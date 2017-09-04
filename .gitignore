@@ -1,0 +1,7 @@
+*.o
+*.a
+*.so
+*.d
+*~
+lulesh2.0
+.vscode
