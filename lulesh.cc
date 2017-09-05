@@ -162,6 +162,11 @@ Additional BSD Notice
 
 #include "lulesh.h"
 
+/*laik headers*/
+extern "C"{
+#include "laik.h"
+#include "laik-backend-mpi.h"
+}
 
 /*********************************/
 /* Data structure implementation */
@@ -2696,7 +2701,7 @@ int main(int argc, char *argv[])
 #if USE_MPI   
    Domain_member fieldData ;
 
-   MPI_Init(&argc, &argv) ;
+   Laik_Instance* inst = laik_init_mpi(&argc, &argv); 
    MPI_Comm_size(MPI_COMM_WORLD, &numRanks) ;
    MPI_Comm_rank(MPI_COMM_WORLD, &myRank) ;
 #else
@@ -2805,9 +2810,7 @@ int main(int argc, char *argv[])
       VerifyAndWriteFinalOutput(elapsed_timeG, *locDom, opts.nx, numRanks);
    }
 
-#if USE_MPI
-   MPI_Finalize() ;
-#endif
+   laik_finalize(inst);
 
    return 0 ;
 }

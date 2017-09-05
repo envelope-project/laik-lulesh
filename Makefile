@@ -8,6 +8,9 @@ LULESH_EXEC = lulesh2.0
 MPI_INC = /opt/local/include/openmpi
 MPI_LIB = /opt/local/lib
 
+LAIK_INC =-I/home/amir/codes/laik/include/
+LAIK_LIB =-L/home/amir/codes/laik/ -llaik
+
 SERCXX = g++ -DUSE_MPI=0
 MPICXX = mpic++ -DUSE_MPI=1
 CXX = $(MPICXX)
@@ -21,8 +24,8 @@ SOURCES2.0 = \
 OBJECTS2.0 = $(SOURCES2.0:.cc=.o)
 
 #Default build suggestions with OpenMP for g++
-CXXFLAGS = -g -O3 -fopenmp -I. -Wall
-LDFLAGS = -g -O3 -fopenmp
+CXXFLAGS = -g -O3 -fopenmp -I. -Wall $(LAIK_INC)
+LDFLAGS = -g -O3 -fopenmp $(LAIK_LIB)
 
 #Below are reasonable default flags for a serial build
 #CXXFLAGS = -g -O3 -I. -Wall
