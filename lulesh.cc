@@ -2810,7 +2810,9 @@ int main(int argc, char *argv[])
       VerifyAndWriteFinalOutput(elapsed_timeG, *locDom, opts.nx, numRanks);
    }
 
+#if USE_MPI   
    laik_finalize(inst);
+#endif
 
    return 0 ;
 }
