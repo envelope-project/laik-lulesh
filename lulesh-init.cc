@@ -12,6 +12,12 @@
 #include <cstdlib>
 #include "lulesh.h"
 
+/*laik headers*/
+extern "C"{
+#include "laik.h"
+#include "laik-backend-mpi.h"
+}
+
 /////////////////////////////////////////////////////////////////////
 Domain::Domain(Int_t numRanks, Index_t colLoc,
                Index_t rowLoc, Index_t planeLoc,
@@ -190,28 +196,31 @@ Domain::BuildMesh(Int_t nx, Int_t edgeNodes, Int_t edgeElems)
 {
   Index_t meshEdgeElems = m_tp*nx ;
 
-  // initialize nodal coordinates 
-  Index_t nidx = 0 ;
-  Real_t tz = Real_t(1.125)*Real_t(m_planeLoc*nx)/Real_t(meshEdgeElems) ;
-  for (Index_t plane=0; plane<edgeNodes; ++plane) {
-    Real_t ty = Real_t(1.125)*Real_t(m_rowLoc*nx)/Real_t(meshEdgeElems) ;
-    for (Index_t row=0; row<edgeNodes; ++row) {
-      Real_t tx = Real_t(1.125)*Real_t(m_colLoc*nx)/Real_t(meshEdgeElems) ;
-      for (Index_t col=0; col<edgeNodes; ++col) {
-	x(nidx) = tx ;
-	y(nidx) = ty ;
-	z(nidx) = tz ;
-	++nidx ;
-	// tx += ds ; // may accumulate roundoff... 
-	tx = Real_t(1.125)*Real_t(m_colLoc*nx+col+1)/Real_t(meshEdgeElems) ;
-      }
-      // ty += ds ;  // may accumulate roundoff... 
-      ty = Real_t(1.125)*Real_t(m_rowLoc*nx+row+1)/Real_t(meshEdgeElems) ;
-    }
-    // tz += ds ;  // may accumulate roundoff... 
-    tz = Real_t(1.125)*Real_t(m_planeLoc*nx+plane+1)/Real_t(meshEdgeElems) ;
-  }
+  // initialize nodal coordinates
+  Index_t nidx = 0;
+  Real_t tz = Real_t(1.125) * Real_t(m_planeLoc * nx) / Real_t(meshEdgeElems);
+  for (Index_t plane = 0; plane < edgeNodes; ++plane)
+  {
+    Real_t ty = Real_t(1.125) * Real_t(m_rowLoc * nx) / Real_t(meshEdgeElems);
+    for (Index_t row = 0; row < edgeNodes; ++row)
+    {
+      Real_t tx = Real_t(1.125) * Real_t(m_colLoc * nx) / Real_t(meshEdgeElems);
+      for (Index_t col = 0; col < edgeNodes; ++col)
+      {
+        x(nidx) = tx;
+        y(nidx) = ty;
+        z(nidx) = tz;
+        ++nidx;
 
+        // tx += ds ; // may accumulate roundoff...
+        tx = Real_t(1.125) * Real_t(m_colLoc * nx + col + 1) / Real_t(meshEdgeElems);
+      }
+      // ty += ds ;  // may accumulate roundoff...
+      ty = Real_t(1.125) * Real_t(m_rowLoc * nx + row + 1) / Real_t(meshEdgeElems);
+    }
+    // tz += ds ;  // may accumulate roundoff...
+    tz = Real_t(1.125) * Real_t(m_planeLoc * nx + plane + 1) / Real_t(meshEdgeElems);
+  }
 
   // embed hexehedral elements in nodal point lattice 
   Index_t zidx = 0 ;
@@ -536,6 +545,10 @@ Domain::SetupElementConnectivities(Int_t edgeElems)
       lzetam(i) = i - edgeElems*edgeElems ;
       lzetap(i-edgeElems*edgeElems) = i ;
    }
+
+   for (Index_t i=0; i<numElem(); ++i) {
+      laik_log((Laik_LogLevel)2,"elem:%d, neighbours:%d, %d, %d, %d, %d, %d", i, lxim(i), lxip(i), letam(i), letap(i), lzetam(i), lzetap(i));
+   }
 }
 
 /////////////////////////////////////////////////////////////
@@ -644,6 +657,11 @@ Domain::SetupBoundaryConditions(Int_t edgeElems)
       }
     }
   }
+
+ for (Index_t i=0; i<numElem(); ++i) {
+      laik_log((Laik_LogLevel)2,"elem:%d, flag: %d, neighbours:%d, %d, %d, %d, %d, %d", i, elemBC(i), lxim(i), lxip(i), letam(i), letap(i), lzetam(i), lzetap(i));
+  }
+
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -707,6 +725,8 @@ void InitMeshDecomp(Int_t numRanks, Int_t myRank,
    *row = (myDom / dx) % dy ;
    *plane = myDom / (dx*dy) ;
    *side = testProcs;
+
+  laik_log((Laik_LogLevel) 2, "%d, %d, %d", *col, *row, *plane);
 
    return;
 }

@@ -59,6 +59,9 @@ clean:
 	/bin/rm -f *.o *~ $(OBJECTS) $(LULESH_EXEC)
 	/bin/rm -rf *.dSYM
 
+run:
+	LAIK_LOG=1:0 mpirun -np 8 ./lulesh2.0 -s 4 -q
+
 tar: clean
 	cd .. ; tar cvf lulesh-2.0.tar LULESH-2.0 ; mv lulesh-2.0.tar LULESH-2.0
 

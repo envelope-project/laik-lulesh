@@ -168,6 +168,9 @@ extern "C"{
 #include "laik-backend-mpi.h"
 }
 
+//porting to laik
+#include "laik-port.h"
+
 /*********************************/
 /* Data structure implementation */
 /*********************************/
@@ -2702,6 +2705,8 @@ int main(int argc, char *argv[])
    Domain_member fieldData ;
 
    Laik_Instance* inst = laik_init_mpi(&argc, &argv); 
+   Laik_Group* world = laik_world(inst);
+
    MPI_Comm_size(MPI_COMM_WORLD, &numRanks) ;
    MPI_Comm_rank(MPI_COMM_WORLD, &myRank) ;
 #else
@@ -2739,6 +2744,14 @@ int main(int argc, char *argv[])
    }
 
    // Set up the mesh and decompose. Assumes regular cubes for now
+
+   // create a global index space for the elements
+   Laik_Space* elementIndexSpace = laik_new_space_1d(inst, numRanks*opts.nx*opts.nx*opts.nx);
+   Laik_Data* element = laik_new_data(world, elementIndexSpace, laik_Double);
+   Laik_Partitioning *elementPartitioning = laik_new_partitioning(world, elementIndexSpace, element_partitioner(), 0);
+
+   laik_switchto(element, elementPartitioning, LAIK_DF_CopyOut);
+
    Int_t col, row, plane, side;
    InitMeshDecomp(numRanks, myRank, &col, &row, &plane, &side);
 

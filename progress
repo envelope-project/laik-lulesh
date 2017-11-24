@@ -1,0 +1,16 @@
+first we target the partitioning of the domain
+
+we can ignore lulesh_tuple.h file
+as it is not used in compilation
+this file can be used as a reference
+for for porting the data structures
+
+in order to port the lulesh first we need to deal with the partitioning
+of the domain. at the moment the MPI code uses a domin decomposition scheme
+in function InitMeshDecomp. 
+this function assigns the location of the
+
+SetupElementConnectivities is for defining the local connectirvity of the elements
+
+I have written a partitioner for the elements to exclusively partition them now 
+I modify it to get the right partitioner
