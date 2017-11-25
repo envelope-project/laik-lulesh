@@ -2749,7 +2749,7 @@ int main(int argc, char *argv[])
    Index_t numElem = numRanks*opts.nx*opts.nx*opts.nx; // global number of elements
    Laik_Space* elementIndexSpace = laik_new_space_1d(inst, numElem);
    Laik_Partitioning *elementExclusivePartitioning = laik_new_partitioning(world, elementIndexSpace, element_partitioner_exclusive(), 0);
-   Laik_Partitioning *elementOverlapingPartitioning = laik_new_partitioning(world, elementIndexSpace, element_partitioner_overlaping(), 0);
+   Laik_Partitioning *elementOverlapingPartitioning = laik_new_partitioning(world, elementIndexSpace, element_partitioner_overlaping(1), 0);
    Laik_Data* element = laik_new_data(world, elementIndexSpace, laik_Double);
 
    // initialization of the data containers

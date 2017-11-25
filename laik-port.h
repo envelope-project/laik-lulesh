@@ -1,6 +1,9 @@
 #include "lulesh.h"
 #include "laik.h"
 
+#include <assert.h>
+#include <cstdlib>
+
 // directly copied from the lulesh_init.cc -> BuildMesh
 // signature is modified to get rid of the "domain"
 Index_t * build_element_corner_list(Int_t edgeElems, Int_t edgeNodes, Int_t m_rowLoc, Int_t m_colLoc, Int_t m_planeLoc)
@@ -134,6 +137,17 @@ void runElementPartitionerOverlaping(Laik_Partitioner* pr,
     const Laik_Slice* slice = laik_space_getslice(space);
     Index_t edgeElems= cbrt( (slice->to.i[0]+1) / numRanks);
 
+    // the number of halos in each boundary
+    Index_t d = *(Index_t*) laik_partitioner_data(pr);
+
+    if (d>edgeElems)
+    {
+        laik_log (LAIK_LL_Error, "number of halo is too large! fix your application");
+        exit(0);
+    }
+
+    //laik_log ((Laik_LogLevel)2, "number of offsets:%d", d);
+
     Index_t Nx=edgeElems;
     Index_t Ny=edgeElems;
     Index_t Nz=edgeElems;
@@ -159,16 +173,16 @@ void runElementPartitionerOverlaping(Laik_Partitioner* pr,
                 r = ry + rx*Ry + rz*Rx*Ry; // task number
                 // loop over y and z  to create the slices in the
                 // partitioning
-                for (Index_t ny = ((ry==0) ?0:-1); ny < ((ry==Ry-1)?Ny:Ny+1) ; ny++)
+                for (Index_t ny = ((ry==0) ?0:-d); ny < ((ry==Ry-1)?Ny:Ny+d) ; ny++)
                 //for (Index_t ny = 0 ; ny < Ny; ny++)
                 {
-                    for (Index_t nz = ( (rz==0)?0:-1 ) ; nz < ( (rz==Rz-1)?Nz:Nz+1 ) ; nz++)
+                    for (Index_t nz = ( (rz==0)?0:-d ) ; nz < ( (rz==Rz-1)?Nz:Nz+d ) ; nz++)
                     //for (Index_t nz = 0 ; nz < Nz; nz++)
                     {
-                        nx= (rx==0)?0:-1;
+                        nx= (rx==0)?0:-d;
                         slc.from.i[0]=nx + Lx*ny + Pxy*nz +  rx*Nx + ry*Lx*Ny + Pxy*Nz*rz;
-                        laik_log((Laik_LogLevel)2,"rank:%d, from %d, ", r, slc.from.i[0]);
-                        nx= (rx==Rx-1)?Nx:Nx+1;
+                        //laik_log((Laik_LogLevel)1,"rank:%d, from %d, ", r, slc.from.i[0]);
+                        nx= (rx==Rx-1)?Nx:Nx+d;
                         slc.to.i[0]=nx + Lx*ny + Pxy*nz  +  rx*Nx + ry*Lx*Ny + Pxy*Nz*rz;
                         laik_append_slice(ba,r,&slc,0,0);
                     }
@@ -193,7 +207,8 @@ void runElementPartitionerOverlaping(Laik_Partitioner* pr,
 
 }
 
-Laik_Partitioner* element_partitioner_overlaping()
+Laik_Partitioner* element_partitioner_overlaping(Index_t depth)
 {
-    return laik_new_partitioner("overlaping-element", runElementPartitionerOverlaping, 0, LAIK_PF_Merge);
+    void* data = &depth;
+    return laik_new_partitioner("overlaping-element", runElementPartitionerOverlaping, data, LAIK_PF_Merge);
 }

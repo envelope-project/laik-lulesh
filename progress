@@ -14,3 +14,7 @@ SetupElementConnectivities is for defining the local connectirvity of the elemen
 
 I have written a partitioner for the elements to exclusively partition them now 
 I modify it to get the right partitioner
+
+we have implemented the halo partitioner and it works with different number of offsets
+
+next we have to implement the partitioner for the nodes
