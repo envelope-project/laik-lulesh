@@ -2746,7 +2746,8 @@ int main(int argc, char *argv[])
    // Set up the mesh and decompose. Assumes regular cubes for now
 
    // create a global index space for the elements
-   Laik_Space* elementIndexSpace = laik_new_space_1d(inst, numRanks*opts.nx*opts.nx*opts.nx);
+   Index_t numElem = numRanks*opts.nx*opts.nx*opts.nx; // global number of elements
+   Laik_Space* elementIndexSpace = laik_new_space_1d(inst, numElem);
    Laik_Partitioning *elementExclusivePartitioning = laik_new_partitioning(world, elementIndexSpace, element_partitioner_exclusive(), 0);
    Laik_Partitioning *elementOverlapingPartitioning = laik_new_partitioning(world, elementIndexSpace, element_partitioner_overlaping(), 0);
    Laik_Data* element = laik_new_data(world, elementIndexSpace, laik_Double);

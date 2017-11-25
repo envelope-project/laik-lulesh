@@ -53,7 +53,11 @@ void runElementPartitionerExclusive(Laik_Partitioner* pr,
     Int_t myRank = laik_myid(world);
     Int_t col, row, plane, side;
     InitMeshDecomp(numRanks, myRank, &col, &row, &plane, &side);
-    Index_t edgeElems= 4;
+    
+    // get the size of the
+    Laik_Space* space = laik_borderarray_getspace(ba);
+    const Laik_Slice* slice = laik_space_getslice(space);
+    Index_t edgeElems= cbrt( (slice->to.i[0]+1) / numRanks);
 
     Index_t Nx=edgeElems;
     Index_t Ny=edgeElems;
@@ -123,8 +127,12 @@ void runElementPartitionerOverlaping(Laik_Partitioner* pr,
     Int_t numRanks = laik_size(world);
     Int_t myRank = laik_myid(world);
     Int_t col, row, plane, side;
-    InitMeshDecomp(numRanks, myRank, &col, &row, &plane, &side);
-    Index_t edgeElems= 4;
+    InitMeshDecomp(numRanks, myRank, &col, &row, &plane, &side); // could be useful for distributed partitioner
+    
+    // get the size of the
+    Laik_Space* space = laik_borderarray_getspace(ba);
+    const Laik_Slice* slice = laik_space_getslice(space);
+    Index_t edgeElems= cbrt( (slice->to.i[0]+1) / numRanks);
 
     Index_t Nx=edgeElems;
     Index_t Ny=edgeElems;
