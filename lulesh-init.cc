@@ -546,9 +546,11 @@ Domain::SetupElementConnectivities(Int_t edgeElems)
       lzetap(i-edgeElems*edgeElems) = i ;
    }
 
+   /*
    for (Index_t i=0; i<numElem(); ++i) {
       laik_log((Laik_LogLevel)2,"elem:%d, neighbours:%d, %d, %d, %d, %d, %d", i, lxim(i), lxip(i), letam(i), letap(i), lzetam(i), lzetap(i));
    }
+   */
 }
 
 /////////////////////////////////////////////////////////////
@@ -658,9 +660,11 @@ Domain::SetupBoundaryConditions(Int_t edgeElems)
     }
   }
 
+  /*
  for (Index_t i=0; i<numElem(); ++i) {
       laik_log((Laik_LogLevel)2,"elem:%d, flag: %d, neighbours:%d, %d, %d, %d, %d, %d", i, elemBC(i), lxim(i), lxip(i), letam(i), letap(i), lzetam(i), lzetap(i));
   }
+  */
 
 }
 
@@ -726,7 +730,9 @@ void InitMeshDecomp(Int_t numRanks, Int_t myRank,
    *plane = myDom / (dx*dy) ;
    *side = testProcs;
 
+  /*
   laik_log((Laik_LogLevel) 2, "%d, %d, %d", *col, *row, *plane);
+  */
 
    return;
 }
