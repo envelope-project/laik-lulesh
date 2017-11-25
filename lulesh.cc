@@ -2748,35 +2748,47 @@ int main(int argc, char *argv[])
    // create a global index space for the elements
    Index_t numElem = numRanks*opts.nx*opts.nx*opts.nx; // global number of elements
    Laik_Space* elementIndexSpace = laik_new_space_1d(inst, numElem);
-   Laik_Partitioning *elementExclusivePartitioning = laik_new_partitioning(world, elementIndexSpace, element_partitioner_exclusive(), 0);
-   Laik_Partitioning *elementOverlapingPartitioning = laik_new_partitioning(world, elementIndexSpace, element_partitioner_overlaping(1), 0);
+   Laik_Partitioning *elementExclusivePartitioning = laik_new_partitioning(world, elementIndexSpace, exclusive_partitioner(), 0);
+   Laik_Partitioning *elementOverlapingPartitioning = laik_new_partitioning(world, elementIndexSpace, overlaping_partitioner(1), 0);
    Laik_Data* element = laik_new_data(world, elementIndexSpace, laik_Double);
 
-   // initialization of the data containers
+   // initialization (writing) of the data containers
    // initialization should always be done
    // using an overlaping partitioning 
    // so that the mallocs in laik, allocate
    // data for the halos as well
+   // write to element:
+   // element at writing phase  has to have
+   // Copy_Out data flow
+   // to preserve the data for the next
+   // phase
    laik_switchto(element, elementExclusivePartitioning, LAIK_DF_CopyOut);
    // go through the slices to just allocate the memory
    uint64_t count;
    double* base;
-   int nSlicesElem = laik_my_slicecount(elementExclusivePartitioning);
-   for (int n = 0; n < nSlicesElem; ++n)
+   int nSlices = laik_my_slicecount(elementExclusivePartitioning);
+   for (int n = 0; n < nSlices; ++n)
    {
       laik_map_def(element, n, (void **)&base, &count);
    }
    laik_switchto(element, elementOverlapingPartitioning, LAIK_DF_CopyIn);
    // initialization is done
+   
+   // now we do the same thing for the nodes
+   Index_t numNodes = numRanks*(opts.nx+1)*(opts.nx+1)*(opts.nx+1); // global number of elements
+   Laik_Space* nodeIndexSpace = laik_new_space_1d(inst, numNodes);
+   Laik_Partitioning *nodeExclusivePartitioning = laik_new_partitioning(world, nodeIndexSpace, exclusive_partitioner(), 0);
+   Laik_Partitioning *nodeOverlapingPartitioning = laik_new_partitioning(world, nodeIndexSpace, overlaping_partitioner(1), 0);
+   Laik_Data* node = laik_new_data(world, nodeIndexSpace, laik_Double);
 
-
-   // make it ready for the next phase
-   // write to element:
-   // element (write) has to have
-   // exclusive partitioning with Copy_Out
-   // to preserve the data for the next
-   // phase
-   //laik_switchto(element, elementExclusivePartitioning, LAIK_DF_CopyOut);
+   laik_switchto(node, nodeExclusivePartitioning, LAIK_DF_CopyOut);
+   // go through the slices to just allocate the memory
+   nSlices = laik_my_slicecount(nodeExclusivePartitioning);
+   for (int n = 0; n < nSlices; ++n)
+   {
+      laik_map_def(node, n, (void **)&base, &count);
+   }
+   laik_switchto(node, nodeOverlapingPartitioning, LAIK_DF_CopyIn);
 
    Int_t col, row, plane, side;
    InitMeshDecomp(numRanks, myRank, &col, &row, &plane, &side);

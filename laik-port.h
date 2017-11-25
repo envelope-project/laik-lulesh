@@ -48,7 +48,7 @@ void free_local_corner_list(int* list){
     free(list);
 }
 
-void runElementPartitionerExclusive(Laik_Partitioner* pr,
+void runExclusivePartitioner(Laik_Partitioner* pr,
                                    Laik_BorderArray* ba, Laik_BorderArray* otherBA)
 {
     Laik_Group* world = laik_borderarray_getgroup(ba);
@@ -118,12 +118,12 @@ void runElementPartitionerExclusive(Laik_Partitioner* pr,
 
 }
 
-Laik_Partitioner* element_partitioner_exclusive()
+Laik_Partitioner* exclusive_partitioner()
 {
-    return laik_new_partitioner("exclusive-element", runElementPartitionerExclusive, 0, LAIK_PF_Merge);
+    return laik_new_partitioner("exclusive", runExclusivePartitioner, 0, LAIK_PF_Merge);
 }
 
-void runElementPartitionerOverlaping(Laik_Partitioner* pr,
+void runOverlapingPartitioner(Laik_Partitioner* pr,
                                    Laik_BorderArray* ba, Laik_BorderArray* otherBA)
 {
     Laik_Group* world = laik_borderarray_getgroup(ba);
@@ -207,8 +207,8 @@ void runElementPartitionerOverlaping(Laik_Partitioner* pr,
 
 }
 
-Laik_Partitioner* element_partitioner_overlaping(Index_t depth)
+Laik_Partitioner* overlaping_partitioner(Index_t depth)
 {
     void* data = &depth;
-    return laik_new_partitioner("overlaping-element", runElementPartitionerOverlaping, data, LAIK_PF_Merge);
+    return laik_new_partitioner("overlaping", runOverlapingPartitioner, data, LAIK_PF_Merge);
 }
