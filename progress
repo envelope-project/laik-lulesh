@@ -17,4 +17,41 @@ I modify it to get the right partitioner
 
 we have implemented the halo partitioner and it works with different number of offsets
 
-next we have to implement the partitioner for the nodes
+next we have to implement the partitioner for the nodes, so far we have the same 
+partitioners for the nodes as well.
+
+Now we need to read the code to check wether other communications and partitioners
+are needed.
+
+the communication is happening in asynchronous way:
+receive/send/wait
+
+lulesh.cc
+    1-in CalcForceForNodes there is one set of asynchronous communication 
+    on the nodes for forces
+    fx, fy, fz
+
+    2-in LagrangeNodal there is one set of asynchronous communication
+    on the nodes for position and velocity
+    x, y, z, dx, dy, dz
+
+    3-in CalcQForElems there is one set of asynchronous communication 
+    on the elements for:
+    delv_xi, delv_eta, delv_zeta
+
+    4-in LagrangeLeapFrog there is one set of asynchronous communication
+    on the nodes for position and velocity
+    x, y, z, dx, dy, dz
+
+    5-in main there is one set of asynchronous communication
+    on the nodes for mass
+    nodalMass
+
+    Not much important
+    6- in TimeIncrement
+    MPI_Allreduce
+    gnewdt
+
+    7- in main
+    MPI_Reduce
+    elapsed_time
