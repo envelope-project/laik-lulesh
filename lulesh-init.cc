@@ -112,6 +112,12 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
       nodalMass(i) = Real_t(0.0) ;
    }
 
+   m_node_test.switch_to_exclusive_partitioning();
+   for (Index_t i=0; i<numNode(); ++i) {
+      testVectorNode(i) = Real_t(0.0) ;
+   }
+   m_node_test.switch_to_halo_partitioning();
+
    BuildMesh(nx, edgeNodes, edgeElems);
 
 #if _OPENMP
@@ -157,6 +163,7 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    cycle()   = Int_t(0) ;
 
    // initialize field data 
+   m_element_test.switch_to_exclusive_partitioning();
    for (Index_t i=0; i<numElem(); ++i) {
       Real_t x_local[8], y_local[8], z_local[8] ;
       Index_t *elemToNode = nodelist(i) ;
@@ -172,11 +179,13 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
       Real_t volume = CalcElemVolume(x_local, y_local, z_local );
       volo(i) = volume ;
       elemMass(i) = volume ;
+      testVectorElement(i)= volume ; // TEST
       for (Index_t j=0; j<8; ++j) {
          Index_t idx = elemToNode[j] ;
          nodalMass(idx) += volume / Real_t(8.0) ;
       }
    }
+   m_element_test.switch_to_halo_partitioning();
 
    // deposit initial energy
    // An energy of 3.948746e+7 is correct for a problem with

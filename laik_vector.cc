@@ -28,6 +28,19 @@ void laik_vector::resize(int count){
     this->switch_to_halo_partitioning();
 }
 
+double& laik_vector::operator [](int idx){
+    uint64_t cnt;
+    double* base;
+    int slice = 0;
+    int l_idx = 0;
+    laik_map_def(data, slice, (void **)&base, &cnt);
+    slice = idx / cnt;
+    laik_map_def(data, slice, (void **)&base, &cnt);
+    l_idx = idx % cnt;
+
+    return base[l_idx];
+}
+
 void laik_vector::switch_to_exclusive_partitioning(){
     laik_switchto(data, exclusivePartitioning, LAIK_DF_CopyOut);
 }
