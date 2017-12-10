@@ -161,7 +161,7 @@ class Domain {
       m_fy.resize(numNode);
       m_fz.resize(numNode);
 
-      m_nodalMass.resize(numNode);  // mass
+      m_nodalMass.resize(numRanks*numNode);  // mass
       m_node_test.resize(numRanks*numNode); // global size
    }
 
@@ -196,7 +196,7 @@ class Domain {
 
       m_ss.resize(numElem);
 
-      m_elemMass.resize(numElem);
+      m_elemMass.resize(numRanks*numElem);
       m_element_test.resize(numRanks*numElem); // global size
    }
 
@@ -461,7 +461,7 @@ class Domain {
    std::vector<Real_t> m_fy ;
    std::vector<Real_t> m_fz ;
 
-   std::vector<Real_t> m_nodalMass ;  /* mass */
+   laik_vector m_nodalMass ;  /* mass */
    laik_vector m_node_test ;
 
    std::vector<Index_t> m_symmX ;  /* symmetry plane nodesets */
@@ -518,7 +518,7 @@ class Domain {
    
    std::vector<Real_t> m_ss ;      /* "sound speed" */
 
-   std::vector<Real_t> m_elemMass ;  /* mass */
+   laik_vector m_elemMass ;  /* mass */
 
    // Cutoffs (treat as constants)
    const Real_t  m_e_cut ;             // energy tolerance 
