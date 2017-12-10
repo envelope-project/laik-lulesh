@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MY_LULESH_H
+#define MY_LULESH_H
 
 #if !defined(USE_MPI)
 # error "You should specify USE_MPI=0 or USE_MPI=1 on the compile line"
@@ -25,6 +26,8 @@
 
 #include <math.h>
 #include <vector>
+//#include <laik_port.h>
+#include <laik_vector.h>
 
 //**************************************************
 // Allow flexibility for arithmetic representations 
@@ -133,7 +136,8 @@ class Domain {
    // Constructor
    Domain(Int_t numRanks, Index_t colLoc,
           Index_t rowLoc, Index_t planeLoc,
-          Index_t nx, Int_t tp, Int_t nr, Int_t balance, Int_t cost);
+          Index_t nx, Int_t tp, Int_t nr, Int_t balance, Int_t cost,
+          Laik_Instance *inst, Laik_Group* world);
 
    //
    // ALLOCATION
@@ -158,6 +162,7 @@ class Domain {
       m_fz.resize(numNode);
 
       m_nodalMass.resize(numNode);  // mass
+      m_test.resize(numNode);
    }
 
    void AllocateElemPersistent(Int_t numElem) // Elem-centered
@@ -260,6 +265,7 @@ class Domain {
 
    // Nodal mass
    Real_t& nodalMass(Index_t idx) { return m_nodalMass[idx] ; }
+   Real_t& testVector(Index_t idx) { return m_test[idx] ; }
 
    // Nodes on symmertry planes
    Index_t symmX(Index_t idx) { return m_symmX[idx] ; }
@@ -401,6 +407,13 @@ class Domain {
    Index_t&  maxPlaneSize()       { return m_maxPlaneSize ; }
    Index_t&  maxEdgeSize()        { return m_maxEdgeSize ; }
    
+   // LAIK-related data
+   // the domain needs to
+   // know about the laik instance
+   // and laik group
+   Laik_Instance *inst;
+   Laik_Group *world;
+
    //
    // MPI-Related additional data
    //
@@ -447,6 +460,7 @@ class Domain {
    std::vector<Real_t> m_fz ;
 
    std::vector<Real_t> m_nodalMass ;  /* mass */
+   laik_vector m_test ;
 
    std::vector<Index_t> m_symmX ;  /* symmetry plane nodesets */
    std::vector<Index_t> m_symmY ;
@@ -616,3 +630,5 @@ void CommMonoQ(Domain& domain);
 // lulesh-init
 void InitMeshDecomp(Int_t numRanks, Int_t myRank,
                     Int_t *col, Int_t *row, Int_t *plane, Int_t *side);
+
+#endif

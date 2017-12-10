@@ -160,8 +160,6 @@ Additional BSD Notice
 # include <omp.h>
 #endif
 
-#include "lulesh.h"
-
 /*laik headers*/
 extern "C"{
 #include "laik.h"
@@ -169,7 +167,11 @@ extern "C"{
 }
 
 //porting to laik
-#include "laik-port.h"
+//#include "laik_vector.h" // includes lulesh.h
+#include <lulesh.h>
+#include <laik_port.h>
+#include <laik_vector.h>
+
 
 /*********************************/
 /* Data structure implementation */
@@ -2745,11 +2747,12 @@ int main(int argc, char *argv[])
 
    // Set up the mesh and decompose. Assumes regular cubes for now
 
+   int halo_depth = 1;
    // create a global index space for the elements
    Index_t numElem = numRanks*opts.nx*opts.nx*opts.nx; // global number of elements
    Laik_Space* elementIndexSpace = laik_new_space_1d(inst, numElem);
    Laik_Partitioning *elementExclusivePartitioning = laik_new_partitioning(world, elementIndexSpace, exclusive_partitioner(), 0);
-   Laik_Partitioning *elementOverlapingPartitioning = laik_new_partitioning(world, elementIndexSpace, overlaping_partitioner(1), 0);
+   Laik_Partitioning *elementOverlapingPartitioning = laik_new_partitioning(world, elementIndexSpace, overlaping_partitioner(halo_depth), 0);
    Laik_Data* element = laik_new_data(world, elementIndexSpace, laik_Double);
 
    // initialization (writing) of the data containers
@@ -2778,7 +2781,7 @@ int main(int argc, char *argv[])
    Index_t numNodes = numRanks*(opts.nx+1)*(opts.nx+1)*(opts.nx+1); // global number of elements
    Laik_Space* nodeIndexSpace = laik_new_space_1d(inst, numNodes);
    Laik_Partitioning *nodeExclusivePartitioning = laik_new_partitioning(world, nodeIndexSpace, exclusive_partitioner(), 0);
-   Laik_Partitioning *nodeOverlapingPartitioning = laik_new_partitioning(world, nodeIndexSpace, overlaping_partitioner(1), 0);
+   Laik_Partitioning *nodeOverlapingPartitioning = laik_new_partitioning(world, nodeIndexSpace, overlaping_partitioner(halo_depth), 0);
    Laik_Data* node = laik_new_data(world, nodeIndexSpace, laik_Double);
 
    laik_switchto(node, nodeExclusivePartitioning, LAIK_DF_CopyOut);
@@ -2794,8 +2797,14 @@ int main(int argc, char *argv[])
    InitMeshDecomp(numRanks, myRank, &col, &row, &plane, &side);
 
    // Build the main data structure and initialize it
+   //locDom = new Domain(numRanks, col, row, plane, opts.nx,
+   //                    side, opts.numReg, opts.balance, opts.cost) ;
+
+   // pass the laik inst and world to the domain
    locDom = new Domain(numRanks, col, row, plane, opts.nx,
-                       side, opts.numReg, opts.balance, opts.cost) ;
+                       side, opts.numReg, opts.balance, opts.cost,
+                       inst, world) ;
+
 
 
 #if USE_MPI   

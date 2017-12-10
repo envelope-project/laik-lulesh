@@ -21,8 +21,12 @@ extern "C"{
 /////////////////////////////////////////////////////////////////////
 Domain::Domain(Int_t numRanks, Index_t colLoc,
                Index_t rowLoc, Index_t planeLoc,
-               Index_t nx, int tp, int nr, int balance, Int_t cost)
+               Index_t nx, int tp, int nr, int balance, Int_t cost,
+               Laik_Instance *inst, Laik_Group *world)
    :
+   inst(inst),
+   world(world),
+   m_test(inst, world),
    m_e_cut(Real_t(1.0e-7)),
    m_p_cut(Real_t(1.0e-7)),
    m_q_cut(Real_t(1.0e-7)),

@@ -55,3 +55,11 @@ lulesh.cc
     7- in main
     MPI_Reduce
     elapsed_time
+
+
+data containers are std::vector
+what we do with these vectors are just
+allocation vec.resize() -> AllocateNodePersistent
+referencing vec[idx] -> Accessors
+
+we need to deligate this two tasks to laik.

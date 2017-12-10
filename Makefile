@@ -20,7 +20,9 @@ SOURCES2.0 = \
 	lulesh-comm.cc \
 	lulesh-viz.cc \
 	lulesh-util.cc \
-	lulesh-init.cc
+	lulesh-init.cc \
+	laik_port.cc \
+	laik_vector.cc
 OBJECTS2.0 = $(SOURCES2.0:.cc=.o)
 
 #Default build suggestions with OpenMP for g++
