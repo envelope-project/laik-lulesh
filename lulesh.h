@@ -143,7 +143,7 @@ class Domain {
    // ALLOCATION
    //
 
-   void AllocateNodePersistent(Int_t numNode) // Node-centered
+   void AllocateNodePersistent(Int_t numNode, Int_t numRanks) // Node-centered
    {
       m_x.resize(numNode);  // coordinates
       m_y.resize(numNode);
@@ -162,10 +162,10 @@ class Domain {
       m_fz.resize(numNode);
 
       m_nodalMass.resize(numNode);  // mass
-      m_test.resize(numNode);
+      m_node_test.resize(numRanks*numNode); // global size
    }
 
-   void AllocateElemPersistent(Int_t numElem) // Elem-centered
+   void AllocateElemPersistent(Int_t numElem, Int_t numRanks) // Elem-centered
    {
       m_nodelist.resize(8*numElem);
 
@@ -197,6 +197,7 @@ class Domain {
       m_ss.resize(numElem);
 
       m_elemMass.resize(numElem);
+      m_element_test.resize(numRanks*numElem); // global size
    }
 
    void AllocateGradients(Int_t numElem, Int_t allElem)
@@ -265,7 +266,7 @@ class Domain {
 
    // Nodal mass
    Real_t& nodalMass(Index_t idx) { return m_nodalMass[idx] ; }
-   Real_t& testVector(Index_t idx) { return m_test[idx] ; }
+   Real_t& testVectorNode(Index_t idx) { return m_node_test[idx] ; }
 
    // Nodes on symmertry planes
    Index_t symmX(Index_t idx) { return m_symmX[idx] ; }
@@ -286,6 +287,7 @@ class Domain {
 
    Index_t*  nodelist(Index_t idx)    { return &m_nodelist[Index_t(8)*idx] ; }
 
+   Real_t& testVectorElement(Index_t idx) { return m_element_test[idx] ; }
    // elem connectivities through face
    Index_t&  lxim(Index_t idx) { return m_lxim[idx] ; }
    Index_t&  lxip(Index_t idx) { return m_lxip[idx] ; }
@@ -460,7 +462,7 @@ class Domain {
    std::vector<Real_t> m_fz ;
 
    std::vector<Real_t> m_nodalMass ;  /* mass */
-   laik_vector m_test ;
+   laik_vector m_node_test ;
 
    std::vector<Index_t> m_symmX ;  /* symmetry plane nodesets */
    std::vector<Index_t> m_symmY ;
@@ -476,6 +478,7 @@ class Domain {
    Index_t **m_regElemlist ;  // region indexset 
 
    std::vector<Index_t>  m_nodelist ;     /* elemToNode connectivity */
+   laik_vector m_element_test ;
 
    std::vector<Index_t>  m_lxim ;  /* element connectivity across each face */
    std::vector<Index_t>  m_lxip ;

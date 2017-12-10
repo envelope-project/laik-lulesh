@@ -2747,6 +2747,7 @@ int main(int argc, char *argv[])
 
    // Set up the mesh and decompose. Assumes regular cubes for now
 
+   /*
    int halo_depth = 1;
    // create a global index space for the elements
    Index_t numElem = numRanks*opts.nx*opts.nx*opts.nx; // global number of elements
@@ -2793,12 +2794,14 @@ int main(int argc, char *argv[])
    }
    laik_switchto(node, nodeOverlapingPartitioning, LAIK_DF_CopyIn);
 
+   */
    Int_t col, row, plane, side;
    InitMeshDecomp(numRanks, myRank, &col, &row, &plane, &side);
 
    // Build the main data structure and initialize it
    //locDom = new Domain(numRanks, col, row, plane, opts.nx,
    //                    side, opts.numReg, opts.balance, opts.cost) ;
+
 
    // pass the laik inst and world to the domain
    locDom = new Domain(numRanks, col, row, plane, opts.nx,

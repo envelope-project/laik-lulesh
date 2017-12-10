@@ -13,6 +13,9 @@ public:
     //laik_vector();
     laik_vector(Laik_Instance* inst, Laik_Group* world);
     void resize(int count);
+    // TODO accessors
+    void switch_to_exclusive_partitioning();
+    void switch_to_halo_partitioning();
 
 private:
     Laik_Instance* inst;

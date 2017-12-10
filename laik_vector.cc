@@ -15,5 +15,24 @@ void laik_vector::resize(int count){
     exclusivePartitioning = laik_new_partitioning(world, indexSpace, exclusive_partitioner(), 0);
     haloPartitioning = laik_new_partitioning(world, indexSpace, overlaping_partitioner(halo_depth), 0);
     data = laik_new_data(world, indexSpace, laik_Double);
+
+    this -> switch_to_exclusive_partitioning();
+    // go through the slices to just allocate the memory
+    uint64_t cnt;
+    double* base;
+    int nSlices = laik_my_slicecount(exclusivePartitioning);
+    for (int n = 0; n < nSlices; ++n)
+    {
+       laik_map_def(data, n, (void **)&base, &cnt);
+    }
+    this->switch_to_halo_partitioning();
+}
+
+void laik_vector::switch_to_exclusive_partitioning(){
+    laik_switchto(data, exclusivePartitioning, LAIK_DF_CopyOut);
+}
+
+void laik_vector::switch_to_halo_partitioning(){
+    laik_switchto(data, haloPartitioning, LAIK_DF_CopyIn);
 }
 

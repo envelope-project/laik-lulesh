@@ -26,7 +26,8 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    :
    inst(inst),
    world(world),
-   m_test(inst, world),
+   m_node_test(inst, world),
+   m_element_test(inst, world),
    m_e_cut(Real_t(1.0e-7)),
    m_p_cut(Real_t(1.0e-7)),
    m_q_cut(Real_t(1.0e-7)),
@@ -75,10 +76,10 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    m_regNumList = new Index_t[numElem()] ;  // material indexset
 
    // Elem-centered 
-   AllocateElemPersistent(numElem()) ;
+   AllocateElemPersistent(numElem(), numRanks) ;
 
    // Node-centered 
-   AllocateNodePersistent(numNode()) ;
+   AllocateNodePersistent(numNode(),numRanks) ;
 
    SetupCommBuffers(edgeNodes);
 
