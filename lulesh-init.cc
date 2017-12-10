@@ -26,8 +26,19 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    :
    inst(inst),
    world(world),
+   m_x(inst, world),
+   m_y(inst, world),
+   m_z(inst, world),
+   m_xd(inst, world),
+   m_yd(inst, world),
+   m_zd(inst, world),
+   m_xdd(inst, world),
+   m_ydd(inst, world),
+   m_zdd(inst, world),
+   m_fx(inst, world),
+   m_fy(inst, world),
+   m_fz(inst, world),
    m_nodalMass(inst, world),
-   m_node_test(inst, world),
    m_element_test(inst, world),
    m_elemMass(inst, world),
    m_e_cut(Real_t(1.0e-7)),
@@ -113,13 +124,6 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    for (Index_t i=0; i<numNode(); ++i) {
       nodalMass(i) = Real_t(0.0) ;
    }
-
-   m_node_test.switch_to_exclusive_partitioning();
-   for (Index_t i=0; i<numNode(); ++i) {
-      testVectorNode(i) = Real_t(0.0) ;
-   }
-   m_node_test.switch_to_halo_partitioning();
-
    BuildMesh(nx, edgeNodes, edgeElems);
 
 #if _OPENMP

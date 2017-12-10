@@ -145,24 +145,23 @@ class Domain {
 
    void AllocateNodePersistent(Int_t numNode, Int_t numRanks) // Node-centered
    {
-      m_x.resize(numNode);  // coordinates
-      m_y.resize(numNode);
-      m_z.resize(numNode);
+      m_x.resize(numRanks*numNode);  // coordinates
+      m_y.resize(numRanks*numNode);
+      m_z.resize(numRanks*numNode);
 
-      m_xd.resize(numNode); // velocities
-      m_yd.resize(numNode);
-      m_zd.resize(numNode);
+      m_xd.resize(numRanks*numNode); // velocities
+      m_yd.resize(numRanks*numNode);
+      m_zd.resize(numRanks*numNode);
 
-      m_xdd.resize(numNode); // accelerations
-      m_ydd.resize(numNode);
-      m_zdd.resize(numNode);
+      m_xdd.resize(numRanks*numNode); // accelerations
+      m_ydd.resize(numRanks*numNode);
+      m_zdd.resize(numRanks*numNode);
 
-      m_fx.resize(numNode);  // forces
-      m_fy.resize(numNode);
-      m_fz.resize(numNode);
+      m_fx.resize(numRanks*numNode);  // forces
+      m_fy.resize(numRanks*numNode);
+      m_fz.resize(numRanks*numNode);
 
       m_nodalMass.resize(numRanks*numNode);  // mass
-      m_node_test.resize(numRanks*numNode); // global size
    }
 
    void AllocateElemPersistent(Int_t numElem, Int_t numRanks) // Elem-centered
@@ -266,7 +265,6 @@ class Domain {
 
    // Nodal mass
    Real_t& nodalMass(Index_t idx) { return m_nodalMass[idx] ; }
-   Real_t& testVectorNode(Index_t idx) { return m_node_test[idx] ; }
 
    // Nodes on symmertry planes
    Index_t symmX(Index_t idx) { return m_symmX[idx] ; }
@@ -445,24 +443,23 @@ class Domain {
    //
 
    /* Node-centered */
-   std::vector<Real_t> m_x ;  /* coordinates */
-   std::vector<Real_t> m_y ;
-   std::vector<Real_t> m_z ;
+   laik_vector m_x ;  /* coordinates */
+   laik_vector m_y ;
+   laik_vector m_z ;
 
-   std::vector<Real_t> m_xd ; /* velocities */
-   std::vector<Real_t> m_yd ;
-   std::vector<Real_t> m_zd ;
+   laik_vector m_xd ; /* velocities */
+   laik_vector m_yd ;
+   laik_vector m_zd ;
 
-   std::vector<Real_t> m_xdd ; /* accelerations */
-   std::vector<Real_t> m_ydd ;
-   std::vector<Real_t> m_zdd ;
+   laik_vector m_xdd ; /* accelerations */
+   laik_vector m_ydd ;
+   laik_vector m_zdd ;
 
-   std::vector<Real_t> m_fx ;  /* forces */
-   std::vector<Real_t> m_fy ;
-   std::vector<Real_t> m_fz ;
+   laik_vector m_fx ;  /* forces */
+   laik_vector m_fy ;
+   laik_vector m_fz ;
 
    laik_vector m_nodalMass ;  /* mass */
-   laik_vector m_node_test ;
 
    std::vector<Index_t> m_symmX ;  /* symmetry plane nodesets */
    std::vector<Index_t> m_symmY ;
