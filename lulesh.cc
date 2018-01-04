@@ -1177,12 +1177,14 @@ static inline void CalcForceForNodes(Domain& domain)
 static inline
 void CalcAccelerationForNodes(Domain &domain, Index_t numNode)
 {
-   
+    //laik_log((Laik_LogLevel)2, "in calculation of the acceleration:");
+
 #pragma omp parallel for firstprivate(numNode)
    for (Index_t i = 0; i < numNode; ++i) {
       domain.xdd(i) = domain.fx(i) / domain.nodalMass(i);
       domain.ydd(i) = domain.fy(i) / domain.nodalMass(i);
       domain.zdd(i) = domain.fz(i) / domain.nodalMass(i);
+      //laik_log((Laik_LogLevel)2, "%d i, %f", i, domain.nodalMass(i));
    }
 }
 
@@ -2810,8 +2812,11 @@ int main(int argc, char *argv[])
 
 
 
-#if USE_MPI   
+#if USE_MPI
+
+    /*
    fieldData = &Domain::nodalMass ;
+
 
    // Initial domain boundary communication 
    CommRecv(*locDom, MSG_COMM_SBN, 1,
@@ -2822,8 +2827,14 @@ int main(int argc, char *argv[])
             true, false) ;
    CommSBN(*locDom, 1, &fieldData) ;
 
+
    // End initialization
    MPI_Barrier(MPI_COMM_WORLD);
+    */
+
+   // laik communication for nodalMass
+   //locDom -> communicateNodalMass();
+
 #endif   
    
    // BEGIN timestep to solution */

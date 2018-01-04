@@ -426,6 +426,13 @@ class Domain {
    // Maximum number of block neighbors 
    MPI_Request recvRequest[26] ; // 6 faces + 12 edges + 8 corners 
    MPI_Request sendRequest[26] ; // 6 faces + 12 edges + 8 corners 
+
+
+   //laik communication
+   void communicateNodalMass(){
+       m_nodalMass.switch_to_halo_partitioning();
+       m_nodalMass.switch_to_exclusive_partitioning();
+   }
 #endif
 
   private:
@@ -443,23 +450,23 @@ class Domain {
    //
 
    /* Node-centered */
-   laik_vector m_x ;  /* coordinates */
-   laik_vector m_y ;
-   laik_vector m_z ;
+   laik_vector_halo m_x ;  /* coordinates */
+   laik_vector_halo m_y ;
+   laik_vector_halo m_z ;
 
-   laik_vector m_xd ; /* velocities */
-   laik_vector m_yd ;
-   laik_vector m_zd ;
+   laik_vector_halo m_xd ; /* velocities */
+   laik_vector_halo m_yd ;
+   laik_vector_halo m_zd ;
 
-   laik_vector m_xdd ; /* accelerations */
-   laik_vector m_ydd ;
-   laik_vector m_zdd ;
+   laik_vector_halo m_xdd ; /* accelerations */
+   laik_vector_halo m_ydd ;
+   laik_vector_halo m_zdd ;
 
-   laik_vector m_fx ;  /* forces */
-   laik_vector m_fy ;
-   laik_vector m_fz ;
+   laik_vector_halo m_fx ;  /* forces */
+   laik_vector_halo m_fy ;
+   laik_vector_halo m_fz ;
 
-   laik_vector m_nodalMass ;  /* mass */
+   laik_vector_overlapping m_nodalMass ;  /* mass */
 
    std::vector<Index_t> m_symmX ;  /* symmetry plane nodesets */
    std::vector<Index_t> m_symmY ;
@@ -475,7 +482,7 @@ class Domain {
    Index_t **m_regElemlist ;  // region indexset 
 
    std::vector<Index_t>  m_nodelist ;     /* elemToNode connectivity */
-   laik_vector m_element_test ;
+   laik_vector_halo m_element_test ;
 
    std::vector<Index_t>  m_lxim ;  /* element connectivity across each face */
    std::vector<Index_t>  m_lxip ;
@@ -578,7 +585,6 @@ class Domain {
    Index_t m_rowMin, m_rowMax;
    Index_t m_colMin, m_colMax;
    Index_t m_planeMin, m_planeMax ;
-
 } ;
 
 typedef Real_t &(Domain::* Domain_member )(Index_t) ;

@@ -1,5 +1,6 @@
 #include <laik_vector.h>
 #include <laik_port.h>
+#include <lulesh.h>
 
 //laik_vector::laik_vector(){}
 
@@ -9,15 +10,17 @@ laik_vector::laik_vector(Laik_Instance* inst, Laik_Group* world){
 }
 
 void laik_vector::resize(int count){
+
     size = count;
     int halo_depth = 1;
     indexSpace = laik_new_space_1d(inst, size);
     exclusivePartitioning = laik_new_partitioning(world, indexSpace, exclusive_partitioner(), 0);
     haloPartitioning = laik_new_partitioning(world, indexSpace, overlaping_partitioner(halo_depth), 0);
+    overlapingPartitioning = laik_new_partitioning(world, indexSpace, overlaping_reduction_partitioner(halo_depth), 0);
     data = laik_new_data(world, indexSpace, laik_Double);
 
-    this -> switch_to_exclusive_partitioning();
     // go through the slices to just allocate the memory
+    this -> switch_to_exclusive_partitioning();
     uint64_t cnt;
     double* base;
     int nSlices = laik_my_slicecount(exclusivePartitioning);
@@ -25,18 +28,21 @@ void laik_vector::resize(int count){
     {
        laik_map_def(data, n, (void **)&base, &cnt);
     }
-    this->switch_to_halo_partitioning();
+    this -> switch_to_halo_partitioning();
+
+    this -> count = cnt;
+
 }
 
 double& laik_vector::operator [](int idx){
     uint64_t cnt;
     double* base;
-    int slice = 0;
-    int l_idx = 0;
+
+    int i = (idx % (count*count) ) % count;
+    int l_idx = i;
+    int slice = idx/count;
+
     laik_map_def(data, slice, (void **)&base, &cnt);
-    slice = idx / cnt;
-    laik_map_def(data, slice, (void **)&base, &cnt);
-    l_idx = idx % cnt;
 
     return base[l_idx];
 }
@@ -49,3 +55,8 @@ void laik_vector::switch_to_halo_partitioning(){
     laik_switchto(data, haloPartitioning, LAIK_DF_CopyIn);
 }
 
+laik_vector_halo::laik_vector_halo(Laik_Instance *inst, Laik_Group *world):
+    laik_vector(inst,world){}
+
+laik_vector_overlapping::laik_vector_overlapping(Laik_Instance *inst, Laik_Group *world):
+    laik_vector(inst,world){}

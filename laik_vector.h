@@ -25,7 +25,21 @@ private:
     Laik_Space* indexSpace;
     Laik_Partitioning *exclusivePartitioning;
     Laik_Partitioning *haloPartitioning;
+    Laik_Partitioning *overlapingPartitioning;
     Laik_Data* data;
+    int count;
+};
+
+class laik_vector_halo:public laik_vector
+{
+public:
+    laik_vector_halo(Laik_Instance* inst, Laik_Group* world);
+};
+
+class laik_vector_overlapping:public laik_vector
+{
+public:
+    laik_vector_overlapping(Laik_Instance* inst, Laik_Group* world);
 };
 
 #endif // LAIK_VECTOR

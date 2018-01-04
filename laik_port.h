@@ -14,6 +14,8 @@ void runExclusivePartitioner(Laik_Partitioner* pr, Laik_BorderArray* ba, Laik_Bo
 Laik_Partitioner* exclusive_partitioner();
 void runOverlapingPartitioner(Laik_Partitioner* pr, Laik_BorderArray* ba, Laik_BorderArray* otherBA);
 Laik_Partitioner* overlaping_partitioner(int &depth);
+void runOverlapingReductionPartitioner(Laik_Partitioner* pr, Laik_BorderArray* ba, Laik_BorderArray* otherBA);
+Laik_Partitioner* overlaping_reduction_partitioner(int &depth);
 
 #endif // LAIK_PORT
 
