@@ -192,17 +192,21 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
       }
    }
 
+   /*
    for (Index_t i=0; i<numNode(); ++i) {
-       laik_log((Laik_LogLevel)2, "%d i, %f", i, nodalMass(i));
+       laik_log((Laik_LogLevel)1, "%d i, %f", i, nodalMass(i));
    }
+   */
 
    laik_log((Laik_LogLevel)2, "before switch");
    m_nodalMass.switch_to_reduction();
    m_nodalMass.switch_to_write_phase();
 
+   /*
    for (Index_t i=0; i<numNode(); ++i) {
-       laik_log((Laik_LogLevel)2, "%d i, %f", i, nodalMass(i));
+       laik_log((Laik_LogLevel)1, "%d i, %f", i, nodalMass(i));
    }
+   */
 
    // deposit initial energy
    // An energy of 3.948746e+7 is correct for a problem with

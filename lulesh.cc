@@ -1177,14 +1177,14 @@ static inline void CalcForceForNodes(Domain& domain)
 static inline
 void CalcAccelerationForNodes(Domain &domain, Index_t numNode)
 {
-    //laik_log((Laik_LogLevel)2, "in calculation of the acceleration:");
+    //laik_log((Laik_LogLevel)1, "in calculation of the acceleration:");
 
 #pragma omp parallel for firstprivate(numNode)
    for (Index_t i = 0; i < numNode; ++i) {
       domain.xdd(i) = domain.fx(i) / domain.nodalMass(i);
       domain.ydd(i) = domain.fy(i) / domain.nodalMass(i);
       domain.zdd(i) = domain.fz(i) / domain.nodalMass(i);
-      //laik_log((Laik_LogLevel)2, "%d i, %f", i, domain.nodalMass(i));
+      //laik_log((Laik_LogLevel)1, "%d i, %f", i, domain.nodalMass(i));
    }
 }
 
