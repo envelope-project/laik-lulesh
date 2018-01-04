@@ -18,7 +18,7 @@ public:
     void switch_to_exclusive_partitioning();
     void switch_to_halo_partitioning();
 
-private:
+protected:
     Laik_Instance* inst;
     Laik_Group* world;
     size_t size;
@@ -40,6 +40,9 @@ class laik_vector_overlapping:public laik_vector
 {
 public:
     laik_vector_overlapping(Laik_Instance* inst, Laik_Group* world);
+    void resize(int count);
+    void switch_to_write_phase();
+    void switch_to_reduction();
 };
 
 #endif // LAIK_VECTOR

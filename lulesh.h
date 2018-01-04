@@ -161,7 +161,7 @@ class Domain {
       m_fy.resize(numRanks*numNode);
       m_fz.resize(numRanks*numNode);
 
-      m_nodalMass.resize(numRanks*numNode);  // mass
+      m_nodalMass.resize(9*9*9);  // mass
    }
 
    void AllocateElemPersistent(Int_t numElem, Int_t numRanks) // Elem-centered
