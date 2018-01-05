@@ -63,3 +63,7 @@ allocation vec.resize() -> AllocateNodePersistent
 referencing vec[idx] -> Accessors
 
 we need to deligate this two tasks to laik.
+
+
+the above work flow is done for nodalMass (#5 in the list of the communications)
+reductions are used for that

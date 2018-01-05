@@ -157,9 +157,9 @@ class Domain {
       m_ydd.resize(numRanks*numNode);
       m_zdd.resize(numRanks*numNode);
 
-      m_fx.resize(numRanks*numNode);  // forces
-      m_fy.resize(numRanks*numNode);
-      m_fz.resize(numRanks*numNode);
+      m_fx.resize(9*9*9);  // forces
+      m_fy.resize(9*9*9);
+      m_fz.resize(9*9*9);
 
       m_nodalMass.resize(9*9*9);  // mass
    }
@@ -237,6 +237,13 @@ class Domain {
       m_dxx.clear() ;
    }
    
+   //
+   // GETTERS
+   //
+   laik_vector_overlapping& get_fx() { return m_fx;}
+   laik_vector_overlapping& get_fy() { return m_fy;}
+   laik_vector_overlapping& get_fz() { return m_fz;}
+
    //
    // ACCESSORS
    //
@@ -462,9 +469,9 @@ class Domain {
    laik_vector_halo m_ydd ;
    laik_vector_halo m_zdd ;
 
-   laik_vector_halo m_fx ;  /* forces */
-   laik_vector_halo m_fy ;
-   laik_vector_halo m_fz ;
+   laik_vector_overlapping m_fx ;  /* forces */
+   laik_vector_overlapping m_fy ;
+   laik_vector_overlapping m_fz ;
 
    laik_vector_overlapping m_nodalMass ;  /* mass */
 

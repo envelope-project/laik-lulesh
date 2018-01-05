@@ -1144,10 +1144,14 @@ static inline void CalcForceForNodes(Domain& domain)
   Index_t numNode = domain.numNode() ;
 
 #if USE_MPI  
-  CommRecv(domain, MSG_COMM_SBN, 3,
-           domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
-           true, false) ;
-#endif  
+  //CommRecv(domain, MSG_COMM_SBN, 3,
+  //         domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
+  //         true, false) ;
+
+  domain.get_fx().switch_to_write_phase();
+  domain.get_fy().switch_to_write_phase();
+  domain.get_fz().switch_to_write_phase();
+#endif
 
 #pragma omp parallel for firstprivate(numNode)
   for (Index_t i=0; i<numNode; ++i) {
@@ -1159,7 +1163,15 @@ static inline void CalcForceForNodes(Domain& domain)
   /* Calcforce calls partial, force, hourq */
   CalcVolumeForceForElems(domain) ;
 
-#if USE_MPI  
+
+#if USE_MPI
+  domain.get_fx().switch_to_reduction();
+  domain.get_fx().switch_to_write_phase();
+  domain.get_fy().switch_to_reduction();
+  domain.get_fy().switch_to_write_phase();
+  domain.get_fz().switch_to_reduction();
+  domain.get_fz().switch_to_write_phase();
+/*
   Domain_member fieldData[3] ;
   fieldData[0] = &Domain::fx ;
   fieldData[1] = &Domain::fy ;
@@ -1169,6 +1181,7 @@ static inline void CalcForceForNodes(Domain& domain)
            domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() +  1,
            true, false) ;
   CommSBN(domain, 3, fieldData) ;
+*/
 #endif  
 }
 
@@ -2831,9 +2844,6 @@ int main(int argc, char *argv[])
    // End initialization
    MPI_Barrier(MPI_COMM_WORLD);
     */
-
-   // laik communication for nodalMass
-   //locDom -> communicateNodalMass();
 
 #endif   
    
