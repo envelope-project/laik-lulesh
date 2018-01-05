@@ -21,7 +21,7 @@
    SEDOV_SYNC_POS_VEL_LATE
 */
 
-#define SEDOV_SYNC_POS_VEL_EARLY 1
+#define SEDOV_SYNC_POS_VEL_NONE 1
 #endif
 
 #include <math.h>
@@ -145,17 +145,17 @@ class Domain {
 
    void AllocateNodePersistent(Int_t numNode, Int_t numRanks) // Node-centered
    {
-      m_x.resize(numRanks*numNode);  // coordinates
-      m_y.resize(numRanks*numNode);
-      m_z.resize(numRanks*numNode);
+      m_x.resize(numNode);  // coordinates
+      m_y.resize(numNode);
+      m_z.resize(numNode);
 
-      m_xd.resize(numRanks*numNode); // velocities
-      m_yd.resize(numRanks*numNode);
-      m_zd.resize(numRanks*numNode);
+      m_xd.resize(numNode); // velocities
+      m_yd.resize(numNode);
+      m_zd.resize(numNode);
 
-      m_xdd.resize(numRanks*numNode); // accelerations
-      m_ydd.resize(numRanks*numNode);
-      m_zdd.resize(numRanks*numNode);
+      m_xdd.resize(numNode); // accelerations
+      m_ydd.resize(numNode);
+      m_zdd.resize(numNode);
 
       m_fx.resize(9*9*9);  // forces
       m_fy.resize(9*9*9);
@@ -195,7 +195,7 @@ class Domain {
 
       m_ss.resize(numElem);
 
-      m_elemMass.resize(numRanks*numElem);
+      m_elemMass.resize(numElem);
       m_element_test.resize(numRanks*numElem); // global size
    }
 
@@ -457,17 +457,17 @@ class Domain {
    //
 
    /* Node-centered */
-   laik_vector_halo m_x ;  /* coordinates */
-   laik_vector_halo m_y ;
-   laik_vector_halo m_z ;
+   std::vector<Real_t> m_x ;  /* coordinates */
+   std::vector<Real_t> m_y ;
+   std::vector<Real_t> m_z ;
 
-   laik_vector_halo m_xd ; /* velocities */
-   laik_vector_halo m_yd ;
-   laik_vector_halo m_zd ;
+   std::vector<Real_t> m_xd ; /* velocities */
+   std::vector<Real_t> m_yd ;
+   std::vector<Real_t> m_zd ;
 
-   laik_vector_halo m_xdd ; /* accelerations */
-   laik_vector_halo m_ydd ;
-   laik_vector_halo m_zdd ;
+   std::vector<Real_t> m_xdd ; /* accelerations */
+   std::vector<Real_t> m_ydd ;
+   std::vector<Real_t> m_zdd ;
 
    laik_vector_overlapping m_fx ;  /* forces */
    laik_vector_overlapping m_fy ;
@@ -529,7 +529,7 @@ class Domain {
    
    std::vector<Real_t> m_ss ;      /* "sound speed" */
 
-   laik_vector m_elemMass ;  /* mass */
+   std::vector<Real_t> m_elemMass ;  /* mass */
 
    // Cutoffs (treat as constants)
    const Real_t  m_e_cut ;             // energy tolerance 

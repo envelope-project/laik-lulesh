@@ -67,3 +67,14 @@ we need to deligate this two tasks to laik.
 
 the above work flow is done for nodalMass (#5 in the list of the communications)
 reductions are used for that
+
+the above work flow is done for nodal forces (fx, fy, fz) (#1 in the list of the communications)
+reductions are used for that
+
+communications for x,y,z,dx,dy,dz are removed -> #define SEDOV_SYNC_POS_VEL_NONE 1
+since the nodes are replicated at the edges of the tasks, there is no need for
+such communication and synchronization -> one can also define a reduction operation
+that checks for the equality of the edges and leave them in case they are equal. 
+but for now, I just ignored them as removing this will have no effect on the 
+refenerce energy (correction check)
+

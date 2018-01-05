@@ -1289,9 +1289,9 @@ void LagrangeNodal(Domain& domain)
 
 #if USE_MPI  
 #ifdef SEDOV_SYNC_POS_VEL_EARLY
-   CommRecv(domain, MSG_SYNC_POS_VEL, 6,
-            domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
-            false, false) ;
+   //CommRecv(domain, MSG_SYNC_POS_VEL, 6,
+   //         domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
+   //         false, false) ;
 #endif
 #endif
    
@@ -1311,13 +1311,18 @@ void LagrangeNodal(Domain& domain)
   fieldData[4] = &Domain::yd ;
   fieldData[5] = &Domain::zd ;
 
-   CommSend(domain, MSG_SYNC_POS_VEL, 6, fieldData,
-            domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
-            false, false) ;
-   CommSyncPosVel(domain) ;
+   //CommSend(domain, MSG_SYNC_POS_VEL, 6, fieldData,
+   //         domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
+   //         false, false) ;
+   //CommSyncPosVel(domain) ;
 #endif
 #endif
    
+   //laik_log((Laik_LogLevel)2, "new iteration");
+   //for (Index_t i=0; i<domain.numNode(); ++i) {
+   //    laik_log((Laik_LogLevel)2, "%f", domain.x(i));
+   //}
+
   return;
 }
 
@@ -2040,6 +2045,13 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
 #endif      
 
       CalcMonotonicQForElems(domain, vnew) ;
+
+      /*
+      laik_log((Laik_LogLevel)2, "new iteration");
+      for (Index_t i=0; i<domain.numElem(); ++i) {
+          laik_log((Laik_LogLevel)2, "%f", domain.delv_xi(i));
+      }
+      */
 
       // Free up memory
       domain.DeallocateGradients();
