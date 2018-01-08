@@ -199,7 +199,7 @@ class Domain {
       m_element_test.resize(numRanks*numElem); // global size
    }
 
-   void AllocateGradients(Int_t numElem, Int_t allElem)
+   void AllocateGradients(Int_t numElem, Int_t numRanks, Index_t allElem)
    {
       // Position gradients
       m_delx_xi.resize(numElem) ;
@@ -207,6 +207,10 @@ class Domain {
       m_delx_zeta.resize(numElem) ;
 
       // Velocity gradients
+      //m_delv_xi.resize(numRanks*numElem) ;
+      //m_delv_eta.resize(numRanks*numElem);
+      //m_delv_zeta.resize(numRanks*numElem) ;
+
       m_delv_xi.resize(allElem) ;
       m_delv_eta.resize(allElem);
       m_delv_zeta.resize(allElem) ;
@@ -221,6 +225,9 @@ class Domain {
       m_delv_zeta.clear() ;
       m_delv_eta.clear() ;
       m_delv_xi.clear() ;
+      //m_delv_zeta.clear() ;
+      //m_delv_eta.clear() ;
+      //m_delv_xi.clear() ;
    }
 
    void AllocateStrains(Int_t numElem)
@@ -504,7 +511,11 @@ class Domain {
    std::vector<Real_t> m_dyy ;
    std::vector<Real_t> m_dzz ;
 
-   std::vector<Real_t> m_delv_xi ;    /* velocity gradient -- temporary */
+   //laik_vector_halo m_delv_xi ;    /* velocity gradient -- temporary */
+   //laik_vector_halo m_delv_eta ;
+   //laik_vector_halo m_delv_zeta ;
+
+   std::vector<Real_t> m_delv_xi ;
    std::vector<Real_t> m_delv_eta ;
    std::vector<Real_t> m_delv_zeta ;
 

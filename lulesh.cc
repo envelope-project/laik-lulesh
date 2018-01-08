@@ -1857,6 +1857,10 @@ void CalcMonotonicQRegionForElems(Domain &domain, Int_t r,
             break;
       }
 
+      /*
+      laik_log((Laik_LogLevel)2, "r:%d, size:%d, ielem:%d, i:%d, lxim:%d, lxip:%d", r, domain.regElemSize(r), ielem, i, domain.lxim(i), domain.lxip(i));
+      */
+
       delvm = delvm * norm ;
       delvp = delvp * norm ;
 
@@ -2008,7 +2012,10 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
    // MONOTONIC Q option
    //
 
+
    Index_t numElem = domain.numElem() ;
+   Index_t numRanks;
+   MPI_Comm_size(MPI_COMM_WORLD, &numRanks) ;
 
    if (numElem != 0) {
       Int_t allElem = numElem +  /* local elem */
@@ -2016,12 +2023,12 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
             2*domain.sizeX()*domain.sizeZ() + /* row ghosts */
             2*domain.sizeY()*domain.sizeZ() ; /* col ghosts */
 
-      domain.AllocateGradients(numElem, allElem);
+      domain.AllocateGradients(numElem, numRanks, allElem);
 
 #if USE_MPI      
-      CommRecv(domain, MSG_MONOQ, 3,
-               domain.sizeX(), domain.sizeY(), domain.sizeZ(),
-               true, true) ;
+      //CommRecv(domain, MSG_MONOQ, 3,
+      //         domain.sizeX(), domain.sizeY(), domain.sizeZ(),
+      //         true, true) ;
 #endif      
 
       /* Calculate velocity gradients */
@@ -2037,11 +2044,11 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
       fieldData[1] = &Domain::delv_eta ;
       fieldData[2] = &Domain::delv_zeta ;
 
-      CommSend(domain, MSG_MONOQ, 3, fieldData,
-               domain.sizeX(), domain.sizeY(), domain.sizeZ(),
-               true, true) ;
+      //CommSend(domain, MSG_MONOQ, 3, fieldData,
+      //         domain.sizeX(), domain.sizeY(), domain.sizeZ(),
+      //         true, true) ;
 
-      CommMonoQ(domain) ;
+      //CommMonoQ(domain) ;
 #endif      
 
       CalcMonotonicQForElems(domain, vnew) ;

@@ -31,6 +31,9 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    m_fz(inst, world),
    m_nodalMass(inst, world),
    m_element_test(inst, world),
+   //m_delv_xi(inst, world),
+   //m_delv_eta(inst, world),
+   //m_delv_zeta(inst, world),
    m_e_cut(Real_t(1.0e-7)),
    m_p_cut(Real_t(1.0e-7)),
    m_q_cut(Real_t(1.0e-7)),
@@ -68,7 +71,7 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    m_colLoc   =   colLoc ;
    m_rowLoc   =   rowLoc ;
    m_planeLoc = planeLoc ;
-   
+
    m_sizeX = edgeElems ;
    m_sizeY = edgeElems ;
    m_sizeZ = edgeElems ;
@@ -175,28 +178,34 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
       Real_t volume = CalcElemVolume(x_local, y_local, z_local );
       volo(i) = volume ;
       elemMass(i) = volume ;
-      testVectorElement(i)= volume ; // TEST
       for (Index_t j=0; j<8; ++j) {
          Index_t idx = elemToNode[j] ;
          nodalMass(idx) += volume / Real_t(8.0) ;
       }
    }
 
+
+    m_element_test.switch_to_exclusive_partitioning();
+    for (Index_t i=0; i<numElem(); ++i) {
+       testVectorElement(i)=colLoc + rowLoc*tp + planeLoc*tp*tp; // TEST
+    }
+
+    m_element_test.switch_to_halo_partitioning();
+    m_element_test.test_print();
+
+    for (Index_t i=0; i<160; ++i) {
+        laik_log((Laik_LogLevel)2, "%d, %f", i, testVectorElement(i));
+    }
+
    /*
    for (Index_t i=0; i<numNode(); ++i) {
        laik_log((Laik_LogLevel)1, "%d i, %f", i, nodalMass(i));
    }
    */
 
-   laik_log((Laik_LogLevel)2, "before switch");
+
    m_nodalMass.switch_to_reduction();
    m_nodalMass.switch_to_write_phase();
-
-   /*
-   for (Index_t i=0; i<numNode(); ++i) {
-       laik_log((Laik_LogLevel)1, "%d i, %f", i, nodalMass(i));
-   }
-   */
 
    // deposit initial energy
    // An energy of 3.948746e+7 is correct for a problem with
@@ -554,7 +563,7 @@ Domain::SetupElementConnectivities(Int_t edgeElems)
    lxip(numElem()-1) = numElem()-1 ;
 
    for (Index_t i=0; i<edgeElems; ++i) {
-      letam(i) = i ; 
+      letam(i) = i ;
       letap(numElem()-edgeElems+i) = numElem()-edgeElems+i ;
    }
    for (Index_t i=edgeElems; i<numElem(); ++i) {
@@ -576,11 +585,12 @@ Domain::SetupElementConnectivities(Int_t edgeElems)
       laik_log((Laik_LogLevel)2,"elem:%d, neighbours:%d, %d, %d, %d, %d, %d", i, lxim(i), lxip(i), letam(i), letap(i), lzetam(i), lzetap(i));
    }
    */
+
 }
 
 /////////////////////////////////////////////////////////////
 void
-Domain::SetupBoundaryConditions(Int_t edgeElems) 
+Domain::SetupBoundaryConditions(Int_t edgeElems)
 {
   Index_t ghostIdx[6] ;  // offsets to ghost locations
 
@@ -594,34 +604,34 @@ Domain::SetupBoundaryConditions(Int_t edgeElems)
   }
 
   Int_t pidx = numElem() ;
-  if (m_planeMin != 0) {
+  //if (m_planeMin != 0) {
     ghostIdx[0] = pidx ;
     pidx += sizeX()*sizeY() ;
-  }
+  //}
 
-  if (m_planeMax != 0) {
+  //if (m_planeMax != 0) {
     ghostIdx[1] = pidx ;
     pidx += sizeX()*sizeY() ;
-  }
+  //}
 
-  if (m_rowMin != 0) {
+  //if (m_rowMin != 0) {
     ghostIdx[2] = pidx ;
     pidx += sizeX()*sizeZ() ;
-  }
+  //}
 
-  if (m_rowMax != 0) {
+  //if (m_rowMax != 0) {
     ghostIdx[3] = pidx ;
     pidx += sizeX()*sizeZ() ;
-  }
+  //}
 
-  if (m_colMin != 0) {
+  //if (m_colMin != 0) {
     ghostIdx[4] = pidx ;
     pidx += sizeY()*sizeZ() ;
-  }
+  //}
 
-  if (m_colMax != 0) {
+  //if (m_colMax != 0) {
     ghostIdx[5] = pidx ;
-  }
+  //}
 
   // symmetry plane or free surface BCs 
   for (Index_t i=0; i<edgeElems; ++i) {
@@ -633,7 +643,7 @@ Domain::SetupBoundaryConditions(Int_t edgeElems)
       }
       else {
 	elemBC(rowInc+j) |= ZETA_M_COMM ;
-	lzetam(rowInc+j) = ghostIdx[0] + rowInc + j ;
+    lzetam(rowInc+j) = ghostIdx[0] + rowInc + j ;
       }
 
       if (m_planeLoc == m_tp-1) {
@@ -643,8 +653,8 @@ Domain::SetupBoundaryConditions(Int_t edgeElems)
       else {
 	elemBC(rowInc+j+numElem()-edgeElems*edgeElems) |=
 	  ZETA_P_COMM ;
-	lzetap(rowInc+j+numElem()-edgeElems*edgeElems) =
-	  ghostIdx[1] + rowInc + j ;
+    lzetap(rowInc+j+numElem()-edgeElems*edgeElems) =
+      ghostIdx[1] + rowInc + j ;
       }
 
       if (m_rowLoc == 0) {
@@ -652,7 +662,7 @@ Domain::SetupBoundaryConditions(Int_t edgeElems)
       }
       else {
 	elemBC(planeInc+j) |= ETA_M_COMM ;
-	letam(planeInc+j) = ghostIdx[2] + rowInc + j ;
+    letam(planeInc+j) = ghostIdx[2] + rowInc + j ;
       }
 
       if (m_rowLoc == m_tp-1) {
@@ -662,8 +672,8 @@ Domain::SetupBoundaryConditions(Int_t edgeElems)
       else {
 	elemBC(planeInc+j+edgeElems*edgeElems-edgeElems) |= 
 	  ETA_P_COMM ;
-	letap(planeInc+j+edgeElems*edgeElems-edgeElems) =
-	  ghostIdx[3] +  rowInc + j ;
+    letap(planeInc+j+edgeElems*edgeElems-edgeElems) =
+      ghostIdx[3] +  rowInc + j ;
       }
 
       if (m_colLoc == 0) {
@@ -671,7 +681,7 @@ Domain::SetupBoundaryConditions(Int_t edgeElems)
       }
       else {
 	elemBC(planeInc+j*edgeElems) |= XI_M_COMM ;
-	lxim(planeInc+j*edgeElems) = ghostIdx[4] + rowInc + j ;
+    lxim(planeInc+j*edgeElems) = ghostIdx[4] + rowInc + j ;
       }
 
       if (m_colLoc == m_tp-1) {
@@ -679,17 +689,48 @@ Domain::SetupBoundaryConditions(Int_t edgeElems)
       }
       else {
 	elemBC(planeInc+j*edgeElems+edgeElems-1) |= XI_P_COMM ;
-	lxip(planeInc+j*edgeElems+edgeElems-1) =
-	  ghostIdx[5] + rowInc + j ;
+    lxip(planeInc+j*edgeElems+edgeElems-1) =
+      ghostIdx[5] + rowInc + j ;
       }
     }
   }
 
+
+  // modification for laik
+/*
+  for (Index_t i=0; i<edgeElems; ++i) {
+    Index_t planeInc = i*edgeElems*edgeElems ;
+    Index_t rowInc   = i*edgeElems ;
+    for (Index_t j=0; j<edgeElems; ++j) {
+      if (m_planeLoc != 0)
+        lzetam(rowInc+j) = (rowInc+j-edgeElems*edgeElems);//ghostIdx[0] + rowInc + j ;
+
+      if (m_planeLoc != m_tp-1)
+        lzetap(rowInc+j+numElem()-edgeElems*edgeElems) = (rowInc+j+numElem()) ;//
+        //ghostIdx[1] + rowInc + j ;
+
+      if (m_rowLoc != 0)
+        letam(planeInc+j) = (planeInc+j-edgeElems);// ghostIdx[2] + rowInc + j ;
+
+      if (m_rowLoc != m_tp-1)
+        letap(planeInc+j+edgeElems*edgeElems-edgeElems) =(planeInc+j+edgeElems*edgeElems);//
+        //ghostIdx[3] +  rowInc + j ;
+
+      if (m_colLoc != 0)
+        lxim(planeInc+j*edgeElems) =(planeInc+j*edgeElems-1);//  ghostIdx[4] + rowInc + j ;
+
+      if (m_colLoc != m_tp-1)
+        lxip(planeInc+j*edgeElems+edgeElems-1) =(planeInc+j*edgeElems+edgeElems);//
+        //ghostIdx[5] + rowInc + j ;
+    }
+  }
+*/
   /*
  for (Index_t i=0; i<numElem(); ++i) {
       laik_log((Laik_LogLevel)2,"elem:%d, flag: %d, neighbours:%d, %d, %d, %d, %d, %d", i, elemBC(i), lxim(i), lxip(i), letam(i), letap(i), lzetam(i), lzetap(i));
   }
   */
+
 
 }
 

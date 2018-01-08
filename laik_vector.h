@@ -17,17 +17,20 @@ public:
     double& operator [](int idx);
     void switch_to_exclusive_partitioning();
     void switch_to_halo_partitioning();
+    void test_print();
 
 protected:
     Laik_Instance* inst;
     Laik_Group* world;
-    size_t size;
+    int size;
     Laik_Space* indexSpace;
     Laik_Partitioning *exclusivePartitioning;
     Laik_Partitioning *haloPartitioning;
     Laik_Partitioning *overlapingPartitioning;
     Laik_Data* data;
     int count;
+    int f,b,u,d,l,r;
+    int state;
 };
 
 class laik_vector_halo:public laik_vector
@@ -40,6 +43,7 @@ class laik_vector_overlapping:public laik_vector
 {
 public:
     laik_vector_overlapping(Laik_Instance* inst, Laik_Group* world);
+    double& operator [](int idx);
     void resize(int count);
     void switch_to_write_phase();
     void switch_to_reduction();
