@@ -103,11 +103,10 @@ double& laik_vector::operator [](int idx){
 
         if (idx < count*count*count) {
             i = idx%count;
-            slice = idx/count;
-            int k = idx/(count*count)+1;
-            i += 1*l;
-            slice+= (count+f+b)*f+k*d+(k-1)*u;
-
+            int s = (idx/count)%count;
+            int k = idx/(count*count);
+            i += l;
+            slice = (count+d+u)*(d+k)+(s+d);
         }
 
         if ( ( idx >= count*count*count && idx < (count*count*count + count*count) ) && (f) ) {
@@ -123,7 +122,7 @@ double& laik_vector::operator [](int idx){
             i = index%count;
             slice = index/count;
             i += l;
-            slice += (count+u+d)*(count+f+b-1)+d;
+            slice += (count+u+d)*(count+f)+d;
         }
 
 
@@ -132,7 +131,7 @@ double& laik_vector::operator [](int idx){
             i = index%count;
             slice = index/count;
             i += l;
-            slice = (slice+d)*(count+b+f);
+            slice = (slice+f)*(count+d+u);
         }
 
 
@@ -141,28 +140,28 @@ double& laik_vector::operator [](int idx){
             i = index%count;
             slice = index/count;
             i += l;
-            slice = (slice+d+1)*(count+b+f)-1;
+            slice = (slice+f+1)*(count+d+u)-1;
         }
 
         if ( (idx >= (count*count*count + 4*count*count) && idx < (count*count*count + 5*count*count) ) && (l) ){
             index=idx-(count*count*count + 4*count*count);
-            i = index%count;
-            slice =index/count ;
-            slice = (d+slice)*(count+f+b)+f+i;
+            int s = index%count;
+            int k = index/count;
+            slice = (count+d+u)*(d+k)+(s+d);
             i=0;
         }
 
         if ( (idx >= (count*count*count + 5*count*count) && idx < (count*count*count + 6*count*count) ) && (r) ){
             index=idx-(count*count*count + 5*count*count);
-            i = index%count;
-            slice =index/count ;
-            slice = (d+slice)*(count+f+b)+f+i;
+            int s = index%count;
+            int k = index/count;
+            slice = (count+d+u)*(d+k)+(s+d);
             i=count+l+r-1;
         }
 
     }
 
-    laik_log(Laik_LogLevel(2),"%d %d",slice, i);
+    //laik_log(Laik_LogLevel(2),"%d %d",slice, i);
 
     laik_map_def(data, slice, (void **)&base, &cnt);
 

@@ -2029,26 +2029,29 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
       //CommRecv(domain, MSG_MONOQ, 3,
       //         domain.sizeX(), domain.sizeY(), domain.sizeZ(),
       //         true, true) ;
-#endif      
-
-      /* Calculate velocity gradients */
       domain.get_delv_xi().switch_to_exclusive_partitioning();
       domain.get_delv_eta().switch_to_exclusive_partitioning();
       domain.get_delv_zeta().switch_to_exclusive_partitioning();
+#endif      
+
+      /* Calculate velocity gradients */
       CalcMonotonicQGradientsForElems(domain, vnew);
+
+#if USE_MPI      
+
+
       domain.get_delv_xi().switch_to_halo_partitioning();
       domain.get_delv_eta().switch_to_halo_partitioning();
       domain.get_delv_zeta().switch_to_halo_partitioning();
 
-#if USE_MPI      
       Domain_member fieldData[3] ;
       
       /* Transfer veloctiy gradients in the first order elements */
       /* problem->commElements->Transfer(CommElements::monoQ) ; */
 
-      fieldData[0] = &Domain::delv_xi ;
-      fieldData[1] = &Domain::delv_eta ;
-      fieldData[2] = &Domain::delv_zeta ;
+      //fieldData[0] = &Domain::delv_xi ;
+      //fieldData[1] = &Domain::delv_eta ;
+      //fieldData[2] = &Domain::delv_zeta ;
 
       //CommSend(domain, MSG_MONOQ, 3, fieldData,
       //         domain.sizeX(), domain.sizeY(), domain.sizeZ(),
@@ -2065,6 +2068,14 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
           laik_log((Laik_LogLevel)2, "%f", domain.delv_xi(i));
       }
       */
+
+
+
+      laik_log((Laik_LogLevel)2, "new iteration");
+      for (Index_t i=0; i<150; ++i) {
+          laik_log((Laik_LogLevel)2, "i: %d, lxim: %d, lxip: %d, letam: %d, letap: %d, lzetam: %d, lzetap: %d", i, domain.lxim(i), domain.lxip(i), domain.letam(i), domain.letap(i), domain.lzetam(i),domain.lzetap(i));
+      }
+
 
       // Free up memory
       domain.DeallocateGradients();
