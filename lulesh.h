@@ -207,13 +207,13 @@ class Domain {
       m_delx_zeta.resize(numElem) ;
 
       // Velocity gradients
-      //m_delv_xi.resize(numRanks*numElem) ;
-      //m_delv_eta.resize(numRanks*numElem);
-      //m_delv_zeta.resize(numRanks*numElem) ;
+      m_delv_xi.resize(numRanks*numElem) ;
+      m_delv_eta.resize(numRanks*numElem);
+      m_delv_zeta.resize(numRanks*numElem) ;
 
-      m_delv_xi.resize(allElem) ;
-      m_delv_eta.resize(allElem);
-      m_delv_zeta.resize(allElem) ;
+      //m_delv_xi.resize(allElem) ;
+      //m_delv_eta.resize(allElem);
+      //m_delv_zeta.resize(allElem) ;
    }
 
    void DeallocateGradients()
@@ -222,9 +222,6 @@ class Domain {
       m_delx_eta.clear() ;
       m_delx_xi.clear() ;
 
-      m_delv_zeta.clear() ;
-      m_delv_eta.clear() ;
-      m_delv_xi.clear() ;
       //m_delv_zeta.clear() ;
       //m_delv_eta.clear() ;
       //m_delv_xi.clear() ;
@@ -250,6 +247,9 @@ class Domain {
    laik_vector_overlapping& get_fx() { return m_fx;}
    laik_vector_overlapping& get_fy() { return m_fy;}
    laik_vector_overlapping& get_fz() { return m_fz;}
+   laik_vector_halo& get_delv_xi() { return m_delv_xi;}
+   laik_vector_halo& get_delv_eta() { return m_delv_eta;}
+   laik_vector_halo& get_delv_zeta() { return m_delv_zeta;}
 
    //
    // ACCESSORS
@@ -511,13 +511,13 @@ class Domain {
    std::vector<Real_t> m_dyy ;
    std::vector<Real_t> m_dzz ;
 
-   //laik_vector_halo m_delv_xi ;    /* velocity gradient -- temporary */
-   //laik_vector_halo m_delv_eta ;
-   //laik_vector_halo m_delv_zeta ;
+   laik_vector_halo m_delv_xi ;    /* velocity gradient -- temporary */
+   laik_vector_halo m_delv_eta ;
+   laik_vector_halo m_delv_zeta ;
 
-   std::vector<Real_t> m_delv_xi ;
-   std::vector<Real_t> m_delv_eta ;
-   std::vector<Real_t> m_delv_zeta ;
+   //std::vector<Real_t> m_delv_xi ;
+   //std::vector<Real_t> m_delv_eta ;
+   //std::vector<Real_t> m_delv_zeta ;
 
    std::vector<Real_t> m_delx_xi ;    /* coordinate gradient -- temporary */
    std::vector<Real_t> m_delx_eta ;

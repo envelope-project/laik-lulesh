@@ -2032,7 +2032,13 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
 #endif      
 
       /* Calculate velocity gradients */
+      domain.get_delv_xi().switch_to_exclusive_partitioning();
+      domain.get_delv_eta().switch_to_exclusive_partitioning();
+      domain.get_delv_zeta().switch_to_exclusive_partitioning();
       CalcMonotonicQGradientsForElems(domain, vnew);
+      domain.get_delv_xi().switch_to_halo_partitioning();
+      domain.get_delv_eta().switch_to_halo_partitioning();
+      domain.get_delv_zeta().switch_to_halo_partitioning();
 
 #if USE_MPI      
       Domain_member fieldData[3] ;

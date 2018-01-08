@@ -162,8 +162,6 @@ double& laik_vector::operator [](int idx){
 
     }
 
-
-
     laik_log(Laik_LogLevel(2),"%d %d",slice, i);
 
     laik_map_def(data, slice, (void **)&base, &cnt);
