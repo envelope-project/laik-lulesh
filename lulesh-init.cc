@@ -189,20 +189,18 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
     for (Index_t i=0; i<numElem(); ++i) {
        testVectorElement(i)=colLoc + rowLoc*tp + planeLoc*tp*tp; // TEST
     }
-
     m_element_test.switch_to_halo_partitioning();
-    m_element_test.test_print();
+    //m_element_test.test_print();
 
-    for (Index_t i=0; i<160; ++i) {
-        laik_log((Laik_LogLevel)2, "%d, %f", i, testVectorElement(i));
-    }
+    //for (Index_t i=0; i<160; ++i) {
+    //    laik_log((Laik_LogLevel)2, "%d, %f", i, testVectorElement(i));
+    //}
 
    /*
    for (Index_t i=0; i<numNode(); ++i) {
        laik_log((Laik_LogLevel)1, "%d i, %f", i, nodalMass(i));
    }
    */
-
 
    m_nodalMass.switch_to_reduction();
    m_nodalMass.switch_to_write_phase();
@@ -604,34 +602,34 @@ Domain::SetupBoundaryConditions(Int_t edgeElems)
   }
 
   Int_t pidx = numElem() ;
-  //if (m_planeMin != 0) {
+  if (m_planeMin != 0) {
     ghostIdx[0] = pidx ;
     pidx += sizeX()*sizeY() ;
-  //}
+  }
 
-  //if (m_planeMax != 0) {
+  if (m_planeMax != 0) {
     ghostIdx[1] = pidx ;
     pidx += sizeX()*sizeY() ;
-  //}
+  }
 
-  //if (m_rowMin != 0) {
+  if (m_rowMin != 0) {
     ghostIdx[2] = pidx ;
     pidx += sizeX()*sizeZ() ;
-  //}
+  }
 
-  //if (m_rowMax != 0) {
+  if (m_rowMax != 0) {
     ghostIdx[3] = pidx ;
     pidx += sizeX()*sizeZ() ;
-  //}
+  }
 
-  //if (m_colMin != 0) {
+  if (m_colMin != 0) {
     ghostIdx[4] = pidx ;
     pidx += sizeY()*sizeZ() ;
-  //}
+  }
 
-  //if (m_colMax != 0) {
+  if (m_colMax != 0) {
     ghostIdx[5] = pidx ;
-  //}
+  }
 
   // symmetry plane or free surface BCs 
   for (Index_t i=0; i<edgeElems; ++i) {

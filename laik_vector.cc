@@ -1,6 +1,7 @@
 #include <laik_vector.h>
 #include <laik_port.h>
 #include <lulesh.h>
+#include<limits.h>
 
 //laik_vector::laik_vector(){}
 
@@ -46,6 +47,7 @@ laik_vector::laik_vector(Laik_Instance* inst, Laik_Group* world){
     }
 
     state=0;
+    zero=0;
 }
 
 void laik_vector::resize(int count){
@@ -93,7 +95,58 @@ double& laik_vector::operator [](int idx){
 
     int i=0;
     int index=0;
-    int slice=0;
+    int slice=-1;
+    int side =-1;
+    int numElem=count*count*count;
+
+    Index_t ghostIdx[6] ;  // offsets to ghost locations
+
+    for (Index_t i=0; i<6; ++i) {
+      ghostIdx[i] = INT_MAX;
+    }
+
+    Int_t pidx = numElem ;
+    if (f) {
+      ghostIdx[0] = pidx ;
+      pidx += count*count ;
+    }
+
+    if (b) {
+      ghostIdx[1] = pidx ;
+      pidx += count*count ;
+    }
+
+    if (d) {
+      ghostIdx[2] = pidx ;
+      pidx += count*count ;
+    }
+
+    if (u) {
+      ghostIdx[3] = pidx ;
+      pidx += count*count ;
+    }
+
+    if (l) {
+      ghostIdx[4] = pidx ;
+      pidx += count*count ;
+    }
+
+    if (r) {
+      ghostIdx[5] = pidx ;
+    }
+
+    /*
+    for (int i = 0; i < 6; ++i) {
+            laik_log(Laik_LogLevel(2), "%d", ghostIdx[i]);
+    }
+    */
+
+
+    for (int i = 0; i < 6; ++i) {
+        if  (idx>=ghostIdx[i]){
+            side =i;
+        }
+    }
 
     if (state) {
         i = (idx % (count*count) ) % count;
@@ -101,58 +154,50 @@ double& laik_vector::operator [](int idx){
     }
     else{
 
-        if (idx < count*count*count) {
+        if (idx < numElem) {
             i = idx%count;
             int s = (idx/count)%count;
             int k = idx/(count*count);
             i += l;
             slice = (count+d+u)*(d+k)+(s+d);
         }
-
-        if ( ( idx >= count*count*count && idx < (count*count*count + count*count) ) && (f) ) {
-            index =idx-count*count*count;
+        else if (side==0) {
+            index =idx-ghostIdx[side];
             i = index%count;
             slice = index/count;
             i += l;
             slice+=d;
         }
-
-        if ( (idx >= (count*count*count + count*count) && idx < (count*count*count + 2*count*count) ) && (b)) {
-            index=idx-(count*count*count + count*count);
+        else if (side==1) {
+            index =idx-ghostIdx[side];
             i = index%count;
             slice = index/count;
             i += l;
             slice += (count+u+d)*(count+f)+d;
         }
-
-
-        if ( (idx >= (count*count*count + 2*count*count) && idx < (count*count*count + 3*count*count) ) && (d) ) {
-            index=idx-(count*count*count + 2*count*count);
+        else if (side==2) {
+            index =idx-ghostIdx[side];
             i = index%count;
             slice = index/count;
             i += l;
             slice = (slice+f)*(count+d+u);
         }
-
-
-        if ( (idx >= (count*count*count + 3*count*count) && idx < (count*count*count + 4*count*count) ) && (u) ) {
-            index=idx-(count*count*count + 3*count*count);
+        else if (side==3) {
+            index =idx-ghostIdx[side];
             i = index%count;
             slice = index/count;
             i += l;
             slice = (slice+f+1)*(count+d+u)-1;
         }
-
-        if ( (idx >= (count*count*count + 4*count*count) && idx < (count*count*count + 5*count*count) ) && (l) ){
-            index=idx-(count*count*count + 4*count*count);
+        else if (side==4) {
+            index =idx-ghostIdx[side];
             int s = index%count;
             int k = index/count;
             slice = (count+d+u)*(d+k)+(s+d);
             i=0;
         }
-
-        if ( (idx >= (count*count*count + 5*count*count) && idx < (count*count*count + 6*count*count) ) && (r) ){
-            index=idx-(count*count*count + 5*count*count);
+        else if (side==5) {
+            index =idx-ghostIdx[side];
             int s = index%count;
             int k = index/count;
             slice = (count+d+u)*(d+k)+(s+d);
@@ -161,11 +206,15 @@ double& laik_vector::operator [](int idx){
 
     }
 
-    //laik_log(Laik_LogLevel(2),"%d %d",slice, i);
+    //laik_log(Laik_LogLevel(2),"state: %d, idx: %d, side: %d, slice: %d, i:%d", state, idx, side, slice, i);
 
-    laik_map_def(data, slice, (void **)&base, &cnt);
+    if (slice>-1) {
+        laik_map_def(data, slice, (void **)&base, &cnt);
+        return base[i];
+    }
 
-    return base[i];
+    return zero;
+
 }
 
 void laik_vector::switch_to_exclusive_partitioning(){

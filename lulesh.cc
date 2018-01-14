@@ -2060,6 +2060,7 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
       //CommMonoQ(domain) ;
 #endif      
 
+
       CalcMonotonicQForElems(domain, vnew) ;
 
       /*
@@ -2069,13 +2070,16 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
       }
       */
 
-
-
-      laik_log((Laik_LogLevel)2, "new iteration");
-      for (Index_t i=0; i<150; ++i) {
-          laik_log((Laik_LogLevel)2, "i: %d, lxim: %d, lxip: %d, letam: %d, letap: %d, lzetam: %d, lzetap: %d", i, domain.lxim(i), domain.lxip(i), domain.letam(i), domain.letap(i), domain.lzetam(i),domain.lzetap(i));
+      /*
+      laik_log((Laik_LogLevel)2,"new iteration");
+      for (Index_t i=0; i<32; ++i) {
+          laik_log((Laik_LogLevel)2, "i: %d, lxim: %d, lxip: %d, letam: %d, letap: %d, lzetam: %d, lzetap: %d, value: %f", i, domain.lxim(i), domain.lxip(i), domain.letam(i), domain.letap(i), domain.lzetam(i),domain.lzetap(i), domain.delv_xi(i));
       }
+      */
 
+      for (Index_t i=0; i<20; ++i) {
+          laik_log((Laik_LogLevel)2, "i: %d, value: %f", i, domain.delv_xi(i));
+      }
 
       // Free up memory
       domain.DeallocateGradients();

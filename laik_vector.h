@@ -31,6 +31,8 @@ protected:
     int count;
     int f,b,u,d,l,r;
     int state;
+    double zero;
+
 };
 
 class laik_vector_halo:public laik_vector
