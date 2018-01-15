@@ -157,11 +157,15 @@ class Domain {
       m_ydd.resize(numNode);
       m_zdd.resize(numNode);
 
-      m_fx.resize(9*9*9);  // forces
-      m_fy.resize(9*9*9);
-      m_fz.resize(9*9*9);
+      int edgeElem = (int)(cbrt(numNode)+0.1)-1;
+      int side = cbrt (numRanks);
+      int globalNumNode=(edgeElem*side+1)*(edgeElem*side+1)*(edgeElem*side+1);
 
-      m_nodalMass.resize(9*9*9);  // mass
+      m_fx.resize(globalNumNode);  // forces
+      m_fy.resize(globalNumNode);
+      m_fz.resize(globalNumNode);
+
+      m_nodalMass.resize(globalNumNode);  // mass
    }
 
    void AllocateElemPersistent(Int_t numElem, Int_t numRanks) // Elem-centered

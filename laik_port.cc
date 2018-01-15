@@ -57,7 +57,7 @@ void runExclusivePartitioner(Laik_Partitioner* pr,
     // get the size of the
     Laik_Space* space = laik_borderarray_getspace(ba);
     const Laik_Slice* slice = laik_space_getslice(space);
-    int edgeElems= cbrt( (slice->to.i[0]+1) / numRanks);
+    int edgeElems= (int) (cbrt( (slice->to.i[0]+1) / numRanks ) + 0.1 );
 
     int Nx=edgeElems;
     int Ny=edgeElems;
@@ -134,7 +134,7 @@ void runOverlapingPartitioner(Laik_Partitioner* pr,
     // get the size of the
     Laik_Space* space = laik_borderarray_getspace(ba);
     const Laik_Slice* slice = laik_space_getslice(space);
-    int edgeElems= cbrt( (slice->to.i[0]+1) / numRanks);
+    int edgeElems= (int) ( cbrt( (slice->to.i[0]+1) / numRanks) + 0.1 );
 
     // the number of halos in each boundary
     int d = *(int*) laik_partitioner_data(pr);
@@ -224,7 +224,7 @@ void runOverlapingReductionPartitioner(Laik_Partitioner* pr, Laik_BorderArray* b
     // get the size of the
     Laik_Space* space = laik_borderarray_getspace(ba);
     const Laik_Slice* slice = laik_space_getslice(space);
-    int edgeNodes= (cbrt( (slice->to.i[0]+1)) -1)/cbrt(numRanks) + 1 ;
+    int edgeNodes= (int) ( (cbrt( (slice->to.i[0]+1)) -1)/cbrt(numRanks) + 1   + 0.1);
 
     //laik_log ((Laik_LogLevel)2, "elems: %d", edgeNodes);
 
