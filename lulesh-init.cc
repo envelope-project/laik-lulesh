@@ -87,6 +87,14 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    // Node-centered 
    AllocateNodePersistent(numNode(),numRanks) ;
 
+
+   Int_t allElem = numElem() +  /* local elem */
+            2*sizeX()*sizeY() + /* plane ghosts */
+            2*sizeX()*sizeZ() + /* row ghosts */
+            2*sizeY()*sizeZ() ; /* col ghosts */
+   // Element-centered gradients
+   AllocateGradients(numElem(), numRanks, allElem);
+
    SetupCommBuffers(edgeNodes);
 
    // Basic Field Initialization 

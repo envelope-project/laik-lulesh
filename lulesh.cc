@@ -2023,7 +2023,7 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
             2*domain.sizeX()*domain.sizeZ() + /* row ghosts */
             2*domain.sizeY()*domain.sizeZ() ; /* col ghosts */
 
-      domain.AllocateGradients(numElem, numRanks, allElem);
+      //domain.AllocateGradients(numElem, numRanks, allElem);
 
 #if USE_MPI      
       //CommRecv(domain, MSG_MONOQ, 3,
@@ -2077,12 +2077,14 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
       }
       */
 
+      /*
       for (Index_t i=0; i<20; ++i) {
           laik_log((Laik_LogLevel)2, "i: %d, value: %f", i, domain.delv_xi(i));
       }
+      */
 
       // Free up memory
-      domain.DeallocateGradients();
+      //domain.DeallocateGradients();
 
       /* Don't allow excessive artificial viscosity */
       Index_t idx = -1; 
