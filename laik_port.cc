@@ -67,14 +67,17 @@ void runExclusivePartitioner(Laik_Partitioner* pr,
     int Rz= side;
     int Lx = Rx*Nx;
     int Ly = Ry*Ny;
+    int Lz = Rz*Nz;
     int Pxy= Lx*Ly;
+    int Pxz= Lx*Lz;
+    int Pyz= Ly*Lz;
 
     // sine all the tasks run the same partitioning algorithm
     // we should loop over all the tasks and not just this 
     // task
     Laik_Slice slc;
     int r=0;
-    int nx=0;
+    int ny=0;
     for (int rz = 0; rz < Rz; rz++)
     {
         for (int ry = 0; ry < Ry; ry++)
@@ -82,23 +85,22 @@ void runExclusivePartitioner(Laik_Partitioner* pr,
             for (int rx = 0; rx < Rx; rx++)
             {
                 r = ry + rx*Ry + rz*Rx*Ry; // task number
-                // loop over y and z  to create the slices in the
+                // loop over z and x  to create the slices in the
                 // partitioning
-                for (int ny = 0; ny < Ny; ny++)
+                for (int nx = 0; nx < Nx; nx++)
                 {
                     for (int nz = 0; nz < Nz; nz++)
                     {
-                        nx=0;
-                        slc.from.i[0]=nx + Lx*ny + Pxy*nz +  rx*Nx + ry*Lx*Ny + Pxy*Nz*rz;
-                        nx=Nx;
-                        slc.to.i[0]=nx + Lx*ny + Pxy*nz  +  rx*Nx + ry*Lx*Ny + Pxy*Nz*rz;
+                        ny=0;
+                        slc.from.i[0]=ny + Ly*nz + Pyz*nx +  ry*Ny + rz*Ly*Nz + Pyz*Nx*rx;
+                        ny=Ny;
+                        slc.to.i[0]=ny + Ly*nz + Pyz*nx +  ry*Ny + rz*Ly*Nz + Pyz*Nx*rx;
                         laik_append_slice(ba,r,&slc,0,0);
                     }
                 }
             }
         }    
     }
-
 
     //int edgeNodes=edgeElems+1;
     //int numElem = edgeElems*edgeElems*edgeElems;
@@ -151,14 +153,17 @@ void runOverlapingPartitioner(Laik_Partitioner* pr,
     int Rz= side;
     int Lx = Rx*Nx;
     int Ly = Ry*Ny;
+    int Lz = Rz*Nz;
     int Pxy= Lx*Ly;
+    int Pxz= Lx*Lz;
+    int Pyz= Ly*Lz;
 
     // sine all the tasks run the same partitioning algorithm
     // we should loop over all the tasks and not just this 
     // task
     Laik_Slice slc;
     int r=0;
-    int nx=0;
+    int ny=0;
     for (int rz = 0; rz < Rz; rz++)
     {
         for (int ry = 0; ry < Ry; ry++)
@@ -168,17 +173,17 @@ void runOverlapingPartitioner(Laik_Partitioner* pr,
                 r = ry + rx*Ry + rz*Rx*Ry; // task number
                 // loop over y and z  to create the slices in the
                 // partitioning
-                for (int ny = ((ry==0) ?0:-d); ny < ((ry==Ry-1)?Ny:Ny+d) ; ny++)
+                for (int nx = ((rx==0) ?0:-d); nx < ((rx==Rx-1)?Nx:Nx+d) ; nx++)
                 //for (int ny = 0 ; ny < Ny; ny++)
                 {
                     for (int nz = ( (rz==0)?0:-d ) ; nz < ( (rz==Rz-1)?Nz:Nz+d ) ; nz++)
                     //for (int nz = 0 ; nz < Nz; nz++)
                     {
-                        nx= (rx==0)?0:-d;
-                        slc.from.i[0]=nx + Lx*ny + Pxy*nz +  rx*Nx + ry*Lx*Ny + Pxy*Nz*rz;
+                        ny= (ry==0)?0:-d;
+                        slc.from.i[0]=ny + Ly*nz + Pyz*nx +  ry*Ny + rz*Ly*Nz + Pyz*Nx*rx;
                         //laik_log((Laik_LogLevel)1,"rank:%d, from %d, ", r, slc.from.i[0]);
-                        nx= (rx==Rx-1)?Nx:Nx+d;
-                        slc.to.i[0]=nx + Lx*ny + Pxy*nz  +  rx*Nx + ry*Lx*Ny + Pxy*Nz*rz;
+                        ny= (ry==Ry-1)?Ny:Ny+d;
+                        slc.to.i[0]=ny + Ly*nz + Pyz*nx +  ry*Ny + rz*Ly*Nz + Pyz*Nx*rx;
                         laik_append_slice(ba,r,&slc,0,0);
                     }
                 }
