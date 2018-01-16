@@ -21,7 +21,7 @@ SOURCES2.0 = \
 	lulesh-viz.cc \
 	lulesh-util.cc \
 	lulesh-init.cc \
-	laik_port.cc \
+	laik_partitioners.cc \
 	laik_vector.cc
 OBJECTS2.0 = $(SOURCES2.0:.cc=.o)
 
@@ -62,7 +62,7 @@ clean:
 	/bin/rm -rf *.dSYM
 
 run:
-	LAIK_LOG=1:0 mpirun -np 8 ./lulesh2.0 -s 4 -q
+	LAIK_LOG=2:0 mpirun -np 8 ./lulesh2.0 -s 4 -q
 
 tar: clean
 	cd .. ; tar cvf lulesh-2.0.tar LULESH-2.0 ; mv lulesh-2.0.tar LULESH-2.0

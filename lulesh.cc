@@ -169,9 +169,8 @@ extern "C"{
 //porting to laik
 //#include "laik_vector.h" // includes lulesh.h
 #include <lulesh.h>
-#include <laik_port.h>
+#include <laik_partitioners.h>
 #include <laik_vector.h>
-
 
 /*********************************/
 /* Data structure implementation */
@@ -2012,17 +2011,16 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
    // MONOTONIC Q option
    //
 
-
    Index_t numElem = domain.numElem() ;
    Index_t numRanks;
    MPI_Comm_size(MPI_COMM_WORLD, &numRanks) ;
 
    if (numElem != 0) {
-      Int_t allElem = numElem +  /* local elem */
-            2*domain.sizeX()*domain.sizeY() + /* plane ghosts */
-            2*domain.sizeX()*domain.sizeZ() + /* row ghosts */
-            2*domain.sizeY()*domain.sizeZ() ; /* col ghosts */
 
+       //Int_t allElem = numElem +  /* local elem */
+       //     2*domain.sizeX()*domain.sizeY() + /* plane ghosts */
+       //     2*domain.sizeX()*domain.sizeZ() + /* row ghosts */
+       //     2*domain.sizeY()*domain.sizeZ() ; /* col ghosts */
       //domain.AllocateGradients(numElem, numRanks, allElem);
 
 #if USE_MPI      
@@ -2062,26 +2060,6 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
 
 
       CalcMonotonicQForElems(domain, vnew) ;
-
-      /*
-      laik_log((Laik_LogLevel)2, "new iteration");
-      for (Index_t i=0; i<domain.numElem(); ++i) {
-          laik_log((Laik_LogLevel)2, "%f", domain.delv_xi(i));
-      }
-      */
-
-      /*
-      laik_log((Laik_LogLevel)2,"new iteration");
-      for (Index_t i=0; i<32; ++i) {
-          laik_log((Laik_LogLevel)2, "i: %d, lxim: %d, lxip: %d, letam: %d, letap: %d, lzetam: %d, lzetap: %d, value: %f", i, domain.lxim(i), domain.lxip(i), domain.letam(i), domain.letap(i), domain.lzetam(i),domain.lzetap(i), domain.delv_xi(i));
-      }
-      */
-
-      /*
-      for (Index_t i=0; i<20; ++i) {
-          laik_log((Laik_LogLevel)2, "i: %d, value: %f", i, domain.delv_xi(i));
-      }
-      */
 
       // Free up memory
       //domain.DeallocateGradients();
@@ -2804,54 +2782,6 @@ int main(int argc, char *argv[])
 
    // Set up the mesh and decompose. Assumes regular cubes for now
 
-   /*
-   int halo_depth = 1;
-   // create a global index space for the elements
-   Index_t numElem = numRanks*opts.nx*opts.nx*opts.nx; // global number of elements
-   Laik_Space* elementIndexSpace = laik_new_space_1d(inst, numElem);
-   Laik_Partitioning *elementExclusivePartitioning = laik_new_partitioning(world, elementIndexSpace, exclusive_partitioner(), 0);
-   Laik_Partitioning *elementOverlapingPartitioning = laik_new_partitioning(world, elementIndexSpace, overlaping_partitioner(halo_depth), 0);
-   Laik_Data* element = laik_new_data(world, elementIndexSpace, laik_Double);
-
-   // initialization (writing) of the data containers
-   // initialization should always be done
-   // using an overlaping partitioning 
-   // so that the mallocs in laik, allocate
-   // data for the halos as well
-   // write to element:
-   // element at writing phase  has to have
-   // Copy_Out data flow
-   // to preserve the data for the next
-   // phase
-   laik_switchto(element, elementExclusivePartitioning, LAIK_DF_CopyOut);
-   // go through the slices to just allocate the memory
-   uint64_t count;
-   double* base;
-   int nSlices = laik_my_slicecount(elementExclusivePartitioning);
-   for (int n = 0; n < nSlices; ++n)
-   {
-      laik_map_def(element, n, (void **)&base, &count);
-   }
-   laik_switchto(element, elementOverlapingPartitioning, LAIK_DF_CopyIn);
-   // initialization is done
-   
-   // now we do the same thing for the nodes
-   Index_t numNodes = numRanks*(opts.nx+1)*(opts.nx+1)*(opts.nx+1); // global number of elements
-   Laik_Space* nodeIndexSpace = laik_new_space_1d(inst, numNodes);
-   Laik_Partitioning *nodeExclusivePartitioning = laik_new_partitioning(world, nodeIndexSpace, exclusive_partitioner(), 0);
-   Laik_Partitioning *nodeOverlapingPartitioning = laik_new_partitioning(world, nodeIndexSpace, overlaping_partitioner(halo_depth), 0);
-   Laik_Data* node = laik_new_data(world, nodeIndexSpace, laik_Double);
-
-   laik_switchto(node, nodeExclusivePartitioning, LAIK_DF_CopyOut);
-   // go through the slices to just allocate the memory
-   nSlices = laik_my_slicecount(nodeExclusivePartitioning);
-   for (int n = 0; n < nSlices; ++n)
-   {
-      laik_map_def(node, n, (void **)&base, &count);
-   }
-   laik_switchto(node, nodeOverlapingPartitioning, LAIK_DF_CopyIn);
-
-   */
    Int_t col, row, plane, side;
    InitMeshDecomp(numRanks, myRank, &col, &row, &plane, &side);
 

@@ -1,49 +1,5 @@
-#include <laik_port.h>
+#include <laik_partitioners.h>
 #include <lulesh.h>
-
-// directly copied from the lulesh_init.cc -> BuildMesh
-// signature is modified to get rid of the "domain"
-int * build_element_corner_list(int edgeElems, int edgeNodes, int m_rowLoc, int m_colLoc, int m_planeLoc)
-{
-  // NOTE: this function does not initialize the mesh 
-  // it only creates local node indexes for local
-  // nodes
-  int numElem = edgeElems*edgeElems*edgeElems;
-  int *localNodeList = (int*) malloc (sizeof(int)*numElem*8);
-  int *localNode = 0;
-  int nidx = 0;
-  int zidx = 0;
-  for (int plane = 0; plane < edgeElems; ++plane)
-  {
-      for (int row = 0; row < edgeElems; ++row)
-      {
-          for (int col = 0; col < edgeElems; ++col)
-          {
-              localNode = localNodeList + 8*zidx ;
-              localNode[0] = nidx;
-              localNode[1] = nidx + 1;
-              localNode[2] = nidx + edgeNodes + 1;
-              localNode[3] = nidx + edgeNodes;
-              localNode[4] = nidx + edgeNodes * edgeNodes;
-              localNode[5] = nidx + edgeNodes * edgeNodes + 1;
-              localNode[6] = nidx + edgeNodes * edgeNodes + edgeNodes + 1;
-              localNode[7] = nidx + edgeNodes * edgeNodes + edgeNodes;
-              ++zidx;
-              ++nidx;
-                laik_log((Laik_LogLevel)1,"elem:%d, corners:%d, %d, %d, %d, %d, %d, %d, %d", zidx, localNode[0], localNode[1], localNode[2], localNode[3], localNode[4], localNode[5] 
-                , localNode[6], localNode[7]);
-          }
-          ++nidx;
-      }
-      nidx += edgeNodes;
-  }
-  return localNodeList;
-}
-
-//TODO free the list in the program
-void free_local_corner_list(int* list){
-    free(list);
-}
 
 void runExclusivePartitioner(Laik_Partitioner* pr,
                                    Laik_Partitioning* p, Laik_Partitioning* oldP)
@@ -101,19 +57,6 @@ void runExclusivePartitioner(Laik_Partitioner* pr,
             }
         }    
     }
-
-    //int edgeNodes=edgeElems+1;
-    //int numElem = edgeElems*edgeElems*edgeElems;
-
-    // later on will be used for element partitioner
-    //int* nodeList = build_element_corner_list(edgeElems, edgeNodes, row, col, plane);
-    
-    
-    //slc.from.i[0]=0;
-    //slc.to.i[0]=numElem*numRanks;
-    //laik_append_slice(ba, 0, &slc, 0, 0);
-
-    //free_local_corner_list(nodeList);
 
 }
 
@@ -190,20 +133,6 @@ void runOverlapingPartitioner(Laik_Partitioner* pr,
             }
         }    
     }
-
-
-    //int edgeNodes=edgeElems+1;
-    //int numElem = edgeElems*edgeElems*edgeElems;
-
-    // later on will be used for element partitioner
-    //int* nodeList = build_element_corner_list(edgeElems, edgeNodes, row, col, plane);
-    
-    
-    //slc.from.i[0]=0;
-    //slc.to.i[0]=numElem*numRanks;
-    //laik_append_slice(ba, 0, &slc, 0, 0);
-
-    //free_local_corner_list(nodeList);
 
 }
 

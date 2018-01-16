@@ -1,5 +1,5 @@
 #include <laik_vector.h>
-#include <laik_port.h>
+#include <laik_partitioners.h>
 #include <lulesh.h>
 #include<limits.h>
 
@@ -130,7 +130,6 @@ double& laik_vector::operator [](int idx){
     }
     */
 
-
     for (int i = 0; i < 6; ++i) {
         if  (idx>=ghostIdx[i]){
             side =i;
@@ -198,66 +197,7 @@ double& laik_vector::operator [](int idx){
             slice = (count+b+f)*(l+r+i)+(k+b);
         }
 
-        /*
-        else if (side==0) {
-            index =idx-ghostIdx[side];
-            i = index%count;
-            slice = index/count;
-            i += l;
-            slice+=d;
-        }
-        else if (side==1) {
-            index =idx-ghostIdx[side];
-            i = index%count;
-            slice = index/count;
-            i += l;
-            slice += (count+u+d)*(count+f)+d;
-        }
-
-        else if (side==2) {
-            index =idx-ghostIdx[side];
-            i = index%count;
-            slice = index/count;
-            i += l;
-            slice = (slice+f)*(count+d+u);
-        }
-        else if (side==3) {
-            index =idx-ghostIdx[side];
-            i = index%count;
-            slice = index/count;
-            i += l;
-            slice = (slice+f+1)*(count+d+u)-1;
-        }
-        else if (side==4) {
-            index =idx-ghostIdx[side];
-            int s = index%count;
-            int k = index/count;
-            slice = (count+d+u)*(d+k)+(s+d);
-            i=0;
-        }
-        else if (side==5) {
-            index =idx-ghostIdx[side];
-            int s = index%count;
-            int k = index/count;
-            slice = (count+d+u)*(d+k)+(s+d);
-            i=count+l+r-1;
-        }
-        */
-
     }
-
-    /*
-    side=3;
-    if (idx >= 12 && idx < 16) {
-        index =idx-12;
-
-        int s = index%count;
-        int k = index/count;
-        slice = (count+d+u)*(f+k)+(s+d);
-        i=0;
-    }
-    */
-
 
     //laik_log(Laik_LogLevel(2),"state: %d, idx: %d, side: %d, slice: %d, i:%d", state, idx, side, slice, i);
 
