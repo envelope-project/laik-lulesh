@@ -3,8 +3,6 @@
 #include <lulesh.h>
 #include<limits.h>
 
-//laik_vector::laik_vector(){}
-
 laik_vector::laik_vector(Laik_Instance* inst, Laik_Group* world){
     this -> inst = inst;
     this -> world = world;
@@ -50,13 +48,37 @@ laik_vector::laik_vector(Laik_Instance* inst, Laik_Group* world){
     zero=0;
 }
 
-void laik_vector::resize(int count){
+void laik_vector::test_print(){
+    double *base;
+    uint64_t count;
+    int nSlices = laik_phase_my_slicecount(haloPartitioning);
+    for (size_t s = 0; s < nSlices; s++)
+    {
+        laik_map_def(data, s, (void**) &base, &count);
+        for (uint64_t i = 0; i < count; i++)
+        {
+            laik_log(Laik_LogLevel(2),"%f\n", base[i]);
+        }
+        laik_log(Laik_LogLevel(2),"\n");
+    }
+}
+
+// ////////////////////////////////////////////////////////////////////////
+// implementation of laik_vector with halo partitioning (node partitioning)
+// ////////////////////////////////////////////////////////////////////////
+laik_vector_halo::laik_vector_halo(Laik_Instance *inst,
+                                   Laik_Group *world):laik_vector(inst,world){}
+
+void laik_vector_halo::resize(int count){
 
     size = count;
     int halo_depth = 1;
     indexSpace = laik_new_space_1d(inst, size);
-    exclusivePartitioning = laik_new_accessphase(world, indexSpace, exclusive_partitioner(), 0);
-    haloPartitioning = laik_new_accessphase(world, indexSpace, overlaping_partitioner(halo_depth), 0);
+    exclusivePartitioning = laik_new_accessphase(world,
+                                                 indexSpace,
+                                                 exclusive_partitioner(), 0);
+    haloPartitioning = laik_new_accessphase(world, indexSpace,
+                                            overlaping_partitioner(halo_depth), 0);
     overlapingPartitioning = 0;
     data = laik_new_data(indexSpace, laik_Double);
 
@@ -75,7 +97,7 @@ void laik_vector::resize(int count){
     this -> count = cnt;
 }
 
-double& laik_vector::operator [](int idx){
+double& laik_vector_halo::operator [](int idx){
     uint64_t cnt;
     double* base;
 
@@ -99,27 +121,22 @@ double& laik_vector::operator [](int idx){
       ghostIdx[0] = pidx ;
       pidx += count*count ;
     }
-
     if (f) {
       ghostIdx[1] = pidx ;
       pidx += count*count ;
     }
-
     if (d) {
       ghostIdx[2] = pidx ;
       pidx += count*count ;
     }
-
     if (u) {
       ghostIdx[3] = pidx ;
       pidx += count*count ;
     }
-
     if (l) {
       ghostIdx[4] = pidx ;
       pidx += count*count ;
     }
-
     if (r) {
       ghostIdx[5] = pidx ;
     }
@@ -135,7 +152,6 @@ double& laik_vector::operator [](int idx){
             side =i;
         }
     }
-
     if (state) {
         j = idx % count;
         slice = idx/count;
@@ -148,7 +164,6 @@ double& laik_vector::operator [](int idx){
             slice = (count+b+f)*(l+i)+(k+b);
             j += d;
         }
-
         else if (side==0) {
             index =idx-ghostIdx[side];
             j = index%count;
@@ -156,7 +171,6 @@ double& laik_vector::operator [](int idx){
             k = 0;
             slice = (count+b+f)*(l+i);
         }
-
         else if (side==1) {
             index =idx-ghostIdx[side];
             j = index%count;
@@ -164,7 +178,6 @@ double& laik_vector::operator [](int idx){
             k = count-1;
             slice = (count+b+f)*(l+i+1)-1;
         }
-
         else if (side==3) {
             index =idx-ghostIdx[side];
             j=count+d+u-1;
@@ -172,7 +185,6 @@ double& laik_vector::operator [](int idx){
             k = index%count;
             slice = (count+b+f)*(l+i)+(k+b);
         }
-
         else if (side==2) {
             index =idx-ghostIdx[side];
             j=0;
@@ -180,7 +192,6 @@ double& laik_vector::operator [](int idx){
             k = index%count;
             slice = (count+b+f)*(l+i)+(k+b);
         }
-
         else if (side==4) {
             index =idx-ghostIdx[side];
             j=index%count;
@@ -188,7 +199,6 @@ double& laik_vector::operator [](int idx){
             k = index/count;
             slice = (k+b);
         }
-
         else if (side==5) {
             index =idx-ghostIdx[side];
             j=index%count;
@@ -199,7 +209,8 @@ double& laik_vector::operator [](int idx){
 
     }
 
-    //laik_log(Laik_LogLevel(2),"state: %d, idx: %d, side: %d, slice: %d, i:%d", state, idx, side, slice, i);
+    //laik_log(Laik_LogLevel(2),"state: %d, idx: %d, side: %d,
+    //slice: %d, i:%d", state, idx, side, slice, i);
 
     if (slice>-1) {
         laik_map_def(data, slice, (void **)&base, &cnt);
@@ -210,50 +221,38 @@ double& laik_vector::operator [](int idx){
 
 }
 
-void laik_vector::switch_to_exclusive_partitioning(){
+void laik_vector_halo::switch_to_write_phase(){
     laik_switchto_phase(data, exclusivePartitioning, LAIK_DF_CopyOut);
     state=1;
 }
 
-void laik_vector::switch_to_halo_partitioning(){
+void laik_vector_halo::switch_to_read_phase(){
     laik_switchto_phase(data, haloPartitioning, LAIK_DF_CopyIn);
     state=0;
 }
 
-void laik_vector::test_print(){
-    double *base;
-    uint64_t count;
-    int nSlices = laik_phase_my_slicecount(haloPartitioning);
-    for (size_t s = 0; s < nSlices; s++)
-    {
-        laik_map_def(data, s, (void**) &base, &count);
-        for (uint64_t i = 0; i < count; i++)
-        {
-            laik_log(Laik_LogLevel(2),"%f\n", base[i]);
-        }
-        laik_log(Laik_LogLevel(2),"\n");
-    }
-}
+// ///////////////////////////////////////////////////////////
+// implementation of laik_vector with overlapping partitioning
+// (node partitioning)
+// ///////////////////////////////////////////////////////////
 
-laik_vector_halo::laik_vector_halo(Laik_Instance *inst, Laik_Group *world):
-    laik_vector(inst,world){}
-
-laik_vector_overlapping::laik_vector_overlapping(Laik_Instance *inst, Laik_Group *world):
-    laik_vector(inst,world){}
-
+laik_vector_overlapping::laik_vector_overlapping(Laik_Instance *inst,
+                                                 Laik_Group *world):laik_vector(inst,world){}
 
 void laik_vector_overlapping::resize(int count){
-
     size = count;
     int halo_depth = 1;
     indexSpace = laik_new_space_1d(inst, size);
     exclusivePartitioning = 0;
     haloPartitioning = 0;
-    overlapingPartitioning = laik_new_accessphase(world, indexSpace, overlaping_reduction_partitioner(halo_depth), 0);
+    overlapingPartitioning =laik_new_accessphase(world,
+                                 indexSpace,
+                                 overlaping_reduction_partitioner(halo_depth), 0);
     data = laik_new_data(indexSpace, laik_Double);
 
     // go through the slices to just allocate the memory
-    laik_switchto_phase(data, overlapingPartitioning, Laik_DataFlow ( LAIK_DF_Init | LAIK_DF_ReduceOut | LAIK_DF_Sum ) );
+    laik_switchto_phase(data, overlapingPartitioning, Laik_DataFlow
+                        ( LAIK_DF_Init | LAIK_DF_ReduceOut | LAIK_DF_Sum ) );
     uint64_t cnt;
     double* base;
     int nSlices = laik_phase_my_slicecount(overlapingPartitioning);
@@ -274,18 +273,16 @@ double& laik_vector_overlapping::operator [](int idx){
     int i = (idx % (count*count) ) % count;
     int l_idx = i;
     int slice = idx/count;
-
-    //laik_log(Laik_LogLevel(2),"%d",idx);
-
     laik_map_def(data, slice, (void **)&base, &cnt);
 
     return base[l_idx];
 }
 
 void laik_vector_overlapping::switch_to_write_phase(){
-    laik_switchto_phase(data, overlapingPartitioning, Laik_DataFlow ( LAIK_DF_ReduceOut | LAIK_DF_Sum ) );
+    laik_switchto_phase(data, overlapingPartitioning, Laik_DataFlow
+                        ( LAIK_DF_ReduceOut | LAIK_DF_Sum ) );
 }
 
-void laik_vector_overlapping::switch_to_reduction(){
+void laik_vector_overlapping::switch_to_read_phase(){
     laik_switchto_phase(data, overlapingPartitioning, LAIK_DF_CopyIn);
 }

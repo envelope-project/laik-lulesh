@@ -191,27 +191,14 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
          nodalMass(idx) += volume / Real_t(8.0) ;
       }
    }
+   m_nodalMass.switch_to_read_phase();
+   m_nodalMass.switch_to_write_phase();
 
-
-    m_element_test.switch_to_exclusive_partitioning();
+    m_element_test.switch_to_write_phase();
     for (Index_t i=0; i<numElem(); ++i) {
        testVectorElement(i)=colLoc + rowLoc*tp + planeLoc*tp*tp; // TEST
     }
-    m_element_test.switch_to_halo_partitioning();
-    //m_element_test.test_print();
-
-    //for (Index_t i=0; i<160; ++i) {
-    //    laik_log((Laik_LogLevel)2, "%d, %f", i, testVectorElement(i));
-    //}
-
-   /*
-   for (Index_t i=0; i<numNode(); ++i) {
-       laik_log((Laik_LogLevel)1, "%d i, %f", i, nodalMass(i));
-   }
-   */
-
-   m_nodalMass.switch_to_reduction();
-   m_nodalMass.switch_to_write_phase();
+    m_element_test.switch_to_read_phase();
 
    // deposit initial energy
    // An energy of 3.948746e+7 is correct for a problem with

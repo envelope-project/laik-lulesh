@@ -1164,11 +1164,11 @@ static inline void CalcForceForNodes(Domain& domain)
 
 
 #if USE_MPI
-  domain.get_fx().switch_to_reduction();
+  domain.get_fx().switch_to_read_phase();
   domain.get_fx().switch_to_write_phase();
-  domain.get_fy().switch_to_reduction();
+  domain.get_fy().switch_to_read_phase();
   domain.get_fy().switch_to_write_phase();
-  domain.get_fz().switch_to_reduction();
+  domain.get_fz().switch_to_read_phase();
   domain.get_fz().switch_to_write_phase();
 /*
   Domain_member fieldData[3] ;
@@ -2027,9 +2027,9 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
       //CommRecv(domain, MSG_MONOQ, 3,
       //         domain.sizeX(), domain.sizeY(), domain.sizeZ(),
       //         true, true) ;
-      domain.get_delv_xi().switch_to_exclusive_partitioning();
-      domain.get_delv_eta().switch_to_exclusive_partitioning();
-      domain.get_delv_zeta().switch_to_exclusive_partitioning();
+      domain.get_delv_xi().switch_to_write_phase();
+      domain.get_delv_eta().switch_to_write_phase();
+      domain.get_delv_zeta().switch_to_write_phase();
 #endif      
 
       /* Calculate velocity gradients */
@@ -2037,10 +2037,9 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
 
 #if USE_MPI      
 
-
-      domain.get_delv_xi().switch_to_halo_partitioning();
-      domain.get_delv_eta().switch_to_halo_partitioning();
-      domain.get_delv_zeta().switch_to_halo_partitioning();
+      domain.get_delv_xi().switch_to_read_phase();
+      domain.get_delv_eta().switch_to_read_phase();
+      domain.get_delv_zeta().switch_to_read_phase();
 
       Domain_member fieldData[3] ;
       

@@ -448,8 +448,8 @@ class Domain {
 
    //laik communication
    void communicateNodalMass(){
-       m_nodalMass.switch_to_halo_partitioning();
-       m_nodalMass.switch_to_exclusive_partitioning();
+       m_nodalMass.switch_to_write_phase();
+       m_nodalMass.switch_to_read_phase();
    }
 #endif
 
