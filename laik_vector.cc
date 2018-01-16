@@ -55,22 +55,22 @@ void laik_vector::resize(int count){
     size = count;
     int halo_depth = 1;
     indexSpace = laik_new_space_1d(inst, size);
-    exclusivePartitioning = laik_new_partitioning(world, indexSpace, exclusive_partitioner(), 0);
-    haloPartitioning = laik_new_partitioning(world, indexSpace, overlaping_partitioner(halo_depth), 0);
+    exclusivePartitioning = laik_new_accessphase(world, indexSpace, exclusive_partitioner(), 0);
+    haloPartitioning = laik_new_accessphase(world, indexSpace, overlaping_partitioner(halo_depth), 0);
     overlapingPartitioning = 0;
-    data = laik_new_data(world, indexSpace, laik_Double);
+    data = laik_new_data(indexSpace, laik_Double);
 
     // go through the slices to just allocate the memory
     uint64_t cnt;
     double* base;
 
-    laik_switchto(data, exclusivePartitioning, LAIK_DF_CopyOut);
-    int nSlices = laik_my_slicecount(exclusivePartitioning);
+    laik_switchto_phase(data, exclusivePartitioning, LAIK_DF_CopyOut);
+    int nSlices = laik_phase_my_slicecount(exclusivePartitioning);
     for (int n = 0; n < nSlices; ++n)
     {
        laik_map_def(data, n, (void **)&base, &cnt);
     }
-    laik_switchto(data, haloPartitioning, LAIK_DF_CopyIn);
+    laik_switchto_phase(data, haloPartitioning, LAIK_DF_CopyIn);
 
     this -> count = cnt;
 }
@@ -271,19 +271,19 @@ double& laik_vector::operator [](int idx){
 }
 
 void laik_vector::switch_to_exclusive_partitioning(){
-    laik_switchto(data, exclusivePartitioning, LAIK_DF_CopyOut);
+    laik_switchto_phase(data, exclusivePartitioning, LAIK_DF_CopyOut);
     state=1;
 }
 
 void laik_vector::switch_to_halo_partitioning(){
-    laik_switchto(data, haloPartitioning, LAIK_DF_CopyIn);
+    laik_switchto_phase(data, haloPartitioning, LAIK_DF_CopyIn);
     state=0;
 }
 
 void laik_vector::test_print(){
     double *base;
     uint64_t count;
-    int nSlices = laik_my_slicecount(haloPartitioning);
+    int nSlices = laik_phase_my_slicecount(haloPartitioning);
     for (size_t s = 0; s < nSlices; s++)
     {
         laik_map_def(data, s, (void**) &base, &count);
@@ -309,19 +309,19 @@ void laik_vector_overlapping::resize(int count){
     indexSpace = laik_new_space_1d(inst, size);
     exclusivePartitioning = 0;
     haloPartitioning = 0;
-    overlapingPartitioning = laik_new_partitioning(world, indexSpace, overlaping_reduction_partitioner(halo_depth), 0);
-    data = laik_new_data(world, indexSpace, laik_Double);
+    overlapingPartitioning = laik_new_accessphase(world, indexSpace, overlaping_reduction_partitioner(halo_depth), 0);
+    data = laik_new_data(indexSpace, laik_Double);
 
     // go through the slices to just allocate the memory
-    laik_switchto(data, overlapingPartitioning, Laik_DataFlow ( LAIK_DF_Init | LAIK_DF_ReduceOut | LAIK_DF_Sum ) );
+    laik_switchto_phase(data, overlapingPartitioning, Laik_DataFlow ( LAIK_DF_Init | LAIK_DF_ReduceOut | LAIK_DF_Sum ) );
     uint64_t cnt;
     double* base;
-    int nSlices = laik_my_slicecount(overlapingPartitioning);
+    int nSlices = laik_phase_my_slicecount(overlapingPartitioning);
     for (int n = 0; n < nSlices; ++n)
     {
        laik_map_def(data, n, (void **)&base, &cnt);
     }
-    laik_switchto(data, overlapingPartitioning, LAIK_DF_CopyIn);
+    laik_switchto_phase(data, overlapingPartitioning, LAIK_DF_CopyIn);
 
     this -> count = cnt;
 
@@ -343,9 +343,9 @@ double& laik_vector_overlapping::operator [](int idx){
 }
 
 void laik_vector_overlapping::switch_to_write_phase(){
-    laik_switchto(data, overlapingPartitioning, Laik_DataFlow ( LAIK_DF_ReduceOut | LAIK_DF_Sum ) );
+    laik_switchto_phase(data, overlapingPartitioning, Laik_DataFlow ( LAIK_DF_ReduceOut | LAIK_DF_Sum ) );
 }
 
 void laik_vector_overlapping::switch_to_reduction(){
-    laik_switchto(data, overlapingPartitioning, LAIK_DF_CopyIn);
+    laik_switchto_phase(data, overlapingPartitioning, LAIK_DF_CopyIn);
 }

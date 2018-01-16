@@ -24,9 +24,9 @@ protected:
     Laik_Group* world;
     int size;
     Laik_Space* indexSpace;
-    Laik_Partitioning *exclusivePartitioning;
-    Laik_Partitioning *haloPartitioning;
-    Laik_Partitioning *overlapingPartitioning;
+    Laik_AccessPhase *exclusivePartitioning;
+    Laik_AccessPhase *haloPartitioning;
+    Laik_AccessPhase *overlapingPartitioning;
     Laik_Data* data;
     int count;
     int f,b,u,d,l,r;
