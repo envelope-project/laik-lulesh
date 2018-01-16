@@ -5,15 +5,18 @@ Building
 ========
 
 Clone with "git clone --recurse ..." to also clone LAIK as submodule in subdirectory "laik/".
-You also can use an existing LAIK installation by setting LAIK_ROOT when compiling LULESH.
-
-Then compile LAIK:
+By default, this version will be linked with LULESH.
+First, run "configure". MPI needs to be installed and detected for LULESH to work.
 
     cd laik
     ./configure
-    make
-    
-Finally build LULESH:
+    make liblaik.so
 
-    make
+
+To link LULESH with an existing LAIK installation, set LAIK_ROOT to the path you installed
+LAIK into (or the base directory with the compiled LAIK sources).
     
+To build LULESH, just run
+    
+    make
+
