@@ -27,7 +27,7 @@ OBJECTS2.0 = $(SOURCES2.0:.cc=.o)
 
 #Default build suggestions with OpenMP for g++
 CXXFLAGS = -g -O3 -fopenmp -I. -Wall $(LAIK_INC)
-LDFLAGS = -g -O3 -fopenmp $(LAIK_LIB)
+LDFLAGS = -g -O3 -fopenmp -Wl,-rpath,$(abspath $(LAIK_ROOT)) $(LAIK_LIB)
 
 #Below are reasonable default flags for a serial build
 #CXXFLAGS = -g -O3 -I. -Wall
