@@ -1,0 +1,3 @@
+[submodule "laik"]
+	path = laik
+	url = git@github.com:envelope-project/laik.git
