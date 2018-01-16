@@ -8,8 +8,8 @@ LULESH_EXEC = lulesh2.0
 MPI_INC = /opt/local/include/openmpi
 MPI_LIB = /opt/local/lib
 
-LAIK_INC =-I/home/amir/codes/laik/include/
-LAIK_LIB =-L/home/amir/codes/laik/ -llaik
+LAIK_INC =-I$(LAIK_ROOT)/include/
+LAIK_LIB =-L$(LAIK_ROOT)/ -llaik
 
 SERCXX = g++ -DUSE_MPI=0
 MPICXX = mpic++ -DUSE_MPI=1
