@@ -1,1 +1,19 @@
 This is the README for porting LULESH to LAIK
+
+
+Building
+========
+
+Clone with "git clone --recurse ..." to also clone LAIK as submodule in subdirectory "laik/".
+You also can use an existing LAIK installation by setting LAIK_ROOT when compiling LULESH.
+
+Then compile LAIK:
+
+    cd laik
+    ./configure
+    make
+    
+Finally build LULESH:
+
+    make
+    
