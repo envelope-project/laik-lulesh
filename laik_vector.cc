@@ -104,7 +104,6 @@ double& laik_vector_halo::operator [](int idx){
     int i=0;
     int j=0;
     int k=0;
-    int s=0;
     int index=0;
     int slice=-1;
     int side =-1;
@@ -152,59 +151,80 @@ double& laik_vector_halo::operator [](int idx){
             side =i;
         }
     }
+    // tested OK
     if (state) {
-        j = idx % count;
+        i = idx % count;
         slice = idx/count;
     }
     else{
+        // tested OK
         if (idx < numElem) {
-            j = idx%count;
-            k = (idx/count)%count;
-            i = idx/(count*count);
-            slice = (count+b+f)*(l+i)+(k+b);
-            j += d;
+            i = idx%count;
+            j = (idx/count)%count;
+            k = idx/(count*count);
+            slice = (count+d+u)*(k+b)+(j+d);
+            i += l;
         }
+
+        // back
+        // tested OK
         else if (side==0) {
             index =idx-ghostIdx[side];
-            j = index%count;
-            i = index/count;
-            k = 0;
-            slice = (count+b+f)*(l+i);
+            i = index%count;
+            j = index/count;
+            k = -1;
+            slice = (count+d+u)*(k+b)+(j+d);
+            i += l;
         }
+        // front
+        // tested OK
         else if (side==1) {
             index =idx-ghostIdx[side];
-            j = index%count;
-            i = index/count;
-            k = count-1;
-            slice = (count+b+f)*(l+i+1)-1;
+            i = index%count;
+            j = index/count;
+            k = count;
+            slice = (count+d+u)*(k+b)+(j+d);
+            i += l;
         }
-        else if (side==3) {
-            index =idx-ghostIdx[side];
-            j=count+d+u-1;
-            i = index/count;
-            k = index%count;
-            slice = (count+b+f)*(l+i)+(k+b);
-        }
+        //down
+        //tested OK
         else if (side==2) {
             index =idx-ghostIdx[side];
-            j=0;
-            i = index/count;
-            k = index%count;
-            slice = (count+b+f)*(l+i)+(k+b);
+            i = index%count;
+            j = -1;
+            k = index/count;
+            slice = (count+d+u)*(k+b)+(j+d);
+            i += l;
         }
+        //up
+        //tested OK
+        else if (side==3) {
+            index =idx-ghostIdx[side];
+            i = index%count;
+            j = count;
+            k = index/count;
+            slice = (count+d+u)*(k+b)+(j+d);
+            i += l;
+        }
+        //left
+        //tested OK
         else if (side==4) {
             index =idx-ghostIdx[side];
-            j=index%count;
-            i = 0;
+            i = -1;
+            j = index%count;
             k = index/count;
-            slice = (k+b);
+            slice = (count+d+u)*(k+b)+(j+d);
+            i += l;
         }
+        //right
+        //tested OK
         else if (side==5) {
             index =idx-ghostIdx[side];
-            j=index%count;
-            i = count-1;
+            i = count;
+            j = index%count;
             k = index/count;
-            slice = (count+b+f)*(l+r+i)+(k+b);
+            slice = (count+d+u)*(k+b)+(j+d);
+            i += l;
         }
 
     }
@@ -214,7 +234,7 @@ double& laik_vector_halo::operator [](int idx){
 
     if (slice>-1) {
         laik_map_def(data, slice, (void **)&base, &cnt);
-        return base[j];
+        return base[i];
     }
 
     return zero;
