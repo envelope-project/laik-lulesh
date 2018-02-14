@@ -128,11 +128,11 @@ void runOverlapingPartitioner(Laik_Partitioner* pr,
                          nz < ( (rz==Rz-1)?Nz:Nz+d ) ; nz++)
                     {
                         nx= (rx==0)?0:-d;
-                        slc.from.i[0]=nx + Lx*nz + Pxz*ny +
-                                rx*Nx + rz*Lx*Nz + Pxz*Ny*ry;
+                        slc.from.i[0]=nx + Lx*ny + Pxz*nz +
+                                rx*Nx + ry*Lx*Ny + Pxy*Nz*rz;
                         nx= (rx==Rx-1)?Nx:Nx+d;
-                        slc.to.i[0]=nx + Lx*nz + Pxz*ny +
-                                rx*Nx + rz*Lx*Nz + Pxz*Ny*ry;
+                        slc.to.i[0]=nx + Lx*ny + Pxz*nz +
+                                rx*Nx + ry*Lx*Ny + Pxy*Nz*rz;
                         laik_append_slice(p,r,&slc,0,0);
                     }
                 }
