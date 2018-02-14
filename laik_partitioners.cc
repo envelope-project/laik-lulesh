@@ -201,7 +201,13 @@ void runOverlapingReductionPartitioner(Laik_Partitioner* pr,
         {
             for (int rx = 0; rx < Rx; rx++)
             {
-                r = rx + ry*Rx + rz*Rx*Ry; // task number
+                r = ry + rx*Ry + rz*Rx*Ry; // (yxz)
+                //r = rx + ry*Rx + rz*Rx*Ry; // (xyz)
+                //r = rx + rz*Rx + ry*Rx*Rz; // (xzy)
+                //r = ry + rz*Ry + rx*Rz*Ry; // (yzx)
+                //r = rz + ry*Rz + rx*Rz*Ry; // (zyx)
+                //r = rz + rx*Rz + ry*Rx*Rz; // (zxy)
+
                 // loop over y and z to create the slices in the
                 // partitioning
                 for (int ny = 0 ; ny < Ny; ny++)
