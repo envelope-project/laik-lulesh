@@ -34,7 +34,7 @@ void runExclusivePartitioner(Laik_Partitioner* pr,
     // task
     Laik_Slice slc;
     int r=0;
-    int ny=0;
+    int nx=0;
     for (int rz = 0; rz < Rz; rz++)
     {
         for (int ry = 0; ry < Ry; ry++)
@@ -44,16 +44,16 @@ void runExclusivePartitioner(Laik_Partitioner* pr,
                 r = ry + rx*Ry + rz*Rx*Ry; // task number
                 // loop over z and x  to create the slices in the
                 // partitioning
-                for (int nx = 0; nx < Nx; nx++)
+                for (int ny = 0; ny < Ny; ny++)
                 {
                     for (int nz = 0; nz < Nz; nz++)
                     {
-                        ny=0;
-                        slc.from.i[0]=ny + Ly*nz + Pyz*nx +
-                                ry*Ny + rz*Ly*Nz + Pyz*Nx*rx;
-                        ny=Ny;
-                        slc.to.i[0]=ny + Ly*nz + Pyz*nx +  ry*Ny +
-                                rz*Ly*Nz + Pyz*Nx*rx;
+                        nx=0;
+                        slc.from.i[0]=nx + Lx*ny + Pxz*nz +
+                                rx*Nx + ry*Lx*Ny + Pxy*Nz*rz;
+                        nx=Nx;
+                        slc.to.i[0]=nx + Lx*ny + Pxz*nz +
+                                rx*Nx + ry*Lx*Ny + Pxy*Nz*rz;
                         laik_append_slice(p,r,&slc,0,0);
                     }
                 }
@@ -112,7 +112,7 @@ void runOverlapingPartitioner(Laik_Partitioner* pr,
     // task
     Laik_Slice slc;
     int r=0;
-    int ny=0;
+    int nx=0;
     for (int rz = 0; rz < Rz; rz++)
     {
         for (int ry = 0; ry < Ry; ry++)
@@ -122,17 +122,17 @@ void runOverlapingPartitioner(Laik_Partitioner* pr,
                 r = ry + rx*Ry + rz*Rx*Ry; // task number
                 // loop over y and z  to create the slices in the
                 // partitioning
-                for (int nx = ((rx==0) ?0:-d); nx < ((rx==Rx-1)?Nx:Nx+d) ; nx++)
+                for (int ny = ((ry==0) ?0:-d); ny < ((ry==Ry-1)?Ny:Ny+d) ; ny++)
                 {
                     for (int nz = ( (rz==0)?0:-d ) ;
                          nz < ( (rz==Rz-1)?Nz:Nz+d ) ; nz++)
                     {
-                        ny= (ry==0)?0:-d;
-                        slc.from.i[0]=ny + Ly*nz + Pyz*nx +  ry*Ny +
-                                rz*Ly*Nz + Pyz*Nx*rx;
-                        ny= (ry==Ry-1)?Ny:Ny+d;
-                        slc.to.i[0]=ny + Ly*nz + Pyz*nx +  ry*Ny +
-                                rz*Ly*Nz + Pyz*Nx*rx;
+                        nx= (rx==0)?0:-d;
+                        slc.from.i[0]=nx + Lx*nz + Pxz*ny +
+                                rx*Nx + rz*Lx*Nz + Pxz*Ny*ry;
+                        nx= (rx==Rx-1)?Nx:Nx+d;
+                        slc.to.i[0]=nx + Lx*nz + Pxz*ny +
+                                rx*Nx + rz*Lx*Nz + Pxz*Ny*ry;
                         laik_append_slice(p,r,&slc,0,0);
                     }
                 }
