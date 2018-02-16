@@ -41,7 +41,7 @@ void runExclusivePartitioner(Laik_Partitioner* pr,
         {
             for (int rx = 0; rx < Rx; rx++)
             {
-                r = ry + rx*Ry + rz*Rx*Ry; // task number
+                r = rx + ry*Rx + rz*Rx*Ry; // task number
                 // loop over z and x  to create the slices in the
                 // partitioning
                 for (int ny = 0; ny < Ny; ny++)
@@ -119,7 +119,7 @@ void runOverlapingPartitioner(Laik_Partitioner* pr,
         {
             for (int rx = 0; rx < Rx; rx++)
             {
-                r = ry + rx*Ry + rz*Rx*Ry; // task number
+                r = rx + ry*Rx + rz*Rx*Ry; // task number
                 // loop over y and z  to create the slices in the
                 // partitioning
                 for (int ny = ((ry==0) ?0:-d); ny < ((ry==Ry-1)?Ny:Ny+d) ; ny++)
@@ -201,8 +201,8 @@ void runOverlapingReductionPartitioner(Laik_Partitioner* pr,
         {
             for (int rx = 0; rx < Rx; rx++)
             {
-                r = ry + rx*Ry + rz*Rx*Ry; // (yxz)
-                //r = rx + ry*Rx + rz*Rx*Ry; // (xyz)
+                //r = ry + rx*Ry + rz*Rx*Ry; // (yxz)
+                r = rx + ry*Rx + rz*Rx*Ry; // (xyz)
                 //r = rx + rz*Rx + ry*Rx*Rz; // (xzy)
                 //r = ry + rz*Ry + rx*Rz*Ry; // (yzx)
                 //r = rz + ry*Rz + rx*Rz*Ry; // (zyx)
