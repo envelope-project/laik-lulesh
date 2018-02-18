@@ -21,19 +21,19 @@ laik_vector::laik_vector(Laik_Instance* inst, Laik_Group* world){
     r=1;
 
     if (col==0) {
-        d=0;
-    }
-
-    if (col==side-1) {
-        u=0;
-    }
-
-    if (row==0) {
         l=0;
     }
 
-    if (row==side-1) {
+    if (col==side-1) {
         r=0;
+    }
+
+    if (row==0) {
+        d=0;
+    }
+
+    if (row==side-1) {
+        u=0;
     }
 
     if (plane==0) {
