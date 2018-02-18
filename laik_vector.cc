@@ -283,10 +283,14 @@ void laik_vector_overlapping::resize(int count){
     laik_switchto_phase(data, overlapingPartitioning, LAIK_DF_CopyIn);
 
     this -> count = cnt;
-
+    this -> calculate_pointers();
 }
 
 double& laik_vector_overlapping::operator [](int idx){
+    return *(this -> overlapping_pointers[idx]);
+}
+
+double* laik_vector_overlapping::calc_pointer(int idx){
     uint64_t cnt;
     double* base;
 
@@ -295,7 +299,17 @@ double& laik_vector_overlapping::operator [](int idx){
     int slice = idx/count;
     laik_map_def(data, slice, (void **)&base, &cnt);
 
-    return base[l_idx];
+    return base+l_idx;
+}
+
+void laik_vector_overlapping::calculate_pointers(){
+    exclusive_pointers=0;
+    halo_pointers=0;
+    overlapping_pointers = (double**) malloc (size * sizeof(double*));
+
+    for (int i = 0; i < size; ++i) {
+        overlapping_pointers [i] = calc_pointer(i);
+    }
 }
 
 void laik_vector_overlapping::switch_to_write_phase(){
