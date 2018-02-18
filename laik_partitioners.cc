@@ -215,11 +215,10 @@ void runOverlapingReductionPartitioner(Laik_Partitioner* pr,
                     for (int nz = 0 ; nz < Nz; nz++)
                     {
                         nx=0;
-                        slc.from.i[0]=nx + Lx*ny + Pxy*nz +  ry*(Nx-1) +
-                                rx*Lx*(Ny-1) + rz*Pxy*(Nz-1);
+                        slc.from.i[0]=
+                                nx + Lx*ny + Pxy*nz +  rx*(Nx-1) + ry*Lx*(Ny-1) + rz*Pxy*(Nz-1);
                         nx=Nx;
-                        slc.to.i[0]=nx + Lx*ny + Pxy*nz +  ry*(Nx-1) +
-                                rx*Lx*(Ny-1) + rz*Pxy*(Nz-1);
+                        slc.to.i[0]= nx + Lx*ny + Pxy*nz +  rx*(Nx-1) + ry*Lx*(Ny-1) + rz*Pxy*(Nz-1);
                         laik_append_slice(p,r,&slc,0,0);
                     }
                 }
