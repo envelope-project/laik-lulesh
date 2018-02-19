@@ -2063,9 +2063,11 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
       // Free up memory
       //domain.DeallocateGradients();
 
+      /*
       for (Index_t i=0; i<20; ++i) {
           laik_log((Laik_LogLevel)2, "i: %d, value: %f", i, domain.delv_xi(i));
       }
+      */
 
 
       /* Don't allow excessive artificial viscosity */
