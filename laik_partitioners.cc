@@ -1,6 +1,14 @@
 #include <laik_partitioners.h>
 #include <lulesh.h>
 
+/** 
+ * @brief  Exclusiv Partitioner
+ * @note   For ELEMENTs Data structures.
+ * @param  pr: 
+ * @param  p: 
+ * @param  oldP: 
+ * @retval None
+ */
 void runExclusivePartitioner(Laik_Partitioner* pr,
                                    Laik_Partitioning* p,
                              Laik_Partitioning* oldP)
@@ -63,12 +71,21 @@ void runExclusivePartitioner(Laik_Partitioner* pr,
 
 }
 
+
 Laik_Partitioner* exclusive_partitioner()
 {
     return laik_new_partitioner("exclusive", runExclusivePartitioner, 0,
                                 LAIK_PF_Merge);
 }
 
+/** 
+ * @brief  Halo Partitioner for Elements
+ * @note   Overlaping layouts for the elements data structure. 
+ * @param  pr: 
+ * @param  p: 
+ * @param  oldP: 
+ * @retval None
+ */
 void runOverlapingPartitioner(Laik_Partitioner* pr,
                                    Laik_Partitioning* p,
                               Laik_Partitioning* oldP)
@@ -142,6 +159,13 @@ void runOverlapingPartitioner(Laik_Partitioner* pr,
 
 }
 
+/** 
+ * @brief  Partitioner for Nodes (Reduction Partitioner)
+ * @note   A Halo Liked Reduction Partitioner for partitiong the
+ *         Nodes Datastructure.
+ * @param  &depth: Depth of the Halo
+ * @retval 
+ */
 Laik_Partitioner* overlaping_partitioner(int &depth)
 {
     //void* data = (void*) &depth;
