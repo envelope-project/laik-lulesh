@@ -78,9 +78,24 @@ void laik_vector_halo::resize(int count){
                                                  indexSpace,
                                                  exclusive_partitioner(), 0);
     haloPartitioning = laik_new_accessphase(world, indexSpace,
-                                            overlaping_partitioner(halo_depth), 0);
+                                            overlaping_partitioner(halo_depth), exclusivePartitioning);
     overlapingPartitioning = 0;
+
     data = laik_new_data(indexSpace, laik_Double);
+
+
+    // use the reservation API to precalculate the pointers
+    Laik_Partitioning* paExlusive = laik_phase_run_partitioner(exclusivePartitioning);
+    Laik_Partitioning* paHalo  = laik_phase_get_partitioning(haloPartitioning);
+
+    Laik_Reservation* reservation = laik_reservation_new(data);
+    laik_reservation_add(reservation, paHalo);
+    laik_reservation_add(reservation, paExlusive);
+
+    laik_log((Laik_LogLevel)1,"debug for the reservation api");
+
+    laik_reservation_alloc(reservation);
+    laik_data_use_reservation(data, reservation);
 
     // go through the slices to just allocate the memory
     uint64_t cnt;

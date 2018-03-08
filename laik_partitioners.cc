@@ -43,6 +43,7 @@ void runExclusivePartitioner(Laik_Partitioner* pr,
     Laik_Slice slc;
     int r=0;
     int nx=0;
+    int tag=0;
     for (int rz = 0; rz < Rz; rz++)
     {
         for (int ry = 0; ry < Ry; ry++)
@@ -56,13 +57,17 @@ void runExclusivePartitioner(Laik_Partitioner* pr,
                 {
                     for (int nz = 0; nz < Nz; nz++)
                     {
+                        // tag = global index where nx = 0 + safety shift = Ny+10
+                        nx=0;
+                        tag = nx + Lx*ny + Pxy*nz +
+                                rx*Nx + ry*Lx*Ny + Pxy*Nz*rz + Ny*10;
                         nx=0;
                         slc.from.i[0]=nx + Lx*ny + Pxy*nz +
                                 rx*Nx + ry*Lx*Ny + Pxy*Nz*rz;
                         nx=Nx;
                         slc.to.i[0]=nx + Lx*ny + Pxy*nz +
                                 rx*Nx + ry*Lx*Ny + Pxy*Nz*rz;
-                        laik_append_slice(p,r,&slc,0,0);
+                        laik_append_slice(p,r,&slc,tag,0);
                     }
                 }
             }
@@ -130,6 +135,7 @@ void runOverlapingPartitioner(Laik_Partitioner* pr,
     Laik_Slice slc;
     int r=0;
     int nx=0;
+    int tag;
     for (int rz = 0; rz < Rz; rz++)
     {
         for (int ry = 0; ry < Ry; ry++)
@@ -144,13 +150,18 @@ void runOverlapingPartitioner(Laik_Partitioner* pr,
                     for (int nz = ( (rz==0)?0:-d ) ;
                          nz < ( (rz==Rz-1)?Nz:Nz+d ) ; nz++)
                     {
+                        // tag = global index where nx = 0 + safety shift = Ny+10
+                        nx=0;
+                        tag = nx + Lx*ny + Pxy*nz +
+                                rx*Nx + ry*Lx*Ny + Pxy*Nz*rz  + Ny*10;
                         nx= (rx==0)?0:-d;
                         slc.from.i[0]=nx + Lx*ny + Pxy*nz +
                                 rx*Nx + ry*Lx*Ny + Pxy*Nz*rz;
                         nx= (rx==Rx-1)?Nx:Nx+d;
                         slc.to.i[0]=nx + Lx*ny + Pxy*nz +
                                 rx*Nx + ry*Lx*Ny + Pxy*Nz*rz;
-                        laik_append_slice(p,r,&slc,0,0);
+                        laik_append_slice(p,r,&slc,tag,0);
+                        //laik_log((Laik_LogLevel)2,"tag: %d\n",tag);
                     }
                 }
             }
