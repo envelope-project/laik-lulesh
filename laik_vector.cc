@@ -92,8 +92,6 @@ void laik_vector_halo::resize(int count){
     laik_reservation_add(reservation, paHalo);
     laik_reservation_add(reservation, paExlusive);
 
-    laik_log((Laik_LogLevel)1,"debug for the reservation api");
-
     laik_reservation_alloc(reservation);
     laik_data_use_reservation(data, reservation);
 
@@ -110,9 +108,21 @@ void laik_vector_halo::resize(int count){
     laik_switchto_phase(data, haloPartitioning, LAIK_DF_CopyIn);
 
     this -> count = cnt;
+    this -> calculate_pointers();
 }
 
 double& laik_vector_halo::operator [](int idx){
+    if (state){
+        //laik_log(Laik_LogLevel(2),"state: %d, idx: %d, pointer: %x", state, idx, exclusive_pointers[idx]);
+        return *(this -> exclusive_pointers[idx]);
+    }
+    else{
+        //laik_log(Laik_LogLevel(2),"state: %d, idx: %d, pointer: %x", state, idx, halo_pointers[idx]);
+        return *(this -> halo_pointers[idx]);
+    }
+}
+
+double* laik_vector_halo::calc_pointer(int idx, int state){
     uint64_t cnt;
     double* base;
 
@@ -241,19 +251,46 @@ double& laik_vector_halo::operator [](int idx){
             slice = (count+d+u)*(k+b)+(j+d);
             i += l;
         }
-
     }
-
-    //laik_log(Laik_LogLevel(2),"state: %d, idx: %d, side: %d,
-    //slice: %d, i:%d", state, idx, side, slice, i);
 
     if (slice>-1) {
         laik_map_def(data, slice, (void **)&base, &cnt);
-        return base[i];
+        //laik_log(Laik_LogLevel(2),"state: %d, idx: %d, pointer: %x", state, idx, base+i);
+        return base+i;
     }
 
-    return zero;
+    return &zero;
+}
 
+void laik_vector_halo::calculate_pointers(){
+    overlapping_pointers=0;
+    int numElems = count*count*count;
+    exclusive_pointers= (double**) malloc (numElems * sizeof(double*));
+    laik_switchto_phase(data, exclusivePartitioning, LAIK_DF_CopyOut);
+    for (int i = 0; i < numElems; ++i) {
+        exclusive_pointers [i] = calc_pointer(i,1);
+    }
+    // test
+    /*
+    for (int i = 0; i < numElems; ++i) {
+        laik_log((Laik_LogLevel)2,"exclusive pointers: %d %x\n", i, exclusive_pointers [i]);
+    }
+    */
+
+    int numElemsTotal = numElems + (b+f+d+u+l+r)*count*count;
+    halo_pointers= (double**) malloc (numElemsTotal * sizeof(double*));
+    laik_switchto_phase(data, haloPartitioning, LAIK_DF_CopyIn);
+    for (int i = 0; i < numElemsTotal; ++i) {
+        halo_pointers [i] = calc_pointer(i,0);
+    }
+    // test
+    /*
+    for (int i = 0; i < numElemsTotal; ++i) {
+        laik_log((Laik_LogLevel)2,"halo pointers: %d %x\n", i, halo_pointers [i]);
+    }
+    */
+
+    //laik_log((Laik_LogLevel)2,"debug for the reservation api");
 }
 
 void laik_vector_halo::switch_to_write_phase(){
