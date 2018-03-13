@@ -322,6 +322,15 @@ void laik_vector_overlapping::resize(int count){
                                  overlaping_reduction_partitioner(halo_depth), 0);
     data = laik_new_data(indexSpace, laik_Double);
 
+    // use the reservation API to precalculate the pointers
+    Laik_Partitioning* paOverlapping = laik_phase_run_partitioner(overlapingPartitioning);
+
+    Laik_Reservation* reservation = laik_reservation_new(data);
+    laik_reservation_add(reservation, paOverlapping);
+
+    laik_reservation_alloc(reservation);
+    laik_data_use_reservation(data, reservation);
+
     // go through the slices to just allocate the memory
     laik_switchto_phase(data, overlapingPartitioning, Laik_DataFlow
                         ( LAIK_DF_Init | LAIK_DF_ReduceOut | LAIK_DF_Sum ) );

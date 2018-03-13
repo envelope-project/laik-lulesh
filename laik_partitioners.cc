@@ -230,6 +230,7 @@ void runOverlapingReductionPartitioner(Laik_Partitioner* pr,
     Laik_Slice slc;
     int r=0;
     int nx=0;
+    int tag=0;
     for (int rz = 0; rz < Rz; rz++)
     {
         for (int ry = 0; ry < Ry; ry++)
@@ -250,11 +251,14 @@ void runOverlapingReductionPartitioner(Laik_Partitioner* pr,
                     for (int nz = 0 ; nz < Nz; nz++)
                     {
                         nx=0;
+                        // unique tags
+                        tag = nx + Lx*ny + Pxy*nz +  rx*(Nx-1) + ry*Lx*(Ny-1) + rz*Pxy*(Nz-1) + Ny*100;
+                        nx=0;
                         slc.from.i[0]=
                                 nx + Lx*ny + Pxy*nz +  rx*(Nx-1) + ry*Lx*(Ny-1) + rz*Pxy*(Nz-1);
                         nx=Nx;
                         slc.to.i[0]= nx + Lx*ny + Pxy*nz +  rx*(Nx-1) + ry*Lx*(Ny-1) + rz*Pxy*(Nz-1);
-                        laik_append_slice(p,r,&slc,0,0);
+                        laik_append_slice(p,r,&slc,tag,0);
                     }
                 }
             }
