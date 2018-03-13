@@ -26,6 +26,8 @@ protected:
     Laik_AccessPhase *exclusivePartitioning;
     Laik_AccessPhase *haloPartitioning;
     Laik_AccessPhase *overlapingPartitioning;
+    Laik_Transition *toW;
+    Laik_Transition *toR;
     Laik_Data* data;
     int count;
     int f,b,u,d,l,r;
