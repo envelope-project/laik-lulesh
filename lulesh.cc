@@ -1165,11 +1165,11 @@ static inline void CalcForceForNodes(Domain& domain)
 
 #if USE_MPI
   domain.get_fx().switch_to_read_phase();
-  domain.get_fx().switch_to_write_phase();
+  //domain.get_fx().switch_to_write_phase();
   domain.get_fy().switch_to_read_phase();
-  domain.get_fy().switch_to_write_phase();
+  //domain.get_fy().switch_to_write_phase();
   domain.get_fz().switch_to_read_phase();
-  domain.get_fz().switch_to_write_phase();
+  //domain.get_fz().switch_to_write_phase();
 /*
   Domain_member fieldData[3] ;
   fieldData[0] = &Domain::fx ;

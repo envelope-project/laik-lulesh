@@ -344,11 +344,11 @@ void laik_vector_overlapping::resize(int count){
     laik_data_use_reservation(data, reservation);
 
     // precalculate the transition object
-    toR = laik_calc_transition(indexSpace,
+    toW = laik_calc_transition(indexSpace,
                                        paOverlapping, LAIK_DF_CopyIn,
                                        paOverlapping,
                                        Laik_DataFlow ( LAIK_DF_ReduceOut | LAIK_DF_Sum ));
-    toW = laik_calc_transition(indexSpace,
+    toR = laik_calc_transition(indexSpace,
                                        paOverlapping,
                                        Laik_DataFlow ( LAIK_DF_ReduceOut | LAIK_DF_Sum ),
                                        paOverlapping, LAIK_DF_CopyIn);
@@ -396,14 +396,12 @@ void laik_vector_overlapping::calculate_pointers(){
 }
 
 void laik_vector_overlapping::switch_to_write_phase(){
-    //laik_exec_transition(data,toW);
-
-    laik_log((Laik_LogLevel)2, "here");
-    laik_switchto_phase(data, overlapingPartitioning, Laik_DataFlow
-                        ( LAIK_DF_ReduceOut | LAIK_DF_Sum ) );
+    laik_exec_transition(data,toW);
+    //laik_switchto_phase(data, overlapingPartitioning, Laik_DataFlow
+    //                    ( LAIK_DF_ReduceOut | LAIK_DF_Sum ) );
 }
 
 void laik_vector_overlapping::switch_to_read_phase(){
-    //laik_exec_transition(data,toR);
-    laik_switchto_phase(data, overlapingPartitioning, LAIK_DF_CopyIn);
+    laik_exec_transition(data,toR);
+    //laik_switchto_phase(data, overlapingPartitioning, LAIK_DF_CopyIn);
 }

@@ -192,7 +192,7 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
       }
    }
    m_nodalMass.switch_to_read_phase();
-   m_nodalMass.switch_to_write_phase();
+   //m_nodalMass.switch_to_write_phase();
 
     m_element_test.switch_to_write_phase();
     for (Index_t i=0; i<numElem(); ++i) {
