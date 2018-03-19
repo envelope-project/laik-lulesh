@@ -121,9 +121,11 @@ void laik_vector_halo::resize(int count){
     this -> calculate_pointers();
 }
 
+/*
 double& laik_vector_halo::operator [](int idx){
     return *(this -> halo_pointers[idx]);
 }
+*/
 
 double* laik_vector_halo::calc_pointer(int idx, int state){
     uint64_t cnt;
@@ -362,9 +364,11 @@ void laik_vector_overlapping::resize(int count){
     this -> calculate_pointers();
 }
 
+/*
 double& laik_vector_overlapping::operator [](int idx){
     return *(this -> overlapping_pointers[idx]);
 }
+*/
 
 double* laik_vector_overlapping::calc_pointer(int idx){
     uint64_t cnt;
