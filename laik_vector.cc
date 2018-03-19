@@ -122,14 +122,7 @@ void laik_vector_halo::resize(int count){
 }
 
 double& laik_vector_halo::operator [](int idx){
-    if (state){
-        //laik_log(Laik_LogLevel(2),"state: %d, idx: %d, pointer: %x", state, idx, exclusive_pointers[idx]);
-        return *(this -> exclusive_pointers[idx]);
-    }
-    else{
-        //laik_log(Laik_LogLevel(2),"state: %d, idx: %d, pointer: %x", state, idx, halo_pointers[idx]);
-        return *(this -> halo_pointers[idx]);
-    }
+    return *(this -> halo_pointers[idx]);
 }
 
 double* laik_vector_halo::calc_pointer(int idx, int state){
