@@ -28,6 +28,8 @@ protected:
     Laik_AccessPhase *overlapingPartitioning;
     Laik_Transition *toW;
     Laik_Transition *toR;
+    Laik_ActionSeq* asW;
+    Laik_ActionSeq* asR;
     Laik_Data* data;
     int count;
     int f,b,u,d,l,r;

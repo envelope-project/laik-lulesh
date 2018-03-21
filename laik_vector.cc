@@ -103,6 +103,9 @@ void laik_vector_halo::resize(int count){
                                        paHalo, LAIK_DF_CopyIn,
                                        paExlusive, LAIK_DF_CopyOut);
 
+    asR = laik_calc_actions(data, toR, reservation, reservation);
+    asW = laik_calc_actions(data, toW, reservation, reservation);
+
     // go through the slices to just allocate the memory
     uint64_t cnt;
     double* base;
@@ -299,13 +302,15 @@ void laik_vector_halo::calculate_pointers(){
 }
 
 void laik_vector_halo::switch_to_write_phase(){
-    laik_exec_transition(data,toW);
+    laik_exec_actions(asW);    
+    //laik_exec_transition(data,toW);
     //laik_switchto_phase(data, exclusivePartitioning, LAIK_DF_CopyOut);
     state=1;
 }
 
 void laik_vector_halo::switch_to_read_phase(){
-    laik_exec_transition(data,toR);
+    laik_exec_actions(asR);    
+    //laik_exec_transition(data,toR);
     //laik_switchto_phase(data, haloPartitioning, LAIK_DF_CopyIn);
     state=0;
 }
@@ -347,6 +352,9 @@ void laik_vector_overlapping::resize(int count){
                                        paOverlapping,
                                        Laik_DataFlow ( LAIK_DF_ReduceOut | LAIK_DF_Sum ),
                                        paOverlapping, LAIK_DF_CopyIn);
+
+    asR = laik_calc_actions(data, toR, reservation, reservation);
+    asW = laik_calc_actions(data, toW, reservation, reservation);
 
     // go through the slices to just allocate the memory
     laik_switchto_phase(data, overlapingPartitioning, Laik_DataFlow
@@ -393,12 +401,14 @@ void laik_vector_overlapping::calculate_pointers(){
 }
 
 void laik_vector_overlapping::switch_to_write_phase(){
-    laik_exec_transition(data,toW);
+    laik_exec_actions(asW);
+    //laik_exec_transition(data,toW);
     //laik_switchto_phase(data, overlapingPartitioning, Laik_DataFlow
     //                    ( LAIK_DF_ReduceOut | LAIK_DF_Sum ) );
 }
 
 void laik_vector_overlapping::switch_to_read_phase(){
-    laik_exec_transition(data,toR);
+    laik_exec_actions(asR);
+    //laik_exec_transition(data,toR);
     //laik_switchto_phase(data, overlapingPartitioning, LAIK_DF_CopyIn);
 }
