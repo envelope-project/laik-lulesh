@@ -111,7 +111,7 @@ void laik_vector_halo::resize(int count){
        laik_map_def(data, n, (void **)&base, &cnt);
     }
     //laik_exec_transition(data, toHalo);
-    laik_switchto_partitioning(data, haloPartitioning, LAIK_DF_None, LAIK_RO_None);
+    laik_switchto_partitioning(data, haloPartitioning, LAIK_DF_Preserve, LAIK_RO_None);
 
     this -> count = cnt;
     this -> calculate_pointers();
@@ -267,7 +267,7 @@ void laik_vector_halo::calculate_pointers(){
     overlapping_pointers=0;
     int numElems = count*count*count;
     exclusive_pointers= (double**) malloc (numElems * sizeof(double*));
-    laik_switchto_partitioning(data, exclusivePartitioning, LAIK_DF_Preserve, LAIK_RO_None);
+    laik_switchto_partitioning(data, exclusivePartitioning, LAIK_DF_None, LAIK_RO_None);
 
     for (int i = 0; i < numElems; ++i) {
         exclusive_pointers [i] = calc_pointer(i,1);
@@ -281,7 +281,7 @@ void laik_vector_halo::calculate_pointers(){
 
     int numElemsTotal = numElems + (b+f+d+u+l+r)*count*count;
     halo_pointers= (double**) malloc (numElemsTotal * sizeof(double*));
-    laik_switchto_partitioning(data, haloPartitioning, LAIK_DF_None, LAIK_RO_None);
+    laik_switchto_partitioning(data, haloPartitioning, LAIK_DF_Preserve, LAIK_RO_None);
 
     for (int i = 0; i < numElemsTotal; ++i) {
         halo_pointers [i] = calc_pointer(i,0);
