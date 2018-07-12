@@ -41,6 +41,7 @@ void runExclusivePartitioner(Laik_Partitioner* pr,
     // we should loop over all the tasks and not just this
     // task
     Laik_Slice slc;
+    uint64_t from, to;
     int r=0;
     int nx=0;
     int tag=0;
@@ -62,11 +63,13 @@ void runExclusivePartitioner(Laik_Partitioner* pr,
                         tag = nx + Lx*ny + Pxy*nz +
                                 rx*Nx + ry*Lx*Ny + Pxy*Nz*rz + Ny*10;
                         nx=0;
-                        slc.from.i[0]=nx + Lx*ny + Pxy*nz +
+                        from = nx + Lx*ny + Pxy*nz +
                                 rx*Nx + ry*Lx*Ny + Pxy*Nz*rz;
                         nx=Nx;
-                        slc.to.i[0]=nx + Lx*ny + Pxy*nz +
+                        to = nx + Lx*ny + Pxy*nz +
                                 rx*Nx + ry*Lx*Ny + Pxy*Nz*rz;
+
+                        laik_slice_init_1d(&slc, space, from, to);
                         laik_append_slice(p,r,&slc,tag,0);
                     }
                 }
@@ -133,6 +136,7 @@ void runOverlapingPartitioner(Laik_Partitioner* pr,
     // we should loop over all the tasks and not just this
     // task
     Laik_Slice slc;
+    uint64_t from, to;
     int r=0;
     int nx=0;
     int tag;
@@ -155,11 +159,13 @@ void runOverlapingPartitioner(Laik_Partitioner* pr,
                         tag = nx + Lx*ny + Pxy*nz +
                                 rx*Nx + ry*Lx*Ny + Pxy*Nz*rz  + Ny*10;
                         nx= (rx==0)?0:-d;
-                        slc.from.i[0]=nx + Lx*ny + Pxy*nz +
+                        from = nx + Lx*ny + Pxy*nz +
                                 rx*Nx + ry*Lx*Ny + Pxy*Nz*rz;
                         nx= (rx==Rx-1)?Nx:Nx+d;
-                        slc.to.i[0]=nx + Lx*ny + Pxy*nz +
+                        to = nx + Lx*ny + Pxy*nz +
                                 rx*Nx + ry*Lx*Ny + Pxy*Nz*rz;
+
+                        laik_slice_init_1d(&slc, space, from, to);
                         laik_append_slice(p,r,&slc,tag,0);
                         //laik_log((Laik_LogLevel)2,"tag: %d\n",tag);
                     }
@@ -228,6 +234,7 @@ void runOverlapingReductionPartitioner(Laik_Partitioner* pr,
     // we should loop over all the tasks and not just this
     // task
     Laik_Slice slc;
+    uint64_t from, to;
     int r=0;
     int nx=0;
     int tag=0;
@@ -254,10 +261,10 @@ void runOverlapingReductionPartitioner(Laik_Partitioner* pr,
                         // unique tags
                         tag = nx + Lx*ny + Pxy*nz +  rx*(Nx-1) + ry*Lx*(Ny-1) + rz*Pxy*(Nz-1) + Ny*100;
                         nx=0;
-                        slc.from.i[0]=
-                                nx + Lx*ny + Pxy*nz +  rx*(Nx-1) + ry*Lx*(Ny-1) + rz*Pxy*(Nz-1);
+                        from = nx + Lx*ny + Pxy*nz +  rx*(Nx-1) + ry*Lx*(Ny-1) + rz*Pxy*(Nz-1);
                         nx=Nx;
-                        slc.to.i[0]= nx + Lx*ny + Pxy*nz +  rx*(Nx-1) + ry*Lx*(Ny-1) + rz*Pxy*(Nz-1);
+                        to = nx + Lx*ny + Pxy*nz +  rx*(Nx-1) + ry*Lx*(Ny-1) + rz*Pxy*(Nz-1);
+                        laik_slice_init_1d(&slc, space, from, to);
                         laik_append_slice(p,r,&slc,tag,0);
                     }
                 }
