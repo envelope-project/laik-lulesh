@@ -2,6 +2,7 @@
 #include <laik_partitioners.h>
 #include <lulesh.h>
 #include<limits.h>
+#include <type_traits>
 
 template <typename T>
 laik_vector<T>::laik_vector(Laik_Instance* inst, Laik_Group* world){
@@ -82,7 +83,13 @@ void laik_vector_halo<T>::resize(int count){
     haloPartitioning = laik_new_partitioning(overlaping_partitioner(halo_depth), world, indexSpace, exclusivePartitioning);
     overlapingPartitioning = 0;
 
-    data = laik_new_data(indexSpace, laik_Double);
+    if (std::is_same <T, double>::value) {
+        data = laik_new_data(indexSpace, laik_Double );
+
+    }
+    else if (std::is_same <T, double>::value){
+        data = laik_new_data(indexSpace, laik_Int64 );
+    }
 
     // use the reservation API to precalculate the pointers
     Laik_Reservation* reservation = laik_reservation_new(data);
@@ -335,8 +342,13 @@ void laik_vector_overlapping<T>::resize(int count){
     overlapingPartitioning =laik_new_partitioning(overlaping_reduction_partitioner(halo_depth),
                                  world, indexSpace, 0);
 
-    data = laik_new_data(indexSpace, laik_Double);
+    if (std::is_same <T, double>::value) {
+        data = laik_new_data(indexSpace, laik_Double );
 
+    }
+    else if (std::is_same <T, double>::value){
+        data = laik_new_data(indexSpace, laik_Int64 );
+    }
     // use the reservation API to precalculate the pointers
 
     Laik_Reservation* reservation = laik_reservation_new(data);

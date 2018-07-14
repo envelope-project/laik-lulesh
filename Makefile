@@ -30,8 +30,8 @@ OBJECTS2.0 = $(SOURCES2.0:.cc=.o)
 
 #Default build suggestions with OpenMP for g++
 OPT = -O3
-CXXFLAGS = -g $(OPT) -fopenmp -I. -Wall $(LAIK_INC) -DUSE_MPI=1
-LDFLAGS = -g $(OPT) -fopenmp -Wl,-rpath,$(abspath $(LAIK_ROOT)) $(LAIK_LIB)  -lmpi
+CXXFLAGS = -g $(OPT) -std=c++11 -fopenmp -I. -Wall $(LAIK_INC) -DUSE_MPI=1
+LDFLAGS = -g $(OPT) -std=c++11 -fopenmp -Wl,-rpath,$(abspath $(LAIK_ROOT)) $(LAIK_LIB)  -lmpi
 
 #Below are reasonable default flags for a serial build
 #CXXFLAGS = -g -O3 -I. -Wall
