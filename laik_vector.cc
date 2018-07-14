@@ -87,7 +87,7 @@ void laik_vector_halo<T>::resize(int count){
         data = laik_new_data(indexSpace, laik_Double );
 
     }
-    else if (std::is_same <T, double>::value){
+    else if (std::is_same <T, int>::value){
         data = laik_new_data(indexSpace, laik_Int64 );
     }
 
@@ -346,7 +346,7 @@ void laik_vector_overlapping<T>::resize(int count){
         data = laik_new_data(indexSpace, laik_Double );
 
     }
-    else if (std::is_same <T, double>::value){
+    else if (std::is_same <T, int>::value){
         data = laik_new_data(indexSpace, laik_Int64 );
     }
     // use the reservation API to precalculate the pointers
