@@ -182,33 +182,33 @@ class Domain {
 
       m_elemBC.resize(numElem);
 
-      m_e.resize(numElem);
-      m_p.resize(numElem);
+      m_e.resize(numRanks*numElem);
+      m_p.resize(numRanks*numElem);
 
-      m_q.resize(numElem);
-      m_ql.resize(numElem);
-      m_qq.resize(numElem);
+      m_q.resize(numRanks*numElem);
+      m_ql.resize(numRanks*numElem);
+      m_qq.resize(numRanks*numElem);
 
-      m_v.resize(numElem);
+      m_v.resize(numRanks*numElem);
 
-      m_volo.resize(numElem);
-      m_delv.resize(numElem);
-      m_vdov.resize(numElem);
+      m_volo.resize(numRanks*numElem);
+      m_delv.resize(numRanks*numElem);
+      m_vdov.resize(numRanks*numElem);
 
-      m_arealg.resize(numElem);
+      m_arealg.resize(numRanks*numElem);
 
-      m_ss.resize(numElem);
+      m_ss.resize(numRanks*numElem);
 
-      m_elemMass.resize(numElem);
+      m_elemMass.resize(numRanks*numElem);
       m_element_test.resize(numRanks*numElem); // global size
    }
 
    void AllocateGradients(Int_t numElem, Int_t numRanks, Index_t allElem)
    {
       // Position gradients
-      m_delx_xi.resize(numElem) ;
-      m_delx_eta.resize(numElem) ;
-      m_delx_zeta.resize(numElem) ;
+      m_delx_xi.resize(numRanks*numElem) ;
+      m_delx_eta.resize(numRanks*numElem) ;
+      m_delx_zeta.resize(numRanks*numElem) ;
 
       // Velocity gradients
       m_delv_xi.resize(numRanks*numElem) ;
@@ -222,9 +222,9 @@ class Domain {
 
    void DeallocateGradients()
    {
-      m_delx_zeta.clear() ;
-      m_delx_eta.clear() ;
-      m_delx_xi.clear() ;
+      //m_delx_zeta.clear() ;
+      //m_delx_eta.clear() ;
+      //m_delx_xi.clear() ;
 
       //m_delv_zeta.clear() ;
       //m_delv_eta.clear() ;
@@ -233,16 +233,16 @@ class Domain {
 
    void AllocateStrains(Int_t numElem)
    {
-      m_dxx.resize(numElem) ;
-      m_dyy.resize(numElem) ;
-      m_dzz.resize(numElem) ;
+      m_dxx.resize(numRanks()*numElem) ;
+      m_dyy.resize(numRanks()*numElem) ;
+      m_dzz.resize(numRanks()*numElem) ;
    }
 
    void DeallocateStrains()
    {
-      m_dzz.clear() ;
-      m_dyy.clear() ;
-      m_dxx.clear() ;
+      //m_dzz.clear() ;
+      //m_dyy.clear() ;
+      //m_dxx.clear() ;
    }
    
    //
@@ -511,9 +511,9 @@ class Domain {
 
    std::vector<Int_t>    m_elemBC ;  /* symmetry/free-surface flags for each elem face */
 
-   std::vector<Real_t> m_dxx ;  /* principal strains -- temporary */
-   std::vector<Real_t> m_dyy ;
-   std::vector<Real_t> m_dzz ;
+   laik_vector_halo m_dxx ;  /* principal strains -- temporary */
+   laik_vector_halo m_dyy ;
+   laik_vector_halo m_dzz ;
 
    laik_vector_halo m_delv_xi ;    /* velocity gradient -- temporary */
    laik_vector_halo m_delv_eta ;
@@ -523,28 +523,28 @@ class Domain {
    //std::vector<Real_t> m_delv_eta ;
    //std::vector<Real_t> m_delv_zeta ;
 
-   std::vector<Real_t> m_delx_xi ;    /* coordinate gradient -- temporary */
-   std::vector<Real_t> m_delx_eta ;
-   std::vector<Real_t> m_delx_zeta ;
+   laik_vector_halo m_delx_xi ;    /* coordinate gradient -- temporary */
+   laik_vector_halo m_delx_eta ;
+   laik_vector_halo m_delx_zeta ;
    
-   std::vector<Real_t> m_e ;   /* energy */
+   laik_vector_halo m_e ;   /* energy */
 
-   std::vector<Real_t> m_p ;   /* pressure */
-   std::vector<Real_t> m_q ;   /* q */
-   std::vector<Real_t> m_ql ;  /* linear term for q */
-   std::vector<Real_t> m_qq ;  /* quadratic term for q */
+   laik_vector_halo m_p ;   /* pressure */
+   laik_vector_halo m_q ;   /* q */
+   laik_vector_halo m_ql ;  /* linear term for q */
+   laik_vector_halo m_qq ;  /* quadratic term for q */
 
-   std::vector<Real_t> m_v ;     /* relative volume */
-   std::vector<Real_t> m_volo ;  /* reference volume */
-   std::vector<Real_t> m_vnew ;  /* new relative volume -- temporary */
-   std::vector<Real_t> m_delv ;  /* m_vnew - m_v */
-   std::vector<Real_t> m_vdov ;  /* volume derivative over volume */
+   laik_vector_halo m_v ;     /* relative volume */
+   laik_vector_halo m_volo ;  /* reference volume */
+   laik_vector_halo m_vnew ;  /* new relative volume -- temporary */
+   laik_vector_halo m_delv ;  /* m_vnew - m_v */
+   laik_vector_halo m_vdov ;  /* volume derivative over volume */
 
-   std::vector<Real_t> m_arealg ;  /* characteristic length of an element */
+   laik_vector_halo m_arealg ;  /* characteristic length of an element */
    
-   std::vector<Real_t> m_ss ;      /* "sound speed" */
+   laik_vector_halo m_ss ;      /* "sound speed" */
 
-   std::vector<Real_t> m_elemMass ;  /* mass */
+   laik_vector_halo m_elemMass ;  /* mass */
 
    // Cutoffs (treat as constants)
    const Real_t  m_e_cut ;             // energy tolerance 
