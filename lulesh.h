@@ -248,12 +248,12 @@ class Domain {
    //
    // GETTERS
    //
-   laik_vector_overlapping& get_fx() { return m_fx;}
-   laik_vector_overlapping& get_fy() { return m_fy;}
-   laik_vector_overlapping& get_fz() { return m_fz;}
-   laik_vector_halo& get_delv_xi() { return m_delv_xi;}
-   laik_vector_halo& get_delv_eta() { return m_delv_eta;}
-   laik_vector_halo& get_delv_zeta() { return m_delv_zeta;}
+   laik_vector_overlapping<double>& get_fx() { return m_fx;}
+   laik_vector_overlapping<double>& get_fy() { return m_fy;}
+   laik_vector_overlapping<double>& get_fz() { return m_fz;}
+   laik_vector_halo<double>& get_delv_xi() { return m_delv_xi;}
+   laik_vector_halo<double>& get_delv_eta() { return m_delv_eta;}
+   laik_vector_halo<double>& get_delv_zeta() { return m_delv_zeta;}
 
    //
    // ACCESSORS
@@ -480,11 +480,11 @@ class Domain {
    std::vector<Real_t> m_ydd ;
    std::vector<Real_t> m_zdd ;
 
-   laik_vector_overlapping m_fx ;  /* forces */
-   laik_vector_overlapping m_fy ;
-   laik_vector_overlapping m_fz ;
+   laik_vector_overlapping<double> m_fx ;  /* forces */
+   laik_vector_overlapping<double> m_fy ;
+   laik_vector_overlapping<double> m_fz ;
 
-   laik_vector_overlapping m_nodalMass ;  /* mass */
+   laik_vector_overlapping<double> m_nodalMass ;  /* mass */
 
    std::vector<Index_t> m_symmX ;  /* symmetry plane nodesets */
    std::vector<Index_t> m_symmY ;
@@ -500,7 +500,7 @@ class Domain {
    Index_t **m_regElemlist ;  // region indexset 
 
    std::vector<Index_t>  m_nodelist ;     /* elemToNode connectivity */
-   laik_vector_halo m_element_test ;
+   laik_vector_halo<double> m_element_test ;
 
    std::vector<Index_t>  m_lxim ;  /* element connectivity across each face */
    std::vector<Index_t>  m_lxip ;
@@ -511,40 +511,40 @@ class Domain {
 
    std::vector<Int_t>    m_elemBC ;  /* symmetry/free-surface flags for each elem face */
 
-   laik_vector_halo m_dxx ;  /* principal strains -- temporary */
-   laik_vector_halo m_dyy ;
-   laik_vector_halo m_dzz ;
+   laik_vector_halo<double> m_dxx ;  /* principal strains -- temporary */
+   laik_vector_halo<double> m_dyy ;
+   laik_vector_halo<double> m_dzz ;
 
-   laik_vector_halo m_delv_xi ;    /* velocity gradient -- temporary */
-   laik_vector_halo m_delv_eta ;
-   laik_vector_halo m_delv_zeta ;
+   laik_vector_halo<double> m_delv_xi ;    /* velocity gradient -- temporary */
+   laik_vector_halo<double> m_delv_eta ;
+   laik_vector_halo<double> m_delv_zeta ;
 
    //std::vector<Real_t> m_delv_xi ;
    //std::vector<Real_t> m_delv_eta ;
    //std::vector<Real_t> m_delv_zeta ;
 
-   laik_vector_halo m_delx_xi ;    /* coordinate gradient -- temporary */
-   laik_vector_halo m_delx_eta ;
-   laik_vector_halo m_delx_zeta ;
+   laik_vector_halo<double> m_delx_xi ;    /* coordinate gradient -- temporary */
+   laik_vector_halo<double> m_delx_eta ;
+   laik_vector_halo<double> m_delx_zeta ;
    
-   laik_vector_halo m_e ;   /* energy */
+   laik_vector_halo<double> m_e ;   /* energy */
 
-   laik_vector_halo m_p ;   /* pressure */
-   laik_vector_halo m_q ;   /* q */
-   laik_vector_halo m_ql ;  /* linear term for q */
-   laik_vector_halo m_qq ;  /* quadratic term for q */
+   laik_vector_halo<double> m_p ;   /* pressure */
+   laik_vector_halo<double> m_q ;   /* q */
+   laik_vector_halo<double> m_ql ;  /* linear term for q */
+   laik_vector_halo<double> m_qq ;  /* quadratic term for q */
 
-   laik_vector_halo m_v ;     /* relative volume */
-   laik_vector_halo m_volo ;  /* reference volume */
-   laik_vector_halo m_vnew ;  /* new relative volume -- temporary */
-   laik_vector_halo m_delv ;  /* m_vnew - m_v */
-   laik_vector_halo m_vdov ;  /* volume derivative over volume */
+   laik_vector_halo<double> m_v ;     /* relative volume */
+   laik_vector_halo<double> m_volo ;  /* reference volume */
+   laik_vector_halo<double> m_vnew ;  /* new relative volume -- temporary */
+   laik_vector_halo<double> m_delv ;  /* m_vnew - m_v */
+   laik_vector_halo<double> m_vdov ;  /* volume derivative over volume */
 
-   laik_vector_halo m_arealg ;  /* characteristic length of an element */
+   laik_vector_halo<double> m_arealg ;  /* characteristic length of an element */
    
-   laik_vector_halo m_ss ;      /* "sound speed" */
+   laik_vector_halo<double> m_ss ;      /* "sound speed" */
 
-   laik_vector_halo m_elemMass ;  /* mass */
+   laik_vector_halo<double> m_elemMass ;  /* mass */
 
    // Cutoffs (treat as constants)
    const Real_t  m_e_cut ;             // energy tolerance 
