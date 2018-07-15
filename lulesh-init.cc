@@ -107,7 +107,8 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
 
    m_numNode = edgeNodes*edgeNodes*edgeNodes ;
 
-   m_regNumList = new Index_t[numElem()] ;  // material indexset
+   //m_regNumList = new Index_t[numElem()] ;  // material indexset
+   m_regNumList.resize(numElem()); // material indexset
 
    // Elem-centered 
    AllocateElemPersistent(numElem(), numRanks) ;
@@ -451,8 +452,10 @@ Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
    Index_t myRank = 0;
 #endif
    this->numReg() = nr;
-   m_regElemSize = new Index_t[numReg()];
-   m_regElemlist = new Index_t*[numReg()];
+   m_regElemSize.resize(numReg());
+   m_regElemlist.resize(numReg());
+   //m_regElemSize = new Index_t[numReg()];
+   //m_regElemlist = new Index_t*[numReg()];
    Index_t nextIndex = 0;
    //if we only have one region just fill it
    // Fill out the regNumList with material numbers, which are always
@@ -537,7 +540,8 @@ Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
    }
    // Second, allocate each region index set
    for (Index_t i=0 ; i<numReg() ; ++i) {
-      m_regElemlist[i] = new Index_t[regElemSize(i)];
+      m_regElemlist[i].resize(regElemSize(i));
+      //m_regElemlist[i] = new Index_t[regElemSize(i)];
       regElemSize(i) = 0;
    }
    // Third, fill index sets

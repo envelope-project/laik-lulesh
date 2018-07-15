@@ -2097,7 +2097,7 @@ void CalcPressureForElems(Real_t* p_new, Real_t* bvc,
                           Real_t* compression, Real_t *vnewc,
                           Real_t pmin,
                           Real_t p_cut, Real_t eosvmax,
-                          Index_t length, Index_t *regElemList)
+                          Index_t length, std::vector<Index_t> regElemList)
 {
 #pragma omp parallel for firstprivate(length)
    for (Index_t i = 0; i < length ; ++i) {
@@ -2135,7 +2135,7 @@ void CalcEnergyForElems(Real_t* p_new, Real_t* e_new, Real_t* q_new,
                         Real_t* qq_old, Real_t* ql_old,
                         Real_t rho0,
                         Real_t eosvmax,
-                        Index_t length, Index_t *regElemList)
+                        Index_t length, std::vector<Index_t> regElemList)
 {
    Real_t *pHalfStep = Allocate<Real_t>(length) ;
 
@@ -2262,7 +2262,7 @@ void CalcSoundSpeedForElems(Domain &domain,
                             Real_t *vnewc, Real_t rho0, Real_t *enewc,
                             Real_t *pnewc, Real_t *pbvc,
                             Real_t *bvc, Real_t ss4o3,
-                            Index_t len, Index_t *regElemList)
+                            Index_t len, std::vector<Index_t> regElemList)
 {
 #pragma omp parallel for firstprivate(rho0, ss4o3)
    for (Index_t i = 0; i < len ; ++i) {
@@ -2283,7 +2283,7 @@ void CalcSoundSpeedForElems(Domain &domain,
 
 static inline
 void EvalEOSForElems(Domain& domain, Real_t *vnewc,
-                     Int_t numElemReg, Index_t *regElemList, Int_t rep)
+                     Int_t numElemReg, std::vector<Index_t> regElemList, Int_t rep)
 {
    Real_t  e_cut = domain.e_cut() ;
    Real_t  p_cut = domain.p_cut() ;
@@ -2460,7 +2460,7 @@ void ApplyMaterialPropertiesForElems(Domain& domain, Real_t vnew[])
 
     for (Int_t r=0 ; r<domain.numReg() ; r++) {
        Index_t numElemReg = domain.regElemSize(r);
-       Index_t *regElemList = domain.regElemlist(r);
+       std::vector <Index_t> regElemList = domain.regElemlist(r);
        Int_t rep;
        //Determine load imbalance for this region
        //round down the number with lowest cost
@@ -2523,7 +2523,7 @@ void LagrangeElements(Domain& domain, Index_t numElem)
 
 static inline
 void CalcCourantConstraintForElems(Domain &domain, Index_t length,
-                                   Index_t *regElemlist,
+                                   std::vector<Index_t> regElemlist,
                                    Real_t qqc, Real_t& dtcourant)
 {
 #if _OPENMP   
@@ -2600,7 +2600,7 @@ void CalcCourantConstraintForElems(Domain &domain, Index_t length,
 
 static inline
 void CalcHydroConstraintForElems(Domain &domain, Index_t length,
-                                 Index_t *regElemlist, Real_t dvovmax, Real_t& dthydro)
+                                 std::vector<Index_t> regElemlist, Real_t dvovmax, Real_t& dthydro)
 {
 #if _OPENMP   
    Index_t threads = omp_get_max_threads();

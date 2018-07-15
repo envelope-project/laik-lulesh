@@ -298,7 +298,7 @@ class Domain {
    Index_t&  regElemSize(Index_t idx) { return m_regElemSize[idx] ; }
    Index_t&  regNumList(Index_t idx) { return m_regNumList[idx] ; }
    Index_t*  regNumList()            { return &m_regNumList[0] ; }
-   Index_t*  regElemlist(Int_t r)    { return m_regElemlist[r] ; }
+   std::vector<Index_t>  regElemlist(Int_t r)    { return m_regElemlist[r] ; }
    Index_t&  regElemlist(Int_t r, Index_t idx) { return m_regElemlist[r][idx] ; }
 
    Index_t*  nodelist(Index_t idx)    { return &m_nodelist[Index_t(8)*idx] ; }
@@ -495,9 +495,14 @@ class Domain {
    // Region information
    Int_t    m_numReg ;
    Int_t    m_cost; //imbalance cost
-   Index_t *m_regElemSize ;   // Size of region sets
-   Index_t *m_regNumList ;    // Region number per domain element
-   Index_t **m_regElemlist ;  // region indexset 
+
+   //Index_t *m_regElemSize ;   // Size of region sets
+   //Index_t *m_regNumList ;    // Region number per domain element
+   //Index_t **m_regElemlist ;  // region indexset
+
+   std::vector<Index_t> m_regElemSize; // Size of region sets
+   std::vector<Index_t> m_regNumList; // Region number per domain element
+   std::vector <std::vector <Index_t> > m_regElemlist; // region indexset
 
    std::vector<Index_t>  m_nodelist ;     /* elemToNode connectivity */
    laik_vector_halo<double> m_element_test ;
