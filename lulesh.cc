@@ -1633,7 +1633,7 @@ void CalcLagrangeElements(Domain& domain, Real_t* vnew)
    if (numElem > 0) {
       const Real_t deltatime = domain.deltatime() ;
 
-      domain.AllocateStrains(numElem);
+      //domain.AllocateStrains(numElem);
 
       CalcKinematicsForElems(domain, vnew, deltatime, numElem) ;
 
@@ -1661,7 +1661,7 @@ void CalcLagrangeElements(Domain& domain, Real_t* vnew)
 #endif
         }
       }
-      domain.DeallocateStrains();
+      //domain.DeallocateStrains();
    }
 }
 

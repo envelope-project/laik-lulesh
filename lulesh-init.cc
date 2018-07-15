@@ -123,6 +123,8 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    // Element-centered gradients
    AllocateGradients(numElem(), numRanks, allElem);
 
+   AllocateStrains(numElem());
+
    SetupCommBuffers(edgeNodes);
 
    // Basic Field Initialization 
