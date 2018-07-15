@@ -11,7 +11,7 @@ template <typename T>
 class laik_vector
 {
 public:
-    laik_vector(Laik_Instance* inst, Laik_Group* world);
+    laik_vector(Laik_Instance* inst, Laik_Group* world, Laik_ReductionOperation operation = LAIK_RO_None);
     void resize(int count);
     inline T& operator [](int idx);
     void calculate_pointers();
@@ -39,13 +39,14 @@ protected:
     T **exclusive_pointers;
     T **halo_pointers;
     T **overlapping_pointers;
+    Laik_ReductionOperation reduction_operation;
 };
 
 template <typename T>
 class laik_vector_halo:public laik_vector<T>
 {
 public:
-    laik_vector_halo(Laik_Instance* inst, Laik_Group* world);
+    laik_vector_halo(Laik_Instance* inst, Laik_Group* world, Laik_ReductionOperation operation = LAIK_RO_None);
     inline T& operator [](int idx);
     T* calc_pointer(int idx, int state);
     void calculate_pointers();
@@ -78,13 +79,14 @@ protected:
     using laik_vector<T>::exclusive_pointers;
     using laik_vector<T>::halo_pointers;
     using laik_vector<T>::overlapping_pointers;
+    using laik_vector<T>::reduction_operation;
 };
 
 template <typename T>
 class laik_vector_overlapping:public laik_vector<T>
 {
 public:
-    laik_vector_overlapping(Laik_Instance* inst, Laik_Group* world);
+    laik_vector_overlapping(Laik_Instance* inst, Laik_Group* world, Laik_ReductionOperation operation = LAIK_RO_Sum);
     inline T& operator [](int idx);
     T* calc_pointer(int idx);
     void calculate_pointers();
@@ -117,6 +119,7 @@ protected:
     using laik_vector<T>::exclusive_pointers;
     using laik_vector<T>::halo_pointers;
     using laik_vector<T>::overlapping_pointers;
+    using laik_vector<T>::reduction_operation;
 };
 
 

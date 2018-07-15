@@ -145,27 +145,27 @@ class Domain {
 
    void AllocateNodePersistent(Int_t numNode, Int_t numRanks) // Node-centered
    {
-      m_x.resize(numNode);  // coordinates
-      m_y.resize(numNode);
-      m_z.resize(numNode);
+       int edgeElem = (int)(cbrt(numNode)+0.1)-1;
+       int side = cbrt (numRanks);
+       int globalNumNode=(edgeElem*side+1)*(edgeElem*side+1)*(edgeElem*side+1);
 
-      m_xd.resize(numNode); // velocities
-      m_yd.resize(numNode);
-      m_zd.resize(numNode);
+       m_x.resize(globalNumNode);  // coordinates
+       m_y.resize(globalNumNode);
+       m_z.resize(globalNumNode);
 
-      m_xdd.resize(numNode); // accelerations
-      m_ydd.resize(numNode);
-      m_zdd.resize(numNode);
+       m_xd.resize(globalNumNode); // velocities
+       m_yd.resize(globalNumNode);
+       m_zd.resize(globalNumNode);
 
-      int edgeElem = (int)(cbrt(numNode)+0.1)-1;
-      int side = cbrt (numRanks);
-      int globalNumNode=(edgeElem*side+1)*(edgeElem*side+1)*(edgeElem*side+1);
+       m_xdd.resize(globalNumNode); // accelerations
+       m_ydd.resize(globalNumNode);
+       m_zdd.resize(globalNumNode);
 
-      m_fx.resize(globalNumNode);  // forces
-      m_fy.resize(globalNumNode);
-      m_fz.resize(globalNumNode);
+       m_fx.resize(globalNumNode);  // forces
+       m_fy.resize(globalNumNode);
+       m_fz.resize(globalNumNode);
 
-      m_nodalMass.resize(globalNumNode);  // mass
+       m_nodalMass.resize(globalNumNode);  // mass
    }
 
    void AllocateElemPersistent(Int_t numElem, Int_t numRanks) // Elem-centered
@@ -468,17 +468,17 @@ class Domain {
    //
 
    /* Node-centered */
-   std::vector<Real_t> m_x ;  /* coordinates */
-   std::vector<Real_t> m_y ;
-   std::vector<Real_t> m_z ;
+   laik_vector_overlapping<double> m_x ;  /* coordinates */
+   laik_vector_overlapping<double> m_y ;
+   laik_vector_overlapping<double> m_z ;
 
-   std::vector<Real_t> m_xd ; /* velocities */
-   std::vector<Real_t> m_yd ;
-   std::vector<Real_t> m_zd ;
+   laik_vector_overlapping<double> m_xd ; /* velocities */
+   laik_vector_overlapping<double> m_yd ;
+   laik_vector_overlapping<double> m_zd ;
 
-   std::vector<Real_t> m_xdd ; /* accelerations */
-   std::vector<Real_t> m_ydd ;
-   std::vector<Real_t> m_zdd ;
+   laik_vector_overlapping<double> m_xdd ; /* accelerations */
+   laik_vector_overlapping<double> m_ydd ;
+   laik_vector_overlapping<double> m_zdd ;
 
    laik_vector_overlapping<double> m_fx ;  /* forces */
    laik_vector_overlapping<double> m_fy ;
