@@ -173,14 +173,14 @@ class Domain {
       m_nodelist.resize(8*numElem);
 
       // elem connectivities through face
-      m_lxim.resize(numElem);
-      m_lxip.resize(numElem);
-      m_letam.resize(numElem);
-      m_letap.resize(numElem);
-      m_lzetam.resize(numElem);
-      m_lzetap.resize(numElem);
+      m_lxim.resize(numRanks*numElem);
+      m_lxip.resize(numRanks*numElem);
+      m_letam.resize(numRanks*numElem);
+      m_letap.resize(numRanks*numElem);
+      m_lzetam.resize(numRanks*numElem);
+      m_lzetap.resize(numRanks*numElem);
 
-      m_elemBC.resize(numElem);
+      m_elemBC.resize(numRanks*numElem);
 
       m_e.resize(numRanks*numElem);
       m_p.resize(numRanks*numElem);
@@ -507,14 +507,14 @@ class Domain {
    std::vector<Index_t>  m_nodelist ;     /* elemToNode connectivity */
    laik_vector_halo<double> m_element_test ;
 
-   std::vector<Index_t>  m_lxim ;  /* element connectivity across each face */
-   std::vector<Index_t>  m_lxip ;
-   std::vector<Index_t>  m_letam ;
-   std::vector<Index_t>  m_letap ;
-   std::vector<Index_t>  m_lzetam ;
-   std::vector<Index_t>  m_lzetap ;
+   laik_vector_halo<int>  m_lxim ;  /* element connectivity across each face */
+   laik_vector_halo<int>  m_lxip ;
+   laik_vector_halo<int>  m_letam ;
+   laik_vector_halo<int>  m_letap ;
+   laik_vector_halo<int>  m_lzetam ;
+   laik_vector_halo<int>  m_lzetap ;
 
-   std::vector<Int_t>    m_elemBC ;  /* symmetry/free-surface flags for each elem face */
+   laik_vector_halo<int>    m_elemBC ;  /* symmetry/free-surface flags for each elem face */
 
    laik_vector_halo<double> m_dxx ;  /* principal strains -- temporary */
    laik_vector_halo<double> m_dyy ;
