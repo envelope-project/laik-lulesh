@@ -36,10 +36,10 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    m_xdd(inst, world, nodes, overlapping, overlapping, LAIK_RO_Min),
    m_ydd(inst, world, nodes, overlapping, overlapping, LAIK_RO_Min),
    m_zdd(inst, world, nodes, overlapping, overlapping, LAIK_RO_Min),
-   m_fx(inst, world, nodes, overlapping, overlapping),
-   m_fy(inst, world, nodes, overlapping, overlapping),
-   m_fz(inst, world, nodes, overlapping, overlapping),
-   m_nodalMass(inst, world, nodes, overlapping, overlapping),
+   m_fx(inst, world, nodes, overlapping, 0),
+   m_fy(inst, world, nodes, overlapping, 0),
+   m_fz(inst, world, nodes, overlapping, 0),
+   m_nodalMass(inst, world, nodes, overlapping, 0),
    m_dxx(inst, world, elems, exclusive, halo),
    m_dyy(inst, world, elems, exclusive, halo),
    m_dzz(inst, world, elems, exclusive, halo),
@@ -91,12 +91,14 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    m_refdens(Real_t(1.0))
 {
 
-   init_domain(rowLoc, balance, cost, colLoc, nr, nx, tp, numRanks, planeLoc);
+   init_domain(numRanks,colLoc, rowLoc, planeLoc, nx, tp, nr, balance, cost);
 
 } // End constructor
 
 ////////////////////////////////////////////////////////////////////////////////
-void Domain::init_domain(Index_t rowLoc, int balance, Int_t cost, Index_t colLoc, int nr, Index_t nx, int tp, Int_t numRanks, Index_t planeLoc)
+void Domain::init_domain(Int_t numRanks, Index_t colLoc,
+                         Index_t rowLoc, Index_t planeLoc,
+                         Index_t nx, Int_t tp, Int_t nr, Int_t balance, Int_t cost)
 {
     Index_t edgeElems = nx ;
     Index_t edgeNodes = edgeElems+1 ;
@@ -261,7 +263,9 @@ void Domain::init_domain(Index_t rowLoc, int balance, Int_t cost, Index_t colLoc
     deltatime() = (Real_t(.5)*cbrt(volo(0)))/sqrt(Real_t(2.0)*einit);
 }
 ////////////////////////////////////////////////////////////////////////////////
-void Domain::re_init_domain(Index_t rowLoc, int balance, Int_t cost, Index_t colLoc, int nr, Index_t nx, int tp, Int_t numRanks, Index_t planeLoc)
+void Domain::re_init_domain(Int_t numRanks, Index_t colLoc,
+                            Index_t rowLoc, Index_t planeLoc,
+                            Index_t nx, Int_t tp, Int_t nr, Int_t balance, Int_t cost)
 {
     Index_t edgeElems = nx ;
     Index_t edgeNodes = edgeElems+1 ;
@@ -289,6 +293,7 @@ void Domain::re_init_domain(Index_t rowLoc, int balance, Int_t cost, Index_t col
 
     //m_regNumList = new Index_t[numElem()] ;  // material indexset
     m_regNumList.resize(numElem()); // material indexset
+    m_nodelist.resize(8*numElem());
 
     SetupCommBuffers(edgeNodes);
 

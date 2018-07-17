@@ -56,7 +56,7 @@ template <typename T>
 void laik_vector<T>::test_print(){
     T *base;
     uint64_t count;
-    int nSlices = laik_my_slicecount(p2);
+    int nSlices = laik_my_slicecount(p1);
     for (size_t s = 0; s < nSlices; s++)
     {
         laik_map_def(data, s, (void**) &base, &count);
@@ -66,6 +66,34 @@ void laik_vector<T>::test_print(){
         }
         laik_log(Laik_LogLevel(2),"\n");
     }
+}
+
+template <typename T>
+void laik_vector_halo<T>::migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2){
+    uint64_t cnt;
+    int* base;
+    int slice = 0;
+
+    laik_switchto_partitioning(data, p1, LAIK_DF_None, LAIK_RO_None);
+    laik_switchto_partitioning(data, p_new_1, LAIK_DF_Preserve, LAIK_RO_None);
+    this -> state = 1;
+
+    this -> p1=p_new_1;
+    this -> p2=p_new_2;
+    this -> world = new_group;
+    if (laik_myid(world)<0)
+        return ;
+
+    int nSlices = laik_my_slicecount(p1);
+    for (int n = 0; n < nSlices; n++)
+    {
+        laik_map_def(data, n, (void **)&base, &cnt);
+    }
+    laik_switchto_partitioning(data, p2, LAIK_DF_Preserve, LAIK_RO_None);
+
+    this -> state = 0;
+    this -> count = cnt;
+    this -> calculate_pointers();
 }
 
 // ////////////////////////////////////////////////////////////////////////
@@ -420,6 +448,32 @@ void laik_vector_overlapping<T>::switch_to_read_phase(){
     laik_exec_actions(asR);
     //laik_exec_transition(data,toR);
     //laik_switchto_phase(data, p1, LAIK_DF_CopyIn);
+}
+
+template <typename T>
+void laik_vector_overlapping<T>::migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2){
+    uint64_t cnt;
+    int* base;
+    int slice = 0;
+
+    laik_switchto_partitioning(data, p1, LAIK_DF_None, LAIK_RO_Min);
+    laik_switchto_partitioning(data, p_new_1, LAIK_DF_Preserve, LAIK_RO_Min);
+
+    this -> p1=p_new_1;
+    this -> p2=p_new_2;
+    this -> world = new_group;
+    if (laik_myid(world)<0)
+        return ;
+
+    int nSlices = laik_my_slicecount(p1);
+    for (int n = 0; n < nSlices; n++)
+    {
+        laik_map_def(data, n, (void **)&base, &cnt);
+    }
+    laik_switchto_partitioning(data, p2, LAIK_DF_Preserve, LAIK_RO_Min);
+
+    this -> count = cnt;
+    this -> calculate_pointers();
 }
 
 template class laik_vector<double>;

@@ -2848,19 +2848,28 @@ int main(int argc, char *argv[])
 //      std::cout << "region" << i + 1<< "size" << locDom->regElemSize(i) <<std::endl;
    while((locDom->time() < locDom->stoptime()) && (locDom->cycle() < opts.its)) {
 
-
        // shrinking the task group from 8->1
        // do it only for 8 -> 1
        // and do it once in the 5th iteration
        // so far de activated
 
-       if (laik_size(world)==8 && locDom->cycle() == 5)
+       if (laik_size(world)==64 && locDom->cycle() == 5)
        {
            laik_log((Laik_LogLevel)2,"Before repart\n" );
 
-           int removeList[7] = {1,2,3,4,5,6,7};
-           Laik_Group* shrinked_group = laik_new_shrinked_group(world, 7, removeList);
-           locDom->re_distribute_data_structures(shrinked_group);
+           //int removeList[7] = {1,2,3,4,5,6,7};
+           int removeList[63];
+           for (int i = 0; i < 56; ++i) {
+               removeList[i]=i+8;
+           }
+           Laik_Group* shrinked_group = laik_new_shrinked_group(world, 56, removeList);
+
+           exclusivePartitioning = laik_new_partitioning(exclusive_partitioner(), shrinked_group, indexSpaceElements, 0);
+           haloPartitioning = laik_new_partitioning(overlaping_partitioner(halo_depth), shrinked_group, indexSpaceElements, exclusivePartitioning);
+           overlapingPartitioning =laik_new_partitioning(overlaping_reduction_partitioner(halo_depth),
+                                           shrinked_group, indexSpaceNodes, 0);
+
+           locDom->re_distribute_data_structures(shrinked_group, exclusivePartitioning, haloPartitioning, overlapingPartitioning);
            world = shrinked_group;
            if (laik_myid(world)==-1) {
                //laik_finalize(inst);
@@ -2871,7 +2880,9 @@ int main(int argc, char *argv[])
            InitMeshDecomp(laik_size(world), laik_myid(world), &col, &row, &plane, &side);
            locDom -> re_init_domain(laik_size(world), col, row, plane, 2*opts.nx,
            side, opts.numReg, opts.balance, opts.cost);
-           locDom->re_calculate_pointers();
+           locDom-> re_calculate_pointers();
+           locDom-> re_init_domain(numRanks, col, row, plane, opts.nx, side, opts.numReg, opts.balance, opts.cost);
+
            laik_log((Laik_LogLevel)2,"After repart\n");
        }
 

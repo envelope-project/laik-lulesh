@@ -15,9 +15,10 @@ public:
  Laik_Partitioning *p1, Laik_Partitioning *p2, Laik_ReductionOperation operation = LAIK_RO_None);
     void resize(int count);
     inline T& operator [](int idx);
-    void calculate_pointers();
+    virtual void calculate_pointers() = 0;
     void switch_to_write_phase();
     void switch_to_read_phase();
+    virtual void migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning*  p_new_2) = 0;
     void test_print();
 
 protected:
@@ -51,6 +52,7 @@ public:
     void resize(int count);
     void switch_to_write_phase();
     void switch_to_read_phase();
+    void migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning*  p_new_2);
 
 protected:
     using laik_vector<T>::inst;
@@ -88,6 +90,7 @@ public:
     void resize(int count);
     void switch_to_write_phase();
     void switch_to_read_phase();
+    void migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning*  p_new_2);
 
 protected:
     using laik_vector<T>::inst;

@@ -186,7 +186,7 @@ void runOverlapingPartitioner(Laik_Partitioner* pr,
 Laik_Partitioner* overlaping_partitioner(int &depth)
 {
     //void* data = (void*) &depth;
-    return laik_new_partitioner("overlaping", runOverlapingPartitioner,
+    return laik_new_partitioner("halo", runOverlapingPartitioner,
                                 (void*) &depth, LAIK_PF_Merge);
 }
 
