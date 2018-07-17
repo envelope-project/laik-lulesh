@@ -22,53 +22,54 @@ extern "C"{
 Domain::Domain(Int_t numRanks, Index_t colLoc,
                Index_t rowLoc, Index_t planeLoc,
                Index_t nx, int tp, int nr, int balance, Int_t cost,
-               Laik_Instance *inst, Laik_Group *world)
+               Laik_Instance *inst, Laik_Group *world, Laik_Space* elems, Laik_Space* nodes,
+               Laik_Partitioning *exclusive, Laik_Partitioning *halo, Laik_Partitioning *overlapping)
    :
    inst(inst),
    world(world),
-   m_x(inst, world, LAIK_RO_Min),
-   m_y(inst, world, LAIK_RO_Min),
-   m_z(inst, world, LAIK_RO_Min),
-   m_xd(inst, world, LAIK_RO_Min),
-   m_yd(inst, world, LAIK_RO_Min),
-   m_zd(inst, world, LAIK_RO_Min),
-   m_xdd(inst, world, LAIK_RO_Min),
-   m_ydd(inst, world, LAIK_RO_Min),
-   m_zdd(inst, world, LAIK_RO_Min),
-   m_fx(inst, world),
-   m_fy(inst, world),
-   m_fz(inst, world),
-   m_nodalMass(inst, world),
-   m_dxx(inst, world),
-   m_dyy(inst, world),
-   m_dzz(inst, world),
-   m_delv_xi(inst, world),
-   m_delv_eta(inst, world),
-   m_delv_zeta(inst, world),
-   m_delx_xi(inst, world),
-   m_delx_eta(inst, world),
-   m_delx_zeta(inst, world),
-   m_element_test(inst, world),
-   m_lxim(inst, world),
-   m_lxip(inst, world),
-   m_letam(inst, world),
-   m_letap(inst, world),
-   m_lzetam(inst, world),
-   m_lzetap(inst, world),
-   m_elemBC(inst, world),
-   m_e(inst, world),
-   m_p(inst, world),
-   m_q(inst, world),
-   m_ql(inst, world),
-   m_qq(inst, world),
-   m_v(inst, world),
-   m_volo(inst, world),
-   m_vnew(inst, world),
-   m_delv(inst, world),
-   m_vdov(inst, world),
-   m_arealg(inst, world),
-   m_ss(inst, world),
-   m_elemMass(inst, world),
+   m_x(inst, world, nodes, overlapping, overlapping, LAIK_RO_Min),
+   m_y(inst, world, nodes, overlapping, overlapping, LAIK_RO_Min),
+   m_z(inst, world, nodes, overlapping, overlapping, LAIK_RO_Min),
+   m_xd(inst, world, nodes, overlapping, overlapping, LAIK_RO_Min),
+   m_yd(inst, world, nodes, overlapping, overlapping, LAIK_RO_Min),
+   m_zd(inst, world, nodes, overlapping, overlapping, LAIK_RO_Min),
+   m_xdd(inst, world, nodes, overlapping, overlapping, LAIK_RO_Min),
+   m_ydd(inst, world, nodes, overlapping, overlapping, LAIK_RO_Min),
+   m_zdd(inst, world, nodes, overlapping, overlapping, LAIK_RO_Min),
+   m_fx(inst, world, nodes, overlapping, overlapping),
+   m_fy(inst, world, nodes, overlapping, overlapping),
+   m_fz(inst, world, nodes, overlapping, overlapping),
+   m_nodalMass(inst, world, nodes, overlapping, overlapping),
+   m_dxx(inst, world, elems, exclusive, halo),
+   m_dyy(inst, world, elems, exclusive, halo),
+   m_dzz(inst, world, elems, exclusive, halo),
+   m_delv_xi(inst, world, elems, exclusive, halo),
+   m_delv_eta(inst, world, elems, exclusive, halo),
+   m_delv_zeta(inst, world, elems, exclusive, halo),
+   m_delx_xi(inst, world, elems, exclusive, halo),
+   m_delx_eta(inst, world, elems, exclusive, halo),
+   m_delx_zeta(inst, world, elems, exclusive, halo),
+   m_element_test(inst, world, elems, exclusive, halo),
+   m_lxim(inst, world, elems, exclusive, halo),
+   m_lxip(inst, world, elems, exclusive, halo),
+   m_letam(inst, world, elems, exclusive, halo),
+   m_letap(inst, world, elems, exclusive, halo),
+   m_lzetam(inst, world, elems, exclusive, halo),
+   m_lzetap(inst, world, elems, exclusive, halo),
+   m_elemBC(inst, world, elems, exclusive, halo),
+   m_e(inst, world, elems, exclusive, halo),
+   m_p(inst, world, elems, exclusive, halo),
+   m_q(inst, world, elems, exclusive, halo),
+   m_ql(inst, world, elems, exclusive, halo),
+   m_qq(inst, world, elems, exclusive, halo),
+   m_v(inst, world, elems, exclusive, halo),
+   m_volo(inst, world, elems, exclusive, halo),
+   m_vnew(inst, world, elems, exclusive, halo),
+   m_delv(inst, world, elems, exclusive, halo),
+   m_vdov(inst, world, elems, exclusive, halo),
+   m_arealg(inst, world, elems, exclusive, halo),
+   m_ss(inst, world, elems, exclusive, halo),
+   m_elemMass(inst, world, elems, exclusive, halo),
    m_e_cut(Real_t(1.0e-7)),
    m_p_cut(Real_t(1.0e-7)),
    m_q_cut(Real_t(1.0e-7)),
@@ -90,171 +91,232 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    m_refdens(Real_t(1.0))
 {
 
-   Index_t edgeElems = nx ;
-   Index_t edgeNodes = edgeElems+1 ;
-   this->cost() = cost;
-
-   m_tp       = tp ;
-   m_numRanks = numRanks ;
-
-   ///////////////////////////////
-   //   Initialize Sedov Mesh
-   ///////////////////////////////
-
-   // construct a uniform box for this processor
-
-   m_colLoc   =   colLoc ;
-   m_rowLoc   =   rowLoc ;
-   m_planeLoc = planeLoc ;
-
-   m_sizeX = edgeElems ;
-   m_sizeY = edgeElems ;
-   m_sizeZ = edgeElems ;
-   m_numElem = edgeElems*edgeElems*edgeElems ;
-
-   m_numNode = edgeNodes*edgeNodes*edgeNodes ;
-
-   //m_regNumList = new Index_t[numElem()] ;  // material indexset
-   m_regNumList.resize(numElem()); // material indexset
-
-   // Elem-centered 
-   AllocateElemPersistent(numElem(), numRanks) ;
-
-   // Node-centered 
-   AllocateNodePersistent(numNode(),numRanks) ;
-
-
-   Int_t allElem = numElem() +  /* local elem */
-            2*sizeX()*sizeY() + /* plane ghosts */
-            2*sizeX()*sizeZ() + /* row ghosts */
-            2*sizeY()*sizeZ() ; /* col ghosts */
-   // Element-centered gradients
-   AllocateGradients(numElem(), numRanks, allElem);
-
-   AllocateStrains(numElem());
-
-   SetupCommBuffers(edgeNodes);
-
-   // Basic Field Initialization 
-   for (Index_t i=0; i<numElem(); ++i) {
-      e(i) =  Real_t(0.0) ;
-      p(i) =  Real_t(0.0) ;
-      q(i) =  Real_t(0.0) ;
-      ss(i) = Real_t(0.0) ;
-   }
-
-   // Note - v initializes to 1.0, not 0.0!
-   for (Index_t i=0; i<numElem(); ++i) {
-      v(i) = Real_t(1.0) ;
-   }
-
-   for (Index_t i=0; i<numNode(); ++i) {
-      xd(i) = Real_t(0.0) ;
-      yd(i) = Real_t(0.0) ;
-      zd(i) = Real_t(0.0) ;
-   }
-
-   for (Index_t i=0; i<numNode(); ++i) {
-      xdd(i) = Real_t(0.0) ;
-      ydd(i) = Real_t(0.0) ;
-      zdd(i) = Real_t(0.0) ;
-   }
-
-   for (Index_t i=0; i<numNode(); ++i) {
-      nodalMass(i) = Real_t(0.0) ;
-   }
-   BuildMesh(nx, edgeNodes, edgeElems);
-
-#if _OPENMP
-   SetupThreadSupportStructures();
-#else
-   // These arrays are not used if we're not threaded
-   m_nodeElemStart = NULL;
-   m_nodeElemCornerList = NULL;
-#endif
-
-   // Setup region index sets. For now, these are constant sized
-   // throughout the run, but could be changed every cycle to 
-   // simulate effects of ALE on the lagrange solver
-   CreateRegionIndexSets(nr, balance);
-
-   // Setup symmetry nodesets
-   SetupSymmetryPlanes(edgeNodes);
-
-   // Setup element connectivities
-   SetupElementConnectivities(edgeElems);
-
-   // Setup symmetry planes and free surface boundary arrays
-   SetupBoundaryConditions(edgeElems);
-
-
-   // Setup defaults
-
-   // These can be changed (requires recompile) if you want to run
-   // with a fixed timestep, or to a different end time, but it's
-   // probably easier/better to just run a fixed number of timesteps
-   // using the -i flag in 2.x
-
-   dtfixed() = Real_t(-1.0e-6) ; // Negative means use courant condition
-   stoptime()  = Real_t(1.0e-2); // *Real_t(edgeElems*tp/45.0) ;
-
-   // Initial conditions
-   deltatimemultlb() = Real_t(1.1) ;
-   deltatimemultub() = Real_t(1.2) ;
-   dtcourant() = Real_t(1.0e+20) ;
-   dthydro()   = Real_t(1.0e+20) ;
-   dtmax()     = Real_t(1.0e-2) ;
-   time()    = Real_t(0.) ;
-   cycle()   = Int_t(0) ;
-
-   // initialize field data 
-   m_nodalMass.switch_to_write_phase();
-   for (Index_t i=0; i<numElem(); ++i) {
-      Real_t x_local[8], y_local[8], z_local[8] ;
-      Index_t *elemToNode = nodelist(i) ;
-      for( Index_t lnode=0 ; lnode<8 ; ++lnode )
-      {
-        Index_t gnode = elemToNode[lnode];
-        x_local[lnode] = x(gnode);
-        y_local[lnode] = y(gnode);
-        z_local[lnode] = z(gnode);
-      }
-
-      // volume calculations
-      Real_t volume = CalcElemVolume(x_local, y_local, z_local );
-      volo(i) = volume ;
-      elemMass(i) = volume ;
-      for (Index_t j=0; j<8; ++j) {
-         Index_t idx = elemToNode[j] ;
-         nodalMass(idx) += volume / Real_t(8.0) ;
-      }
-   }
-   m_nodalMass.switch_to_read_phase();
-   //m_nodalMass.switch_to_write_phase();
-
-    m_element_test.switch_to_write_phase();
-    for (Index_t i=0; i<numElem(); ++i) {
-       testVectorElement(i)=colLoc + rowLoc*tp + planeLoc*tp*tp; // TEST
-    }
-    m_element_test.switch_to_read_phase();
-
-   // deposit initial energy
-   // An energy of 3.948746e+7 is correct for a problem with
-   // 45 zones along a side - we need to scale it
-   const Real_t ebase = Real_t(3.948746e+7);
-   Real_t scale = (nx*m_tp)/Real_t(45.0);
-   Real_t einit = ebase*scale*scale*scale;
-   if (m_rowLoc + m_colLoc + m_planeLoc == 0) {
-      // Dump into the first zone (which we know is in the corner)
-      // of the domain that sits at the origin
-      e(0) = einit;
-   }
-   //set initial deltatime base on analytic CFL calculation
-   deltatime() = (Real_t(.5)*cbrt(volo(0)))/sqrt(Real_t(2.0)*einit);
+   init_domain(rowLoc, balance, cost, colLoc, nr, nx, tp, numRanks, planeLoc);
 
 } // End constructor
 
+////////////////////////////////////////////////////////////////////////////////
+void Domain::init_domain(Index_t rowLoc, int balance, Int_t cost, Index_t colLoc, int nr, Index_t nx, int tp, Int_t numRanks, Index_t planeLoc)
+{
+    Index_t edgeElems = nx ;
+    Index_t edgeNodes = edgeElems+1 ;
+    this->cost() = cost;
 
+    m_tp       = tp ;
+    m_numRanks = numRanks ;
+
+    ///////////////////////////////
+    //   Initialize Sedov Mesh
+    ///////////////////////////////
+
+    // construct a uniform box for this processor
+
+    m_colLoc   =   colLoc ;
+    m_rowLoc   =   rowLoc ;
+    m_planeLoc = planeLoc ;
+
+    m_sizeX = edgeElems ;
+    m_sizeY = edgeElems ;
+    m_sizeZ = edgeElems ;
+    m_numElem = edgeElems*edgeElems*edgeElems ;
+
+    m_numNode = edgeNodes*edgeNodes*edgeNodes ;
+
+    //m_regNumList = new Index_t[numElem()] ;  // material indexset
+    m_regNumList.resize(numElem()); // material indexset
+
+    // Elem-centered
+    AllocateElemPersistent(numElem(), numRanks) ;
+
+    // Node-centered
+    AllocateNodePersistent(numNode(),numRanks) ;
+
+
+    Int_t allElem = numElem() +  /* local elem */
+             2*sizeX()*sizeY() + /* plane ghosts */
+             2*sizeX()*sizeZ() + /* row ghosts */
+             2*sizeY()*sizeZ() ; /* col ghosts */
+    // Element-centered gradients
+    AllocateGradients(numElem(), numRanks, allElem);
+
+    AllocateStrains(numElem());
+
+    SetupCommBuffers(edgeNodes);
+
+    // Basic Field Initialization
+    for (Index_t i=0; i<numElem(); ++i) {
+       e(i) =  Real_t(0.0) ;
+       p(i) =  Real_t(0.0) ;
+       q(i) =  Real_t(0.0) ;
+       ss(i) = Real_t(0.0) ;
+    }
+
+    // Note - v initializes to 1.0, not 0.0!
+    for (Index_t i=0; i<numElem(); ++i) {
+       v(i) = Real_t(1.0) ;
+    }
+
+    for (Index_t i=0; i<numNode(); ++i) {
+       xd(i) = Real_t(0.0) ;
+       yd(i) = Real_t(0.0) ;
+       zd(i) = Real_t(0.0) ;
+    }
+
+    for (Index_t i=0; i<numNode(); ++i) {
+       xdd(i) = Real_t(0.0) ;
+       ydd(i) = Real_t(0.0) ;
+       zdd(i) = Real_t(0.0) ;
+    }
+
+    for (Index_t i=0; i<numNode(); ++i) {
+       nodalMass(i) = Real_t(0.0) ;
+    }
+    BuildMesh(nx, edgeNodes, edgeElems);
+
+ #if _OPENMP
+    SetupThreadSupportStructures();
+ #else
+    // These arrays are not used if we're not threaded
+    m_nodeElemStart = NULL;
+    m_nodeElemCornerList = NULL;
+ #endif
+
+    // Setup region index sets. For now, these are constant sized
+    // throughout the run, but could be changed every cycle to
+    // simulate effects of ALE on the lagrange solver
+    CreateRegionIndexSets(nr, balance);
+
+    // Setup symmetry nodesets
+    SetupSymmetryPlanes(edgeNodes);
+
+    // Setup element connectivities
+    SetupElementConnectivities(edgeElems);
+
+    // Setup symmetry planes and free surface boundary arrays
+    SetupBoundaryConditions(edgeElems);
+
+
+    // Setup defaults
+
+    // These can be changed (requires recompile) if you want to run
+    // with a fixed timestep, or to a different end time, but it's
+    // probably easier/better to just run a fixed number of timesteps
+    // using the -i flag in 2.x
+
+    dtfixed() = Real_t(-1.0e-6) ; // Negative means use courant condition
+    stoptime()  = Real_t(1.0e-2); // *Real_t(edgeElems*tp/45.0) ;
+
+    // Initial conditions
+    deltatimemultlb() = Real_t(1.1) ;
+    deltatimemultub() = Real_t(1.2) ;
+    dtcourant() = Real_t(1.0e+20) ;
+    dthydro()   = Real_t(1.0e+20) ;
+    dtmax()     = Real_t(1.0e-2) ;
+    time()    = Real_t(0.) ;
+    cycle()   = Int_t(0) ;
+
+    // initialize field data
+    m_nodalMass.switch_to_write_phase();
+    for (Index_t i=0; i<numElem(); ++i) {
+       Real_t x_local[8], y_local[8], z_local[8] ;
+       Index_t *elemToNode = nodelist(i) ;
+       for( Index_t lnode=0 ; lnode<8 ; ++lnode )
+       {
+         Index_t gnode = elemToNode[lnode];
+         x_local[lnode] = x(gnode);
+         y_local[lnode] = y(gnode);
+         z_local[lnode] = z(gnode);
+       }
+
+       // volume calculations
+       Real_t volume = CalcElemVolume(x_local, y_local, z_local );
+       volo(i) = volume ;
+       elemMass(i) = volume ;
+       for (Index_t j=0; j<8; ++j) {
+          Index_t idx = elemToNode[j] ;
+          nodalMass(idx) += volume / Real_t(8.0) ;
+       }
+    }
+    m_nodalMass.switch_to_read_phase();
+    //m_nodalMass.switch_to_write_phase();
+
+     m_element_test.switch_to_write_phase();
+     for (Index_t i=0; i<numElem(); ++i) {
+        testVectorElement(i)=colLoc + rowLoc*tp + planeLoc*tp*tp; // TEST
+     }
+     m_element_test.switch_to_read_phase();
+
+    // deposit initial energy
+    // An energy of 3.948746e+7 is correct for a problem with
+    // 45 zones along a side - we need to scale it
+    const Real_t ebase = Real_t(3.948746e+7);
+    Real_t scale = (nx*m_tp)/Real_t(45.0);
+    Real_t einit = ebase*scale*scale*scale;
+    if (m_rowLoc + m_colLoc + m_planeLoc == 0) {
+       // Dump into the first zone (which we know is in the corner)
+       // of the domain that sits at the origin
+       e(0) = einit;
+    }
+    //set initial deltatime base on analytic CFL calculation
+    deltatime() = (Real_t(.5)*cbrt(volo(0)))/sqrt(Real_t(2.0)*einit);
+}
+////////////////////////////////////////////////////////////////////////////////
+void Domain::re_init_domain(Index_t rowLoc, int balance, Int_t cost, Index_t colLoc, int nr, Index_t nx, int tp, Int_t numRanks, Index_t planeLoc)
+{
+    Index_t edgeElems = nx ;
+    Index_t edgeNodes = edgeElems+1 ;
+    this->cost() = cost;
+
+    m_tp       = tp ;
+    m_numRanks = numRanks ;
+
+    ///////////////////////////////
+    //   Initialize Sedov Mesh
+    ///////////////////////////////
+
+    // construct a uniform box for this processor
+
+    m_colLoc   =   colLoc ;
+    m_rowLoc   =   rowLoc ;
+    m_planeLoc = planeLoc ;
+
+    m_sizeX = edgeElems ;
+    m_sizeY = edgeElems ;
+    m_sizeZ = edgeElems ;
+    m_numElem = edgeElems*edgeElems*edgeElems ;
+
+    m_numNode = edgeNodes*edgeNodes*edgeNodes ;
+
+    //m_regNumList = new Index_t[numElem()] ;  // material indexset
+    m_regNumList.resize(numElem()); // material indexset
+
+    SetupCommBuffers(edgeNodes);
+
+    BuildMesh(nx, edgeNodes, edgeElems);
+
+ #if _OPENMP
+    SetupThreadSupportStructures();
+ #else
+    // These arrays are not used if we're not threaded
+    m_nodeElemStart = NULL;
+    m_nodeElemCornerList = NULL;
+ #endif
+
+    // Setup region index sets. For now, these are constant sized
+    // throughout the run, but could be changed every cycle to
+    // simulate effects of ALE on the lagrange solver
+    CreateRegionIndexSets(nr, balance);
+
+    // Setup symmetry nodesets
+    SetupSymmetryPlanes(edgeNodes);
+
+    // Setup element connectivities
+    SetupElementConnectivities(edgeElems);
+
+    // Setup symmetry planes and free surface boundary arrays
+    SetupBoundaryConditions(edgeElems);
+
+}
 ////////////////////////////////////////////////////////////////////////////////
 void
 Domain::BuildMesh(Int_t nx, Int_t edgeNodes, Int_t edgeElems)
@@ -310,8 +372,6 @@ Domain::BuildMesh(Int_t nx, Int_t edgeNodes, Int_t edgeElems)
     nidx += edgeNodes ;
   }
 }
-
-
 ////////////////////////////////////////////////////////////////////////////////
 void
 Domain::SetupThreadSupportStructures()

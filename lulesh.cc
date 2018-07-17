@@ -2791,17 +2791,28 @@ int main(int argc, char *argv[])
    Int_t col, row, plane, side;
    InitMeshDecomp(numRanks, myRank, &col, &row, &plane, &side);
 
+   // run laik partitioners
+   int numElem = opts.nx * opts.nx * opts.nx;
+   int halo_depth = 1;
+   Laik_Space *indexSpaceElements = laik_new_space_1d(inst, numRanks*numElem);
+   Laik_Partitioning *exclusivePartitioning = laik_new_partitioning(exclusive_partitioner(), world, indexSpaceElements, 0);
+   Laik_Partitioning *haloPartitioning = laik_new_partitioning(overlaping_partitioner(halo_depth), world, indexSpaceElements, exclusivePartitioning);
+
+   int NumNodes=(opts.nx*side+1)*(opts.nx*side+1)*(opts.nx*side+1);
+   Laik_Space *indexSpaceNodes = laik_new_space_1d(inst, NumNodes);
+   Laik_Partitioning *overlapingPartitioning =laik_new_partitioning(overlaping_reduction_partitioner(halo_depth),
+                                world, indexSpaceNodes, 0);
+
    // Build the main data structure and initialize it
    //locDom = new Domain(numRanks, col, row, plane, opts.nx,
    //                    side, opts.numReg, opts.balance, opts.cost) ;
 
-
    // pass the laik inst and world to the domain
    locDom = new Domain(numRanks, col, row, plane, opts.nx,
                        side, opts.numReg, opts.balance, opts.cost,
-                       inst, world) ;
-
-
+                       inst, world,
+                       indexSpaceElements, indexSpaceNodes,
+                       exclusivePartitioning, haloPartitioning, overlapingPartitioning) ;
 
 #if USE_MPI
 
@@ -2837,13 +2848,40 @@ int main(int argc, char *argv[])
 //      std::cout << "region" << i + 1<< "size" << locDom->regElemSize(i) <<std::endl;
    while((locDom->time() < locDom->stoptime()) && (locDom->cycle() < opts.its)) {
 
-      TimeIncrement(*locDom) ;
-      LagrangeLeapFrog(*locDom) ;
 
-      if ((opts.showProg != 0) && (opts.quiet == 0) && (myRank == 0)) {
-         printf("cycle = %d, time = %e, dt=%e\n",
-                locDom->cycle(), double(locDom->time()), double(locDom->deltatime()) ) ;
-      }
+       // shrinking the task group from 8->1
+       // do it only for 8 -> 1
+       // and do it once in the 5th iteration
+       // so far de activated
+
+       if (laik_size(world)==8 && locDom->cycle() == 5)
+       {
+           laik_log((Laik_LogLevel)2,"Before repart\n" );
+
+           int removeList[7] = {1,2,3,4,5,6,7};
+           Laik_Group* shrinked_group = laik_new_shrinked_group(world, 7, removeList);
+           locDom->re_distribute_data_structures(shrinked_group);
+           world = shrinked_group;
+           if (laik_myid(world)==-1) {
+               //laik_finalize(inst);
+               break ;
+           }
+           laik_log((Laik_LogLevel)2,"My ID in main world: %d\n", laik_myid(world) );
+
+           InitMeshDecomp(laik_size(world), laik_myid(world), &col, &row, &plane, &side);
+           locDom -> re_init_domain(laik_size(world), col, row, plane, 2*opts.nx,
+           side, opts.numReg, opts.balance, opts.cost);
+           locDom->re_calculate_pointers();
+           laik_log((Laik_LogLevel)2,"After repart\n");
+       }
+
+       TimeIncrement(*locDom) ;
+       LagrangeLeapFrog(*locDom) ;
+
+       if ((opts.showProg != 0) && (opts.quiet == 0) && (myRank == 0)) {
+           printf("cycle = %d, time = %e, dt=%e\n",
+                  locDom->cycle(), double(locDom->time()), double(locDom->deltatime()) ) ;
+       }
    }
 
    // Use reduced max elapsed time

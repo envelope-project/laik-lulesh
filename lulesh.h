@@ -137,7 +137,13 @@ class Domain {
    Domain(Int_t numRanks, Index_t colLoc,
           Index_t rowLoc, Index_t planeLoc,
           Index_t nx, Int_t tp, Int_t nr, Int_t balance, Int_t cost,
-          Laik_Instance *inst, Laik_Group* world);
+          Laik_Instance *inst, Laik_Group* world,
+          Laik_Space* elems, Laik_Space* nodes,
+          Laik_Partitioning *exclusive, Laik_Partitioning *halo, Laik_Partitioning *overlapping);
+
+   void init_domain(Index_t rowLoc, int balance, Int_t cost, Index_t colLoc, int nr, Index_t nx, int tp, Int_t numRanks, Index_t planeLoc);
+
+   void re_init_domain(Index_t rowLoc, int balance, Int_t cost, Index_t colLoc, int nr, Index_t nx, int tp, Int_t numRanks, Index_t planeLoc);
 
    //
    // ALLOCATION
@@ -243,6 +249,20 @@ class Domain {
       //m_dzz.clear() ;
       //m_dyy.clear() ;
       //m_dxx.clear() ;
+   }
+
+   // lulesh-repartitioning
+   void re_distribute_data_structures(Laik_Group* shrinked_group){
+
+       // TODO call repartitioning for each data container
+
+       this -> world = shrinked_group;
+}
+
+   void re_calculate_pointers(){
+
+       //TODO call pointer calculation fo each data container
+
    }
    
    //

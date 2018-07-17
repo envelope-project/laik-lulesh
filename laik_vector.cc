@@ -5,9 +5,12 @@
 #include <type_traits>
 
 template <typename T>
-laik_vector<T>::laik_vector(Laik_Instance* inst, Laik_Group* world, Laik_ReductionOperation operation):reduction_operation(operation){
+laik_vector<T>::laik_vector(Laik_Instance* inst, Laik_Group* world, Laik_Space* indexSpace, Laik_Partitioning *p1, Laik_Partitioning *p2, Laik_ReductionOperation operation):reduction_operation(operation){
     this -> inst = inst;
     this -> world = world;
+    this-> indexSpace = indexSpace;
+    this -> p1 = p1;
+    this -> p2 = p2;
 
     int numRanks = laik_size(world);
     int myRank = laik_myid(world);
@@ -53,7 +56,7 @@ template <typename T>
 void laik_vector<T>::test_print(){
     T *base;
     uint64_t count;
-    int nSlices = laik_my_slicecount(haloPartitioning);
+    int nSlices = laik_my_slicecount(p2);
     for (size_t s = 0; s < nSlices; s++)
     {
         laik_map_def(data, s, (void**) &base, &count);
@@ -70,16 +73,13 @@ void laik_vector<T>::test_print(){
 // ////////////////////////////////////////////////////////////////////////
 template <typename T>
 laik_vector_halo<T>::laik_vector_halo(Laik_Instance *inst,
-                                   Laik_Group *world,Laik_ReductionOperation operation):laik_vector<T>(inst,world, operation){}
+                                   Laik_Group *world,
+                                      Laik_Space* indexSpace,
+                                      Laik_Partitioning *p1, Laik_Partitioning *p2, Laik_ReductionOperation operation):laik_vector<T>(inst,world, indexSpace, p1, p2, operation){}
 template <typename T>
 void laik_vector_halo<T>::resize(int count){
 
     size = count;
-    int halo_depth = 1;
-    indexSpace = laik_new_space_1d(inst, size);
-    exclusivePartitioning = laik_new_partitioning(exclusive_partitioner(), world, indexSpace, 0);
-    haloPartitioning = laik_new_partitioning(overlaping_partitioner(halo_depth), world, indexSpace, exclusivePartitioning);
-    overlapingPartitioning = 0;
 
     if (std::is_same <T, double>::value) {
         data = laik_new_data(indexSpace, laik_Double );
@@ -91,19 +91,19 @@ void laik_vector_halo<T>::resize(int count){
 
     // use the reservation API to precalculate the pointers
     Laik_Reservation* reservation = laik_reservation_new(data);
-    laik_reservation_add(reservation, haloPartitioning);
-    laik_reservation_add(reservation, exclusivePartitioning);
+    laik_reservation_add(reservation, p2);
+    laik_reservation_add(reservation, p1);
 
     laik_reservation_alloc(reservation);
     laik_data_use_reservation(data, reservation);
 
     // precalculate the transition object
     toR = laik_calc_transition(indexSpace,
-                                       exclusivePartitioning,
-                                       haloPartitioning, LAIK_DF_Preserve, reduction_operation);
+                                       p1,
+                                       p2, LAIK_DF_Preserve, reduction_operation);
     toW = laik_calc_transition(indexSpace,
-                                       haloPartitioning,
-                                       exclusivePartitioning, LAIK_DF_None, reduction_operation);
+                                       p2,
+                                       p1, LAIK_DF_None, reduction_operation);
 
     asR = laik_calc_actions(data, toR, reservation, reservation);
     asW = laik_calc_actions(data, toW, reservation, reservation);
@@ -113,14 +113,14 @@ void laik_vector_halo<T>::resize(int count){
     T* base;
 
     //laik_exec_transition(data, toExclusive);
-    laik_switchto_partitioning(data, exclusivePartitioning, LAIK_DF_None, reduction_operation);
-    int nSlices = laik_my_slicecount(exclusivePartitioning);
+    laik_switchto_partitioning(data, p1, LAIK_DF_None, reduction_operation);
+    int nSlices = laik_my_slicecount(p1);
     for (int n = 0; n < nSlices; ++n)
     {
        laik_map_def(data, n, (void **)&base, &cnt);
     }
     //laik_exec_transition(data, toHalo);
-    laik_switchto_partitioning(data, haloPartitioning, LAIK_DF_Preserve, reduction_operation);
+    laik_switchto_partitioning(data, p2, LAIK_DF_Preserve, reduction_operation);
 
     this -> count = cnt;
     this -> calculate_pointers();
@@ -274,13 +274,12 @@ T* laik_vector_halo<T>::calc_pointer(int idx, int state){
 
 template <typename T>
 void laik_vector_halo<T>::calculate_pointers(){
-    overlapping_pointers=0;
     int numElems = count*count*count;
-    exclusive_pointers= (T**) malloc (numElems * sizeof(T*));
-    laik_switchto_partitioning(data, exclusivePartitioning, LAIK_DF_None, reduction_operation);
+    pointer_cache= (T**) malloc (numElems * sizeof(T*));
+    laik_switchto_partitioning(data, p1, LAIK_DF_None, reduction_operation);
 
     for (int i = 0; i < numElems; ++i) {
-        exclusive_pointers [i] = calc_pointer(i,1);
+        pointer_cache [i] = calc_pointer(i,1);
     }
     // test
     /*
@@ -290,11 +289,11 @@ void laik_vector_halo<T>::calculate_pointers(){
     */
 
     int numElemsTotal = numElems + (b+f+d+u+l+r)*count*count;
-    halo_pointers= (T**) malloc (numElemsTotal * sizeof(T*));
-    laik_switchto_partitioning(data, haloPartitioning, LAIK_DF_Preserve, reduction_operation);
+    pointer_cache= (T**) malloc (numElemsTotal * sizeof(T*));
+    laik_switchto_partitioning(data, p2, LAIK_DF_Preserve, reduction_operation);
 
     for (int i = 0; i < numElemsTotal; ++i) {
-        halo_pointers [i] = calc_pointer(i,0);
+        pointer_cache [i] = calc_pointer(i,0);
     }
     // test
     /*
@@ -310,7 +309,7 @@ template <typename T>
 void laik_vector_halo<T>::switch_to_write_phase(){
     laik_exec_actions(asW);    
     //laik_exec_transition(data,toW);
-    //laik_switchto_phase(data, exclusivePartitioning, LAIK_DF_CopyOut);
+    //laik_switchto_phase(data, p1, LAIK_DF_CopyOut);
     state=1;
 }
 
@@ -318,7 +317,7 @@ template <typename T>
 void laik_vector_halo<T>::switch_to_read_phase(){
     laik_exec_actions(asR);    
     //laik_exec_transition(data,toR);
-    //laik_switchto_phase(data, haloPartitioning, LAIK_DF_CopyIn);
+    //laik_switchto_phase(data, p2, LAIK_DF_CopyIn);
     state=0;
 }
 
@@ -330,16 +329,13 @@ void laik_vector_halo<T>::switch_to_read_phase(){
 template <typename T>
 laik_vector_overlapping<T>::laik_vector_overlapping(Laik_Instance *inst,
                                                  Laik_Group*world,
-                                                    Laik_ReductionOperation operation):laik_vector<T>(inst,world, operation){}
+                                                    Laik_Space* indexSpace,
+                                                   Laik_Partitioning *p1, Laik_Partitioning *p2,
+                                                    Laik_ReductionOperation operation):laik_vector<T>(inst,world, indexSpace, p1, p2, operation){}
 template <typename T>
 void laik_vector_overlapping<T>::resize(int count){
+
     size = count;
-    int halo_depth = 1;
-    indexSpace = laik_new_space_1d(inst, size);
-    exclusivePartitioning = 0;
-    haloPartitioning = 0;
-    overlapingPartitioning =laik_new_partitioning(overlaping_reduction_partitioner(halo_depth),
-                                 world, indexSpace, 0);
 
     if (std::is_same <T, double>::value) {
         data = laik_new_data(indexSpace, laik_Double );
@@ -351,33 +347,33 @@ void laik_vector_overlapping<T>::resize(int count){
     // use the reservation API to precalculate the pointers
 
     Laik_Reservation* reservation = laik_reservation_new(data);
-    laik_reservation_add(reservation, overlapingPartitioning);
+    laik_reservation_add(reservation, p1);
 
     laik_reservation_alloc(reservation);
     laik_data_use_reservation(data, reservation);
 
     // precalculate the transition object
     toW = laik_calc_transition(indexSpace,
-                                       overlapingPartitioning, overlapingPartitioning,
+                                       p1, p1,
                                        LAIK_DF_Init, reduction_operation);
 
     toR = laik_calc_transition(indexSpace,
-                                       overlapingPartitioning, overlapingPartitioning,
+                                       p1, p1,
                                        LAIK_DF_Preserve, reduction_operation);
 
     asR = laik_calc_actions(data, toR, reservation, reservation);
     asW = laik_calc_actions(data, toW, reservation, reservation);
 
     // go through the slices to just allocate the memory
-    laik_switchto_partitioning(data, overlapingPartitioning, LAIK_DF_None, reduction_operation );
+    laik_switchto_partitioning(data, p1, LAIK_DF_None, reduction_operation );
     uint64_t cnt;
     T* base;
-    int nSlices = laik_my_slicecount(overlapingPartitioning);
+    int nSlices = laik_my_slicecount(p1);
     for (int n = 0; n < nSlices; ++n)
     {
        laik_map_def(data, n, (void **)&base, &cnt);
     }
-    laik_switchto_partitioning(data, overlapingPartitioning,  LAIK_DF_Preserve, reduction_operation);
+    laik_switchto_partitioning(data, p1,  LAIK_DF_Preserve, reduction_operation);
 
     this -> count = cnt;
     this -> calculate_pointers();
@@ -404,12 +400,10 @@ T* laik_vector_overlapping<T>::calc_pointer(int idx){
 
 template <typename T>
 void laik_vector_overlapping<T>::calculate_pointers(){
-    exclusive_pointers=0;
-    halo_pointers=0;
-    overlapping_pointers = (T**) malloc (size * sizeof(T*));
+    pointer_cache = (T**) malloc (size * sizeof(T*));
 
     for (int i = 0; i < size; ++i) {
-        overlapping_pointers [i] = calc_pointer(i);
+        pointer_cache [i] = calc_pointer(i);
     }
 }
 
@@ -417,7 +411,7 @@ template <typename T>
 void laik_vector_overlapping<T>::switch_to_write_phase(){
     laik_exec_actions(asW);
     //laik_exec_transition(data,toW);
-    //laik_switchto_phase(data, overlapingPartitioning, Laik_DataFlow
+    //laik_switchto_phase(data, p1, Laik_DataFlow
     //                    ( LAIK_DF_ReduceOut | LAIK_DF_Sum ) );
 }
 
@@ -425,7 +419,7 @@ template <typename T>
 void laik_vector_overlapping<T>::switch_to_read_phase(){
     laik_exec_actions(asR);
     //laik_exec_transition(data,toR);
-    //laik_switchto_phase(data, overlapingPartitioning, LAIK_DF_CopyIn);
+    //laik_switchto_phase(data, p1, LAIK_DF_CopyIn);
 }
 
 template class laik_vector<double>;
