@@ -201,7 +201,7 @@ void Release(T **ptr)
 /* Work Routines */
 
 static inline
-void TimeIncrement(Domain& domain)
+void TimeIncrement(Domain& domain, Laik_Data* laik_dt, Laik_Partitioning* allPartitioning, Real_t &gnewdt)
 {
    Real_t targetdt = domain.stoptime() - domain.time() ;
 
@@ -210,7 +210,7 @@ void TimeIncrement(Domain& domain)
       Real_t olddt = domain.deltatime() ;
 
       /* This will require a reduction in parallel */
-      Real_t gnewdt = Real_t(1.0e+20) ;
+      gnewdt = Real_t(1.0e+20) ;
       Real_t newdt ;
       if (domain.dtcourant() < gnewdt) {
          gnewdt = domain.dtcourant() / Real_t(2.0) ;
@@ -220,9 +220,15 @@ void TimeIncrement(Domain& domain)
       }
 
 #if USE_MPI      
+      /*
       MPI_Allreduce(&gnewdt, &newdt, 1,
                     ((sizeof(Real_t) == 4) ? MPI_FLOAT : MPI_DOUBLE),
                     MPI_MIN, MPI_COMM_WORLD) ;
+
+      */
+      laik_switchto_partitioning(laik_dt, allPartitioning, LAIK_DF_Preserve, LAIK_RO_Min);
+      newdt = gnewdt;
+
 #else
       newdt = gnewdt;
 #endif
@@ -2791,23 +2797,33 @@ int main(int argc, char *argv[])
    Int_t col, row, plane, side;
    InitMeshDecomp(numRanks, myRank, &col, &row, &plane, &side);
 
-   // run laik partitioners
+   // run laik_partitioners
+   // elemtns
    int numElem = opts.nx * opts.nx * opts.nx;
    int halo_depth = 1;
    Laik_Space *indexSpaceElements = laik_new_space_1d(inst, numRanks*numElem);
    Laik_Partitioning *exclusivePartitioning = laik_new_partitioning(exclusive_partitioner(), world, indexSpaceElements, 0);
    Laik_Partitioning *haloPartitioning = laik_new_partitioning(overlaping_partitioner(halo_depth), world, indexSpaceElements, exclusivePartitioning);
 
+   // nodes
    int NumNodes=(opts.nx*side+1)*(opts.nx*side+1)*(opts.nx*side+1);
    Laik_Space *indexSpaceNodes = laik_new_space_1d(inst, NumNodes);
    Laik_Partitioning *overlapingPartitioning =laik_new_partitioning(overlaping_reduction_partitioner(halo_depth),
                                 world, indexSpaceNodes, 0);
 
-   // Build the main data structure and initialize it
-   //locDom = new Domain(numRanks, col, row, plane, opts.nx,
-   //                    side, opts.numReg, opts.balance, opts.cost) ;
+   // time increamet reduction
+   Laik_Space* indexSapce_dt = laik_new_space_1d(inst, 1);
+   Laik_Partitioning * allPartitioning = laik_new_partitioning(laik_All, world, indexSapce_dt, 0);
+   Laik_Data* laik_dt = laik_new_data(indexSapce_dt, laik_Double);
 
-   // pass the laik inst and world to the domain
+   // for dt we need to send the base pointer of laik data to TimeIncrement to
+   // do perform the local updates and reduction at the end
+   laik_switchto_partitioning(laik_dt, allPartitioning, LAIK_DF_Init, LAIK_RO_Min);
+   uint64_t dt_count; double* dt_base;
+   laik_map_def1(laik_dt, (void**) &dt_base, &dt_count);
+
+   // Build the main data structure and initialize it
+   // pass the laik inst and world and partitionings to the domain
    locDom = new Domain(numRanks, col, row, plane, opts.nx,
                        side, opts.numReg, opts.balance, opts.cost,
                        inst, world,
@@ -2868,8 +2884,16 @@ int main(int argc, char *argv[])
            haloPartitioning = laik_new_partitioning(overlaping_partitioner(halo_depth), shrinked_group, indexSpaceElements, exclusivePartitioning);
            overlapingPartitioning =laik_new_partitioning(overlaping_reduction_partitioner(halo_depth),
                                            shrinked_group, indexSpaceNodes, 0);
+           allPartitioning = laik_new_partitioning(laik_All, shrinked_group, indexSapce_dt, 0);
 
+           // data migration for all the data structures
            locDom->re_distribute_data_structures(shrinked_group, exclusivePartitioning, haloPartitioning, overlapingPartitioning);
+
+           // only for dt, repartition and get the base pointer
+           laik_switchto_partitioning(laik_dt, allPartitioning, LAIK_DF_None, LAIK_RO_Min);
+           laik_switchto_partitioning(laik_dt, allPartitioning, LAIK_DF_Preserve, LAIK_RO_Min);
+           laik_map_def1(laik_dt, (void**) &dt_base, &dt_count);
+
            world = shrinked_group;
            if (laik_myid(world)==-1) {
                //laik_finalize(inst);
@@ -2881,12 +2905,11 @@ int main(int argc, char *argv[])
            locDom -> re_init_domain(laik_size(world), col, row, plane, 2*opts.nx,
            side, opts.numReg, opts.balance, opts.cost);
            locDom-> re_calculate_pointers();
-           locDom-> re_init_domain(numRanks, col, row, plane, opts.nx, side, opts.numReg, opts.balance, opts.cost);
 
            laik_log((Laik_LogLevel)2,"After repart\n");
        }
 
-       TimeIncrement(*locDom) ;
+       TimeIncrement(*locDom, laik_dt, allPartitioning, *dt_base) ;
        LagrangeLeapFrog(*locDom) ;
 
        if ((opts.showProg != 0) && (opts.quiet == 0) && (myRank == 0)) {
