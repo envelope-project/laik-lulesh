@@ -12,7 +12,7 @@ class laik_vector
 {
 public:
     laik_vector(Laik_Instance* inst, Laik_Group* world, Laik_Space* indexSpace,
- Laik_Partitioning *p1, Laik_Partitioning *p2, Laik_ReductionOperation operation = LAIK_RO_None);
+ Laik_Partitioning *p1, Laik_Partitioning *p2, Laik_Transition* t1, Laik_Transition* t2, Laik_ReductionOperation operation = LAIK_RO_None);
     void resize(int count);
     inline T& operator [](int idx);
     virtual void calculate_pointers() = 0;
@@ -45,7 +45,7 @@ template <typename T>
 class laik_vector_halo:public laik_vector<T>
 {
 public:
-    laik_vector_halo(Laik_Instance* inst, Laik_Group* world, Laik_Space* indexSpace, Laik_Partitioning *p1, Laik_Partitioning *p2, Laik_ReductionOperation operation = LAIK_RO_None);
+    laik_vector_halo(Laik_Instance* inst, Laik_Group* world, Laik_Space* indexSpace, Laik_Partitioning *p1, Laik_Partitioning *p2, Laik_Transition* t1, Laik_Transition* t2, Laik_ReductionOperation operation = LAIK_RO_None);
     inline T& operator [](int idx);
     T* calc_pointer(int idx, int state);
     void calculate_pointers();
@@ -83,7 +83,7 @@ template <typename T>
 class laik_vector_overlapping:public laik_vector<T>
 {
 public:
-    laik_vector_overlapping(Laik_Instance* inst, Laik_Group* world, Laik_Space* indexSpace, Laik_Partitioning *p1, Laik_Partitioning *p2, Laik_ReductionOperation operation = LAIK_RO_Sum);
+    laik_vector_overlapping(Laik_Instance* inst, Laik_Group* world, Laik_Space* indexSpace, Laik_Partitioning *p1, Laik_Partitioning *p2, Laik_Transition* t1, Laik_Transition* t2, Laik_ReductionOperation operation = LAIK_RO_Sum);
     inline T& operator [](int idx);
     T* calc_pointer(int idx);
     void calculate_pointers();

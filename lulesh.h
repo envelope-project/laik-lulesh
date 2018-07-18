@@ -139,7 +139,8 @@ class Domain {
           Index_t nx, Int_t tp, Int_t nr, Int_t balance, Int_t cost,
           Laik_Instance *inst, Laik_Group* world,
           Laik_Space* elems, Laik_Space* nodes,
-          Laik_Partitioning *exclusive, Laik_Partitioning *halo, Laik_Partitioning *overlapping);
+          Laik_Partitioning *exclusive, Laik_Partitioning *halo, Laik_Partitioning *overlapping,
+          Laik_Transition *transitionToExclusive, Laik_Transition *transitionToHalo, Laik_Transition *transitionToOverlappingInit,Laik_Transition * transitionToOverlappingReduce);
 
    void init_domain(Int_t numRanks, Index_t colLoc,
                     Index_t rowLoc, Index_t planeLoc,
