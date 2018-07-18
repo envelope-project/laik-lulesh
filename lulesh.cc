@@ -2901,16 +2901,16 @@ int main(int argc, char *argv[])
                                                          shrinked_group, indexSpaceNodes, 0);
            allPartitioning = laik_new_partitioning(laik_All, shrinked_group, indexSapce_dt, 0);
            // re-calculate the transition object
-           Laik_Transition *transitionToExclusive = laik_calc_transition(indexSpaceElements,
+           transitionToExclusive = laik_calc_transition(indexSpaceElements,
                                                                          haloPartitioning,
                                                                          exclusivePartitioning, LAIK_DF_None, LAIK_RO_None);
-           Laik_Transition *transitionToHalo = laik_calc_transition(indexSpaceElements,
+           transitionToHalo = laik_calc_transition(indexSpaceElements,
                                                                     exclusivePartitioning,
                                                                     haloPartitioning, LAIK_DF_Preserve, LAIK_RO_None);
-           Laik_Transition *transitionToOverlappingInit = laik_calc_transition(indexSpaceNodes,
+           transitionToOverlappingInit = laik_calc_transition(indexSpaceNodes,
                                                                                overlapingPartitioning, overlapingPartitioning,
                                                                                LAIK_DF_Init, LAIK_RO_Sum);
-           Laik_Transition *transitionToOverlappingReduce = laik_calc_transition(indexSpaceNodes,
+           transitionToOverlappingReduce = laik_calc_transition(indexSpaceNodes,
                                                                                  overlapingPartitioning, overlapingPartitioning,
                                                                                  LAIK_DF_Preserve, LAIK_RO_Sum);
            // data migration for all the data structures
