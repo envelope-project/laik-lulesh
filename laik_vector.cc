@@ -14,10 +14,13 @@ laik_vector<T>::laik_vector(Laik_Instance* inst, Laik_Group* world, Laik_Space* 
     this -> toW = t1;
     this -> toR = t2;
 
-    int numRanks = laik_size(world);
-    int myRank = laik_myid(world);
+    this -> init_config_params(world);
+}
+
+template <typename T>
+void laik_vector<T>::init_config_params(Laik_Group* group){
     int col, row, plane, side;
-    InitMeshDecomp(numRanks, myRank, &col, &row, &plane, &side);
+    InitMeshDecomp(laik_size(group), laik_myid(group), &col, &row, &plane, &side);
 
     b=1;
     f=1;
@@ -69,14 +72,16 @@ void laik_vector<T>::test_print(){
         laik_log(Laik_LogLevel(2),"\n");
     }
 }
-
+// ////////////////////////////////////////////////////////////////////////
+// implementation of laik_vector with halo partitioning (node partitioning)
+// ////////////////////////////////////////////////////////////////////////
 template <typename T>
 void laik_vector_halo<T>::migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2, Laik_Transition* t_new_1, Laik_Transition* t_new_2){
     uint64_t cnt;
     int* base;
     int slice = 0;
 
-
+    init_config_params(new_group);
 
     laik_switchto_partitioning(data, p1, LAIK_DF_None, LAIK_RO_None);
 
@@ -95,8 +100,6 @@ void laik_vector_halo<T>::migrate(Laik_Group* new_group, Laik_Partitioning* p_ne
 
     asW = laik_calc_actions(data, t_new_1, reservation, reservation);
     asR = laik_calc_actions(data, t_new_2, reservation, reservation);
-
-    this -> state = 1;
 
     this -> p1=p_new_1;
     this -> p2=p_new_2;
@@ -120,9 +123,7 @@ void laik_vector_halo<T>::migrate(Laik_Group* new_group, Laik_Partitioning* p_ne
     this -> calculate_pointers();
 }
 
-// ////////////////////////////////////////////////////////////////////////
-// implementation of laik_vector with halo partitioning (node partitioning)
-// ////////////////////////////////////////////////////////////////////////
+
 template <typename T>
 laik_vector_halo<T>::laik_vector_halo(Laik_Instance *inst,
                                    Laik_Group *world,
@@ -382,6 +383,7 @@ void laik_vector_overlapping<T>::resize(int count){
 
     size = count;
 
+
     if (std::is_same <T, double>::value) {
         data = laik_new_data(indexSpace, laik_Double );
 
@@ -458,6 +460,8 @@ void laik_vector_overlapping<T>::migrate(Laik_Group* new_group, Laik_Partitionin
     uint64_t cnt;
     int* base;
     int slice = 0;
+
+    init_config_params(new_group);
 
     laik_switchto_partitioning(data, p1, LAIK_DF_None, LAIK_RO_Min);
 

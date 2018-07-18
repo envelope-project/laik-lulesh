@@ -282,13 +282,6 @@ class Domain {
        m_delx_eta.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
        m_delx_zeta.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
        m_element_test.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
-       m_lxim.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
-       m_lxip.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
-       m_letam.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
-       m_letap.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
-       m_lzetam.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
-       m_lzetap.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
-       m_elemBC.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
        m_e.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
        m_p.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
        m_q.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);

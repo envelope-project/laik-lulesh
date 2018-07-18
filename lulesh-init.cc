@@ -289,6 +289,13 @@ void Domain::re_init_domain(Int_t numRanks, Index_t colLoc,
     //m_regNumList = new Index_t[numElem()] ;  // material indexset
     m_regNumList.resize(numElem()); // material indexset
     m_nodelist.resize(8*numElem());
+    m_lxim.resize(numElem());
+    m_lxip.resize(numElem());
+    m_letam.resize(numElem());
+    m_letap.resize(numElem());
+    m_lzetam.resize(numElem());
+    m_lzetap.resize(numElem());
+    m_elemBC.resize(numElem());
 
     SetupCommBuffers(edgeNodes);
 

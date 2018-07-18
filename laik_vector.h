@@ -20,6 +20,7 @@ public:
     void switch_to_read_phase();
     virtual void migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2, Laik_Transition* t_new_1, Laik_Transition* t_new_2) = 0;
     void test_print();
+    void init_config_params(Laik_Group* group);
 
 protected:
     Laik_Instance* inst;
@@ -77,6 +78,7 @@ protected:
     using laik_vector<T>::zero;
     using laik_vector<T>::pointer_cache;
     using laik_vector<T>::reduction_operation;
+    using laik_vector<T>::init_config_params;
 };
 
 template <typename T>
@@ -115,6 +117,7 @@ protected:
     using laik_vector<T>::zero;
     using laik_vector<T>::pointer_cache;
     using laik_vector<T>::reduction_operation;
+    using laik_vector<T>::init_config_params;
 };
 
 
