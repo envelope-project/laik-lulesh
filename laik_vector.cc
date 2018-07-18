@@ -398,16 +398,9 @@ void laik_vector_overlapping<T>::resize(int count){
 
     // go through the slices to just allocate the memory
     laik_switchto_partitioning(data, p1, LAIK_DF_None, reduction_operation );
-    uint64_t cnt;
-    T* base;
-    int nSlices = laik_my_slicecount(p1);
-    for (int n = 0; n < nSlices; ++n)
-    {
-       laik_map_def(data, n, (void **)&base, &cnt);
-    }
-    laik_switchto_partitioning(data, p1,  LAIK_DF_Preserve, reduction_operation);
-
-    this -> count = cnt;
+    Laik_TaskSlice* ts = laik_my_slice(p1, 0);
+    const Laik_Slice* s = laik_taskslice_get_slice(ts);
+    this -> count = laik_slice_size(s);
     this -> calculate_pointers();
 }
 
