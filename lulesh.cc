@@ -2898,11 +2898,23 @@ int main(int argc, char *argv[])
            exclusivePartitioning = laik_new_partitioning(exclusive_partitioner(), shrinked_group, indexSpaceElements, 0);
            haloPartitioning = laik_new_partitioning(overlaping_partitioner(halo_depth), shrinked_group, indexSpaceElements, exclusivePartitioning);
            overlapingPartitioning =laik_new_partitioning(overlaping_reduction_partitioner(halo_depth),
-                                           shrinked_group, indexSpaceNodes, 0);
+                                                         shrinked_group, indexSpaceNodes, 0);
            allPartitioning = laik_new_partitioning(laik_All, shrinked_group, indexSapce_dt, 0);
-
+           // re-calculate the transition object
+           Laik_Transition *transitionToExclusive = laik_calc_transition(indexSpaceElements,
+                                                                         haloPartitioning,
+                                                                         exclusivePartitioning, LAIK_DF_None, LAIK_RO_None);
+           Laik_Transition *transitionToHalo = laik_calc_transition(indexSpaceElements,
+                                                                    exclusivePartitioning,
+                                                                    haloPartitioning, LAIK_DF_Preserve, LAIK_RO_None);
+           Laik_Transition *transitionToOverlappingInit = laik_calc_transition(indexSpaceNodes,
+                                                                               overlapingPartitioning, overlapingPartitioning,
+                                                                               LAIK_DF_Init, LAIK_RO_Sum);
+           Laik_Transition *transitionToOverlappingReduce = laik_calc_transition(indexSpaceNodes,
+                                                                                 overlapingPartitioning, overlapingPartitioning,
+                                                                                 LAIK_DF_Preserve, LAIK_RO_Sum);
            // data migration for all the data structures
-           locDom->re_distribute_data_structures(shrinked_group, exclusivePartitioning, haloPartitioning, overlapingPartitioning);
+           locDom->re_distribute_data_structures(shrinked_group, exclusivePartitioning, haloPartitioning, overlapingPartitioning, transitionToExclusive, transitionToHalo, transitionToOverlappingInit, transitionToOverlappingReduce);
 
            // only for dt, repartition and get the base pointer
            laik_switchto_partitioning(laik_dt, allPartitioning, LAIK_DF_None, LAIK_RO_Min);

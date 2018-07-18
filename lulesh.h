@@ -257,51 +257,51 @@ class Domain {
    }
 
    // lulesh-repartitioning
-   void re_distribute_data_structures(Laik_Group* new_group, Laik_Partitioning* p_exclusive, Laik_Partitioning* p_halo, Laik_Partitioning* p_overlapping){
+   void re_distribute_data_structures(Laik_Group* new_group, Laik_Partitioning* p_exclusive, Laik_Partitioning* p_halo, Laik_Partitioning* p_overlapping, Laik_Transition *t_to_exclusive, Laik_Transition *t_to_halo, Laik_Transition *t_to_overlapping_init, Laik_Transition *t_to_overlapping_reduce){
 
-       m_x.migrate(new_group, p_overlapping, p_overlapping);
-       m_y.migrate(new_group, p_overlapping, p_overlapping);
-       m_z.migrate(new_group, p_overlapping, p_overlapping);
-       m_xd.migrate(new_group, p_overlapping, p_overlapping);
-       m_yd.migrate(new_group, p_overlapping, p_overlapping);
-       m_zd.migrate(new_group, p_overlapping, p_overlapping);
-       m_xdd.migrate(new_group, p_overlapping, p_overlapping);
-       m_ydd.migrate(new_group, p_overlapping, p_overlapping);
-       m_zdd.migrate(new_group, p_overlapping, p_overlapping);
-       m_fx.migrate(new_group, p_overlapping, p_overlapping);
-       m_fy.migrate(new_group, p_overlapping, p_overlapping);
-       m_fz.migrate(new_group, p_overlapping, p_overlapping);
-       m_nodalMass.migrate(new_group, p_overlapping, p_overlapping);
-       m_dxx.migrate(new_group, p_exclusive, p_halo);
-       m_dyy.migrate(new_group, p_exclusive, p_halo);
-       m_dzz.migrate(new_group, p_exclusive, p_halo);
-       m_delv_xi.migrate(new_group, p_exclusive, p_halo);
-       m_delv_eta.migrate(new_group, p_exclusive, p_halo);
-       m_delv_zeta.migrate(new_group, p_exclusive, p_halo);
-       m_delx_xi.migrate(new_group, p_exclusive, p_halo);
-       m_delx_eta.migrate(new_group, p_exclusive, p_halo);
-       m_delx_zeta.migrate(new_group, p_exclusive, p_halo);
-       m_element_test.migrate(new_group, p_exclusive, p_halo);
-       m_lxim.migrate(new_group, p_exclusive, p_halo);
-       m_lxip.migrate(new_group, p_exclusive, p_halo);
-       m_letam.migrate(new_group, p_exclusive, p_halo);
-       m_letap.migrate(new_group, p_exclusive, p_halo);
-       m_lzetam.migrate(new_group, p_exclusive, p_halo);
-       m_lzetap.migrate(new_group, p_exclusive, p_halo);
-       m_elemBC.migrate(new_group, p_exclusive, p_halo);
-       m_e.migrate(new_group, p_exclusive, p_halo);
-       m_p.migrate(new_group, p_exclusive, p_halo);
-       m_q.migrate(new_group, p_exclusive, p_halo);
-       m_ql.migrate(new_group, p_exclusive, p_halo);
-       m_qq.migrate(new_group, p_exclusive, p_halo);
-       m_v.migrate(new_group, p_exclusive, p_halo);
-       m_volo.migrate(new_group, p_exclusive, p_halo);
-       //m_vnew.migrate(new_group, p_exclusive, p_halo);
-       m_delv.migrate(new_group, p_exclusive, p_halo);
-       m_vdov.migrate(new_group, p_exclusive, p_halo);
-       m_arealg.migrate(new_group, p_exclusive, p_halo);
-       m_ss.migrate(new_group, p_exclusive, p_halo);
-       m_elemMass.migrate(new_group, p_exclusive, p_halo);
+       m_x.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
+       m_y.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
+       m_z.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
+       m_xd.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
+       m_yd.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
+       m_zd.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
+       m_xdd.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
+       m_ydd.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
+       m_zdd.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
+       m_fx.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
+       m_fy.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
+       m_fz.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
+       m_nodalMass.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
+       m_dxx.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       m_dyy.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       m_dzz.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       m_delv_xi.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       m_delv_eta.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       m_delv_zeta.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       m_delx_xi.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       m_delx_eta.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       m_delx_zeta.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       m_element_test.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       m_lxim.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       m_lxip.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       m_letam.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       m_letap.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       m_lzetam.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       m_lzetap.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       m_elemBC.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       m_e.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       m_p.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       m_q.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       m_ql.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       m_qq.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       m_v.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       m_volo.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       //m_vnew.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       m_delv.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       m_vdov.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       m_arealg.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       m_ss.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       m_elemMass.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
 
        //m_element_test.test_print();
 

@@ -71,10 +71,12 @@ void laik_vector<T>::test_print(){
 }
 
 template <typename T>
-void laik_vector_halo<T>::migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2){
+void laik_vector_halo<T>::migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2, Laik_Transition* t_new_1, Laik_Transition* t_new_2){
     uint64_t cnt;
     int* base;
     int slice = 0;
+
+
 
     laik_switchto_partitioning(data, p1, LAIK_DF_None, LAIK_RO_None);
 
@@ -84,14 +86,16 @@ void laik_vector_halo<T>::migrate(Laik_Group* new_group, Laik_Partitioning* p_ne
     laik_reservation_add(reservation, p_new_1);
     laik_reservation_alloc(reservation);
     laik_data_use_reservation(data, reservation);
-    asW = laik_calc_actions(data, toW, reservation, reservation);
-    asR = laik_calc_actions(data, toR, reservation, reservation);
+    asW = laik_calc_actions(data, t_new_1, reservation, reservation);
+    asR = laik_calc_actions(data, t_new_2, reservation, reservation);
 
     laik_switchto_partitioning(data, p_new_1, LAIK_DF_Preserve, LAIK_RO_None);
     this -> state = 1;
 
     this -> p1=p_new_1;
     this -> p2=p_new_2;
+    this -> toW=t_new_1;
+    this -> toR=t_new_2;
     this -> world = new_group;
     if (laik_myid(world)<0)
         return ;
@@ -451,7 +455,7 @@ void laik_vector_overlapping<T>::switch_to_read_phase(){
 }
 
 template <typename T>
-void laik_vector_overlapping<T>::migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2){
+void laik_vector_overlapping<T>::migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2, Laik_Transition* t_new_1, Laik_Transition* t_new_2){
     uint64_t cnt;
     int* base;
     int slice = 0;
@@ -462,13 +466,15 @@ void laik_vector_overlapping<T>::migrate(Laik_Group* new_group, Laik_Partitionin
     laik_reservation_add(reservation, p_new_1);
     laik_reservation_alloc(reservation);
     laik_data_use_reservation(data, reservation);
-    asW = laik_calc_actions(data, toW, reservation, reservation);
-    asR = laik_calc_actions(data, toR, reservation, reservation);
+    asW = laik_calc_actions(data, t_new_1, reservation, reservation);
+    asR = laik_calc_actions(data, t_new_2, reservation, reservation);
 
     laik_switchto_partitioning(data, p_new_1, LAIK_DF_Preserve, LAIK_RO_Min);
 
     this -> p1=p_new_1;
     this -> p2=p_new_2;
+    this -> toW=t_new_1;
+    this -> toR=t_new_2;
     this -> world = new_group;
     if (laik_myid(world)<0)
         return ;
