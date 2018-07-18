@@ -86,10 +86,16 @@ void laik_vector_halo<T>::migrate(Laik_Group* new_group, Laik_Partitioning* p_ne
     laik_reservation_add(reservation, p_new_1);
     laik_reservation_alloc(reservation);
     laik_data_use_reservation(data, reservation);
+
+    laik_switchto_partitioning(data, p_new_1, LAIK_DF_Preserve, LAIK_RO_None);
+
+    if (laik_myid(new_group)< 0) {
+        return;
+    }
+
     asW = laik_calc_actions(data, t_new_1, reservation, reservation);
     asR = laik_calc_actions(data, t_new_2, reservation, reservation);
 
-    laik_switchto_partitioning(data, p_new_1, LAIK_DF_Preserve, LAIK_RO_None);
     this -> state = 1;
 
     this -> p1=p_new_1;
@@ -459,10 +465,15 @@ void laik_vector_overlapping<T>::migrate(Laik_Group* new_group, Laik_Partitionin
     laik_reservation_add(reservation, p_new_1);
     laik_reservation_alloc(reservation);
     laik_data_use_reservation(data, reservation);
-    asW = laik_calc_actions(data, t_new_1, reservation, reservation);
-    asR = laik_calc_actions(data, t_new_2, reservation, reservation);
 
     laik_switchto_partitioning(data, p_new_1, LAIK_DF_Preserve, LAIK_RO_Min);
+
+    if (laik_myid(new_group)< 0) {
+        return;
+    }
+
+    asW = laik_calc_actions(data, t_new_1, reservation, reservation);
+    asR = laik_calc_actions(data, t_new_2, reservation, reservation);
 
     this -> p1=p_new_1;
     this -> p2=p_new_2;

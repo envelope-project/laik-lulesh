@@ -2884,16 +2884,17 @@ int main(int argc, char *argv[])
        // and do it once in the 5th iteration
        // so far de activated
 
-       if (laik_size(world)==64 && locDom->cycle() == 5)
+       if (laik_size(world)==8 && locDom->cycle() == 5)
        {
            laik_log((Laik_LogLevel)2,"Before repart\n" );
 
-           //int removeList[7] = {1,2,3,4,5,6,7};
-           int removeList[63];
-           for (int i = 0; i < 56; ++i) {
-               removeList[i]=i+8;
-           }
-           Laik_Group* shrinked_group = laik_new_shrinked_group(world, 56, removeList);
+           int removeList[7] = {1,2,3,4,5,6,7};
+           //int removeList[63];
+           //for (int i = 0; i < 56; ++i) {
+           //    removeList[i]=i+8;
+           //}
+           //Laik_Group* shrinked_group = laik_new_shrinked_group(world, 56, removeList);
+           Laik_Group* shrinked_group = laik_new_shrinked_group(world, 7, removeList);
 
            exclusivePartitioning = laik_new_partitioning(exclusive_partitioner(), shrinked_group, indexSpaceElements, 0);
            haloPartitioning = laik_new_partitioning(overlaping_partitioner(halo_depth), shrinked_group, indexSpaceElements, exclusivePartitioning);
@@ -2913,8 +2914,14 @@ int main(int argc, char *argv[])
            transitionToOverlappingReduce = laik_calc_transition(indexSpaceNodes,
                                                                                  overlapingPartitioning, overlapingPartitioning,
                                                                                  LAIK_DF_Preserve, LAIK_RO_Sum);
+
            // data migration for all the data structures
            locDom->re_distribute_data_structures(shrinked_group, exclusivePartitioning, haloPartitioning, overlapingPartitioning, transitionToExclusive, transitionToHalo, transitionToOverlappingInit, transitionToOverlappingReduce);
+
+           if (laik_myid(shrinked_group)==-1) {
+               //laik_finalize(inst);
+               break ;
+           }
 
            // only for dt, repartition and get the base pointer
            laik_switchto_partitioning(laik_dt, allPartitioning, LAIK_DF_None, LAIK_RO_Min);
@@ -2922,10 +2929,7 @@ int main(int argc, char *argv[])
            laik_map_def1(laik_dt, (void**) &dt_base, &dt_count);
 
            world = shrinked_group;
-           if (laik_myid(world)==-1) {
-               //laik_finalize(inst);
-               break ;
-           }
+
            laik_log((Laik_LogLevel)2,"My ID in main world: %d\n", laik_myid(world) );
 
            InitMeshDecomp(laik_size(world), laik_myid(world), &col, &row, &plane, &side);
