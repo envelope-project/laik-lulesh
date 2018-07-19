@@ -487,7 +487,7 @@ void laik_vector_overlapping<T>::migrate(Laik_Group* new_group, Laik_Partitionin
     if (laik_myid(world)<0)
         return ;
 
-    laik_switchto_partitioning(data, p1, LAIK_DF_None, reduction_operation );
+    laik_switchto_partitioning(data, p1, LAIK_DF_None, LAIK_RO_Min );
     int nSlices = laik_my_slicecount(p1);
     for (int n = 0; n < nSlices; n++)
     {
