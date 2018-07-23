@@ -416,6 +416,8 @@ void CalcElemShapeFunctionDerivatives( Real_t const x[],
   b[2][7] = -b[2][1];
 
   /* calculate jacobian determinant (volume) */
+  //laik_log((Laik_LogLevel)2,"Debug %f\n", *volume);
+
   *volume = Real_t(8.) * ( fjxet * cjxet + fjyet * cjyet + fjzet * cjzet);
 }
 
@@ -1075,7 +1077,8 @@ void CalcHourglassControlForElems(Domain& domain,
 
       /* Do a check for negative volumes */
       if ( domain.v(i) <= Real_t(0.0) ) {
-#if USE_MPI         
+#if USE_MPI
+         laik_log((Laik_LogLevel)2,"Debug 1\n");
          MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
 #else
          exit(VolumeError);
@@ -1115,17 +1118,34 @@ void CalcVolumeForceForElems(Domain& domain)
       /* Sum contributions to total stress tensor */
       InitStressTermsForElems(domain, sigxx, sigyy, sigzz, numElem);
 
+      if (domain.cycle() == 6){
+          for (int k = 0; k < numElem; ++k) {
+              laik_log((Laik_LogLevel)2,"Debug: k: %d %d\n",k , domain.nodelist(k)[1]);
+          }
+      }
+
       // call elemlib stress integration loop to produce nodal forces from
       // material stresses.
       IntegrateStressForElems( domain,
                                sigxx, sigyy, sigzz, determ, numElem,
                                domain.numNode()) ;
 
+      /*
+      if (domain.cycle() == 6){
+          laik_log((Laik_LogLevel)2,"Debug: numNodes: %d\n",domain.numNode());
+          for (int k = 0; k < numElem; ++k) {
+              laik_log((Laik_LogLevel)2,"Debug: k: %d %f\n",k, determ[k]);
+          }
+      }
+      */
+
       // check for negative element volume
 #pragma omp parallel for firstprivate(numElem)
       for ( Index_t k=0 ; k<numElem ; ++k ) {
+         //laik_log((Laik_LogLevel)2,"Debug: %f\n", determ[k]);
          if (determ[k] <= Real_t(0.0)) {
 #if USE_MPI            
+            laik_log((Laik_LogLevel)2,"Debug 2\n");
             MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
 #else
             exit(VolumeError);
@@ -1661,6 +1681,7 @@ void CalcLagrangeElements(Domain& domain, Real_t* vnew)
          if (vnew[k] <= Real_t(0.0))
         {
 #if USE_MPI           
+           laik_log((Laik_LogLevel)2,"Debug 3\n");
            MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
 #else
            exit(VolumeError);
@@ -2086,7 +2107,8 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
       }
 
       if(idx >= 0) {
-#if USE_MPI         
+#if USE_MPI
+         laik_log((Laik_LogLevel)2,"Debug 4\n");
          MPI_Abort(MPI_COMM_WORLD, QStopError) ;
 #else
          exit(QStopError);
@@ -2456,6 +2478,7 @@ void ApplyMaterialPropertiesForElems(Domain& domain, Real_t vnew[])
           }
           if (vc <= 0.) {
 #if USE_MPI             
+             laik_log((Laik_LogLevel)2,"Debug 5\n");
              MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
 #else
              exit(VolumeError);
@@ -2756,8 +2779,11 @@ int main(int argc, char *argv[])
    Laik_Instance* inst = laik_init_mpi(&argc, &argv); 
    Laik_Group* world = laik_world(inst);
 
-   MPI_Comm_size(MPI_COMM_WORLD, &numRanks) ;
-   MPI_Comm_rank(MPI_COMM_WORLD, &myRank) ;
+   numRanks = laik_size(world);
+   myRank = laik_myid(world);
+
+   //MPI_Comm_size(MPI_COMM_WORLD, &numRanks) ;
+   //MPI_Comm_rank(MPI_COMM_WORLD, &myRank) ;
 #else
    numRanks = 1;
    myRank = 0;
@@ -2938,6 +2964,10 @@ int main(int argc, char *argv[])
            locDom-> re_calculate_pointers();
 
            laik_log((Laik_LogLevel)2,"After repart\n");
+       }
+
+       if (locDom->cycle() == 5){
+            //locDom -> get_vdov().test_print();
        }
 
        TimeIncrement(*locDom, laik_dt, allPartitioning, *dt_base) ;

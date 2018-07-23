@@ -310,14 +310,47 @@ class Domain {
    //
    // GETTERS
    //
+   laik_vector_overlapping<double>& get_x() { return m_x;} // buggy
+   laik_vector_overlapping<double>& get_y() { return m_y;} // buggy
+   laik_vector_overlapping<double>& get_z() { return m_z;} // buggy
+   laik_vector_overlapping<double>& get_xd() { return m_xd;}
+   laik_vector_overlapping<double>& get_yd() { return m_yd;}
+   laik_vector_overlapping<double>& get_zd() { return m_zd;}
+   laik_vector_overlapping<double>& get_xdd() { return m_xdd;}
+   laik_vector_overlapping<double>& get_ydd() { return m_ydd;}
+   laik_vector_overlapping<double>& get_zdd() { return m_zdd;}
    laik_vector_overlapping<double>& get_fx() { return m_fx;}
    laik_vector_overlapping<double>& get_fy() { return m_fy;}
    laik_vector_overlapping<double>& get_fz() { return m_fz;}
+   laik_vector_overlapping<double>& get_nodalMass() { return m_nodalMass;}
    laik_vector_halo<double>& get_delv_xi() { return m_delv_xi;}
    laik_vector_halo<double>& get_delv_eta() { return m_delv_eta;}
    laik_vector_halo<double>& get_delv_zeta() { return m_delv_zeta;}
+   laik_vector_halo<double>& get_dxx() { return m_dxx;}
 
-   //
+   laik_vector_halo<double> get_delx_xi() { return m_delx_xi;}    /* coordinate gradient -- temporary */
+   laik_vector_halo<double> get_delx_eta() { return m_delx_eta;}
+   laik_vector_halo<double> get_delx_zeta () { return m_delx_zeta;}
+
+   laik_vector_halo<double> get_e() { return m_e;}  /* energy */
+
+   laik_vector_halo<double> get_p () { return m_p;}   /* pressure */
+   laik_vector_halo<double> get_q () { return m_q;}  /* q */
+   laik_vector_halo<double> get_ql () { return m_ql;} /* linear term for q */
+   laik_vector_halo<double> get_qq() { return m_qq;}  /* quadratic term for q */
+
+   laik_vector_halo<double> get_v () { return m_v;}    /* relative volume */
+   laik_vector_halo<double> get_volo () { return m_volo;} /* reference volume */
+   //std::vector<Real_t> get_vnew () { return m_vnew;} /* new relative volume -- temporary */
+   laik_vector_halo<double> get_delv () { return m_delv;}  /* m_vnew - m_v */
+   laik_vector_halo<double> get_vdov () { return m_vdov;}  /* volume derivative over volume */
+
+   laik_vector_halo<double> get_arealg() { return m_arealg;}/* characteristic length of an element */
+
+   laik_vector_halo<double> get_ss() { return m_ss;}      /* "sound speed" */
+
+   laik_vector_halo<double> get_elemMass() { return m_elemMass;} /* mass */
+
    // ACCESSORS
    //
 
@@ -603,7 +636,7 @@ class Domain {
 
    laik_vector_halo<double> m_v ;     /* relative volume */
    laik_vector_halo<double> m_volo ;  /* reference volume */
-   laik_vector_halo<double> m_vnew ;  /* new relative volume -- temporary */
+    std::vector<Real_t> m_vnew ;  /* new relative volume -- temporary */
    laik_vector_halo<double> m_delv ;  /* m_vnew - m_v */
    laik_vector_halo<double> m_vdov ;  /* volume derivative over volume */
 

@@ -58,7 +58,7 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    m_qq(inst, world, elems, exclusive, halo, transitionToExclusive, transitionToHalo),
    m_v(inst, world, elems, exclusive, halo, transitionToExclusive, transitionToHalo),
    m_volo(inst, world, elems, exclusive, halo, transitionToExclusive, transitionToHalo),
-   m_vnew(inst, world, elems, exclusive, halo, transitionToExclusive, transitionToHalo),
+   //m_vnew(inst, world, elems, exclusive, halo, transitionToExclusive, transitionToHalo),
    m_delv(inst, world, elems, exclusive, halo, transitionToExclusive, transitionToHalo),
    m_vdov(inst, world, elems, exclusive, halo, transitionToExclusive, transitionToHalo),
    m_arealg(inst, world, elems, exclusive, halo, transitionToExclusive, transitionToHalo),
@@ -299,7 +299,29 @@ void Domain::re_init_domain(Int_t numRanks, Index_t colLoc,
 
     SetupCommBuffers(edgeNodes);
 
-    BuildMesh(nx, edgeNodes, edgeElems);
+    // embed hexehedral elements in nodal point lattice
+    Index_t zidx = 0 ;
+    Index_t nidx = 0 ;
+    for (Index_t plane=0; plane<edgeElems; ++plane) {
+      for (Index_t row=0; row<edgeElems; ++row) {
+        for (Index_t col=0; col<edgeElems; ++col) {
+      Index_t *localNode = nodelist(zidx) ;
+      localNode[0] = nidx                                       ;
+      localNode[1] = nidx                                   + 1 ;
+      localNode[2] = nidx                       + edgeNodes + 1 ;
+      localNode[3] = nidx                       + edgeNodes     ;
+      localNode[4] = nidx + edgeNodes*edgeNodes                 ;
+      localNode[5] = nidx + edgeNodes*edgeNodes             + 1 ;
+      localNode[6] = nidx + edgeNodes*edgeNodes + edgeNodes + 1 ;
+      localNode[7] = nidx + edgeNodes*edgeNodes + edgeNodes     ;
+      ++zidx ;
+      ++nidx ;
+        }
+        ++nidx ;
+      }
+      nidx += edgeNodes ;
+    }
+
 
  #if _OPENMP
     SetupThreadSupportStructures();
@@ -341,9 +363,13 @@ Domain::BuildMesh(Int_t nx, Int_t edgeNodes, Int_t edgeElems)
       Real_t tx = Real_t(1.125) * Real_t(m_colLoc * nx) / Real_t(meshEdgeElems);
       for (Index_t col = 0; col < edgeNodes; ++col)
       {
+
         x(nidx) = tx;
         y(nidx) = ty;
         z(nidx) = tz;
+
+        //laik_log((Laik_LogLevel)2,"BuildMesh: %f, %f, %f\n", x(nidx), y(nidx),z(nidx) );
+
         ++nidx;
 
         // tx += ds ; // may accumulate roundoff...
