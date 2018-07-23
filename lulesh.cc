@@ -1118,12 +1118,6 @@ void CalcVolumeForceForElems(Domain& domain)
       /* Sum contributions to total stress tensor */
       InitStressTermsForElems(domain, sigxx, sigyy, sigzz, numElem);
 
-      if (domain.cycle() == 6){
-          for (int k = 0; k < numElem; ++k) {
-              laik_log((Laik_LogLevel)2,"Debug: k: %d %d\n",k , domain.nodelist(k)[1]);
-          }
-      }
-
       // call elemlib stress integration loop to produce nodal forces from
       // material stresses.
       IntegrateStressForElems( domain,
