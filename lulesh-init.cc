@@ -344,7 +344,6 @@ void Domain::re_init_domain(Int_t numRanks, Index_t colLoc,
 
     // Setup symmetry planes and free surface boundary arrays
     SetupBoundaryConditions(edgeElems);
-
 }
 ////////////////////////////////////////////////////////////////////////////////
 void
@@ -532,10 +531,16 @@ Domain::SetupCommBuffers(Int_t edgeNodes)
   // Boundary nodesets
   if (m_colLoc == 0)
     m_symmX.resize(edgeNodes*edgeNodes);
+  else
+    m_symmX.resize(0);
   if (m_rowLoc == 0)
     m_symmY.resize(edgeNodes*edgeNodes);
+  else
+    m_symmY.resize(0);
   if (m_planeLoc == 0)
     m_symmZ.resize(edgeNodes*edgeNodes);
+  else
+    m_symmZ.resize(0);
 }
 
 

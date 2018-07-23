@@ -1079,6 +1079,7 @@ void CalcHourglassControlForElems(Domain& domain,
       if ( domain.v(i) <= Real_t(0.0) ) {
 #if USE_MPI
          laik_log((Laik_LogLevel)2,"Debug 1\n");
+         MPI_Barrier(MPI_COMM_WORLD);
          MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
 #else
          exit(VolumeError);
@@ -1140,6 +1141,7 @@ void CalcVolumeForceForElems(Domain& domain)
          if (determ[k] <= Real_t(0.0)) {
 #if USE_MPI            
             laik_log((Laik_LogLevel)2,"Debug 2\n");
+            MPI_Barrier(MPI_COMM_WORLD);
             MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
 #else
             exit(VolumeError);
@@ -1301,7 +1303,6 @@ void LagrangeNodal(Domain& domain)
 
    const Real_t delt = domain.deltatime() ;
    Real_t u_cut = domain.u_cut() ;
-
   /* time of boundary condition evaluation is beginning of step for force and
    * acceleration boundary conditions. */
   CalcForceForNodes(domain);
@@ -1315,12 +1316,13 @@ void LagrangeNodal(Domain& domain)
 #endif
    
    CalcAccelerationForNodes(domain, domain.numNode());
-   
+
    ApplyAccelerationBoundaryConditionsForNodes(domain);
 
    CalcVelocityForNodes( domain, delt, u_cut, domain.numNode()) ;
 
    CalcPositionForNodes( domain, delt, domain.numNode() );
+
 #if USE_MPI
 #ifdef SEDOV_SYNC_POS_VEL_EARLY
   fieldData[0] = &Domain::x ;
@@ -1649,6 +1651,7 @@ void CalcKinematicsForElems( Domain &domain, Real_t *vnew,
 static inline
 void CalcLagrangeElements(Domain& domain, Real_t* vnew)
 {
+
    Index_t numElem = domain.numElem() ;
    if (numElem > 0) {
       const Real_t deltatime = domain.deltatime() ;
@@ -1676,6 +1679,7 @@ void CalcLagrangeElements(Domain& domain, Real_t* vnew)
         {
 #if USE_MPI           
            laik_log((Laik_LogLevel)2,"Debug 3\n");
+           MPI_Barrier(MPI_COMM_WORLD);
            MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
 #else
            exit(VolumeError);
@@ -1684,6 +1688,7 @@ void CalcLagrangeElements(Domain& domain, Real_t* vnew)
       }
       //domain.DeallocateStrains();
    }
+
 }
 
 /******************************************/
@@ -1700,6 +1705,7 @@ void CalcMonotonicQGradientsForElems(Domain& domain, Real_t vnew[])
       Real_t dxv,dyv,dzv ;
 
       const Index_t *elemToNode = domain.nodelist(i);
+
       Index_t n0 = elemToNode[0] ;
       Index_t n1 = elemToNode[1] ;
       Index_t n2 = elemToNode[2] ;
@@ -1832,6 +1838,7 @@ void CalcMonotonicQGradientsForElems(Domain& domain, Real_t vnew[])
 
       domain.delv_eta(i) = ax*dxv + ay*dyv + az*dzv ;
    }
+
 }
 
 /******************************************/
@@ -2034,7 +2041,8 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
 
    Index_t numElem = domain.numElem() ;
    Index_t numRanks;
-   MPI_Comm_size(MPI_COMM_WORLD, &numRanks) ;
+   numRanks = laik_size(domain.world);
+   //MPI_Comm_size(MPI_COMM_WORLD, &numRanks) ;
 
    if (numElem != 0) {
 
@@ -2103,6 +2111,7 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
       if(idx >= 0) {
 #if USE_MPI
          laik_log((Laik_LogLevel)2,"Debug 4\n");
+         MPI_Barrier(MPI_COMM_WORLD);
          MPI_Abort(MPI_COMM_WORLD, QStopError) ;
 #else
          exit(QStopError);
@@ -2473,6 +2482,7 @@ void ApplyMaterialPropertiesForElems(Domain& domain, Real_t vnew[])
           if (vc <= 0.) {
 #if USE_MPI             
              laik_log((Laik_LogLevel)2,"Debug 5\n");
+             MPI_Barrier(MPI_COMM_WORLD);
              MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
 #else
              exit(VolumeError);
@@ -2721,10 +2731,8 @@ void LagrangeLeapFrog(Domain& domain)
     * applied boundary conditions and slide surface considerations */
    LagrangeNodal(domain);
 
-
 #ifdef SEDOV_SYNC_POS_VEL_LATE
 #endif
-
    /* calculate element quantities (i.e. velocity gradient & q), and update
     * material states */
    LagrangeElements(domain, domain.numElem());
@@ -2904,17 +2912,36 @@ int main(int argc, char *argv[])
        // and do it once in the 5th iteration
        // so far de activated
 
-       if (laik_size(world)==8 && locDom->cycle() == 5)
+       if (laik_size(world)==64 && locDom->cycle() == 5)
        {
            laik_log((Laik_LogLevel)2,"Before repart\n" );
+           laik_log((Laik_LogLevel)2,"My ID in main world: %d\n", laik_myid(world) );
 
-           int removeList[7] = {1,2,3,4,5,6,7};
-           //int removeList[63];
-           //for (int i = 0; i < 56; ++i) {
-           //    removeList[i]=i+8;
-           //}
-           //Laik_Group* shrinked_group = laik_new_shrinked_group(world, 56, removeList);
-           Laik_Group* shrinked_group = laik_new_shrinked_group(world, 7, removeList);
+           //int removeList[7] = {1,2,3,4,5,6,7};
+           //Laik_Group* shrinked_group = laik_new_shrinked_group(world, 7, removeList);
+
+           int removeList[56];
+           for (int i = 0; i < 56; ++i) {
+               removeList[i]=i+8;
+           }
+           Laik_Group* shrinked_group = laik_new_shrinked_group(world, 56, removeList);
+
+           /*
+           int removeList[19];
+           for (int i = 0; i < 19; ++i) {
+               removeList[i]=i+8;
+           }
+           Laik_Group* shrinked_group = laik_new_shrinked_group(world, 19, removeList);
+           */
+
+           /*
+           int removeList[124];
+           for (int i = 0; i < 124; ++i) {
+               removeList[i]=i+1;
+           }
+           Laik_Group* shrinked_group = laik_new_shrinked_group(world, 124, removeList);
+           */
+
 
            exclusivePartitioning = laik_new_partitioning(exclusive_partitioner(), shrinked_group, indexSpaceElements, 0);
            haloPartitioning = laik_new_partitioning(overlaping_partitioner(halo_depth), shrinked_group, indexSpaceElements, exclusivePartitioning);
@@ -2950,19 +2977,28 @@ int main(int argc, char *argv[])
 
            world = shrinked_group;
 
-           laik_log((Laik_LogLevel)2,"My ID in main world: %d\n", laik_myid(world) );
-
            InitMeshDecomp(laik_size(world), laik_myid(world), &col, &row, &plane, &side);
            locDom -> re_init_domain(laik_size(world), col, row, plane, 2*opts.nx,
+           //locDom -> re_init_domain(laik_size(world), col, row, plane, 3,
            side, opts.numReg, opts.balance, opts.cost);
            locDom-> re_calculate_pointers();
 
            laik_log((Laik_LogLevel)2,"After repart\n");
        }
 
+/*
+
        if (locDom->cycle() == 5){
             //locDom -> get_vdov().test_print();
+           int dbg=1;
+           if (laik_myid(world) == 0)
+              {
+                dbg = 0;
+                while (!dbg) {}
+              }
+               
        }
+*/
 
        TimeIncrement(*locDom, laik_dt, allPartitioning, *dt_base) ;
        LagrangeLeapFrog(*locDom) ;

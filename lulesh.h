@@ -636,7 +636,7 @@ class Domain {
 
    laik_vector_halo<double> m_v ;     /* relative volume */
    laik_vector_halo<double> m_volo ;  /* reference volume */
-    std::vector<Real_t> m_vnew ;  /* new relative volume -- temporary */
+   std::vector<Real_t> m_vnew ;  /* new relative volume -- temporary */
    laik_vector_halo<double> m_delv ;  /* m_vnew - m_v */
    laik_vector_halo<double> m_vdov ;  /* volume derivative over volume */
 
