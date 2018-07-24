@@ -2919,11 +2919,29 @@ int main(int argc, char *argv[])
            //int removeList[7] = {1,2,3,4,5,6,7};
            //Laik_Group* shrinked_group = laik_new_shrinked_group(world, 7, removeList);
 
+          int cursize = laik_size(world);
+          
+          double newside = cbrt(opts.repart);
+          if (newside - ((int) floor(newside+0.1)) != 0){
+             MPI_Abort(MPI_COMM_WORLD,-1);
+          }
+          int diffsize = cursize - opts.repart; 
+          
+          int *removeList = (int*) malloc (diffsize * sizeof(int));
+          for (int i=0; i<diffsize; i++){
+            removeList[i] = i+opts.repart;
+          }
+          
+          //FIXME: Need to check if this is a integer
+          opts.nx = opts.nx * side / (int) newside;
+            
+/*
            int removeList[56];
            for (int i = 0; i < 56; ++i) {
                removeList[i]=i+8;
            }
-           Laik_Group* shrinked_group = laik_new_shrinked_group(world, 56, removeList);
+           */
+           Laik_Group* shrinked_group = laik_new_shrinked_group(world, diffsize, removeList);
 
            /*
            int removeList[19];
@@ -2977,7 +2995,7 @@ int main(int argc, char *argv[])
            world = shrinked_group;
 
            InitMeshDecomp(laik_size(world), laik_myid(world), &col, &row, &plane, &side);
-           locDom -> re_init_domain(laik_size(world), col, row, plane, 2*opts.nx,
+           locDom -> re_init_domain(laik_size(world), col, row, plane, opts.nx,
            //locDom -> re_init_domain(laik_size(world), col, row, plane, 3,
            side, opts.numReg, opts.balance, opts.cost);
            locDom-> re_calculate_pointers();

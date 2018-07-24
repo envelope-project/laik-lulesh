@@ -1,7 +1,7 @@
 #default build suggestion of MPI + OPENMP with gcc on Livermore machines you might have to change the compiler name
 
 # default for LAIK installation: submodule in directory laik/ of this repository
-LAIK_ROOT = laik
+LAIK_ROOT = ../laik
 
 SHELL = /bin/sh
 .SUFFIXES: .cc .o
@@ -28,7 +28,7 @@ SOURCES2.0 = \
 	laik_vector.cc
 OBJECTS2.0 = $(SOURCES2.0:.cc=.o)
 
-TARGET = PERFORMANCE
+TARGET = REPARTITIONING
 
 #Default build suggestions with OpenMP for g++
 OPT = -O3
