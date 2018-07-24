@@ -2801,7 +2801,7 @@ int main(int argc, char *argv[])
    opts.viz = 0;
    opts.balance = 1;
    opts.cost = 1;
-   opts.repart = 8;
+   opts.repart = 0;
    opts.cycle = 5;
 
    ParseCommandLineOptions(argc, argv, myRank, &opts);
