@@ -26,5 +26,5 @@ the other one compiles it for enabling repartitioning.
 for performance use the following build instruction: (default)
     make -DPERFORMANCE
 
-for enabling repartitioning build the programm like this:
-    make -DREPARTITION
+for enabling repartitioning use:
+    make -DREPARTITIONING
