@@ -2801,6 +2801,8 @@ int main(int argc, char *argv[])
    opts.viz = 0;
    opts.balance = 1;
    opts.cost = 1;
+   opts.repart = 8;
+   opts.cycle = 5;
 
    ParseCommandLineOptions(argc, argv, myRank, &opts);
 
@@ -2912,7 +2914,7 @@ int main(int argc, char *argv[])
        // and do it once in the 5th iteration
        // so far de activated
 
-       if (laik_size(world)==64 && locDom->cycle() == 5)
+       if (opts.repart>0 && locDom->cycle() == opts.cycle)
        {
            laik_log((Laik_LogLevel)2,"Before repart\n" );
            laik_log((Laik_LogLevel)2,"My ID in main world: %d\n", laik_myid(world) );
