@@ -160,6 +160,7 @@ class Domain {
        int side = cbrt (numRanks);
        int globalNumNode=(edgeElem*side+1)*(edgeElem*side+1)*(edgeElem*side+1);
 
+#ifdef REPARTITIONING
        m_x.resize(globalNumNode);  // coordinates
        m_y.resize(globalNumNode);
        m_z.resize(globalNumNode);
@@ -171,7 +172,21 @@ class Domain {
        m_xdd.resize(globalNumNode); // accelerations
        m_ydd.resize(globalNumNode);
        m_zdd.resize(globalNumNode);
+#endif
 
+#ifdef PERFORMANCE
+       m_x.resize(numNode);  // coordinates
+       m_y.resize(numNode);
+       m_z.resize(numNode);
+
+       m_xd.resize(numNode); // velocities
+       m_yd.resize(numNode);
+       m_zd.resize(numNode);
+
+       m_xdd.resize(numNode); // accelerations
+       m_ydd.resize(numNode);
+       m_zdd.resize(numNode);
+#endif
        m_fx.resize(globalNumNode);  // forces
        m_fy.resize(globalNumNode);
        m_fz.resize(globalNumNode);
@@ -193,6 +208,7 @@ class Domain {
 
       m_elemBC.resize(numElem);
 
+#ifdef REPARTITIONING
       m_e.resize(numRanks*numElem);
       m_p.resize(numRanks*numElem);
 
@@ -211,24 +227,48 @@ class Domain {
       m_ss.resize(numRanks*numElem);
 
       m_elemMass.resize(numRanks*numElem);
-      m_element_test.resize(numRanks*numElem); // global size
+#endif
+
+#ifdef PERFORMANCE
+      m_e.resize(numElem);
+      m_p.resize(numElem);
+
+      m_q.resize(numElem);
+      m_ql.resize(numElem);
+      m_qq.resize(numElem);
+
+      m_v.resize(numElem);
+
+      m_volo.resize(numElem);
+      m_delv.resize(numElem);
+      m_vdov.resize(numElem);
+
+      m_arealg.resize(numElem);
+
+      m_ss.resize(numElem);
+
+      m_elemMass.resize(numElem);
+#endif
    }
 
    void AllocateGradients(Int_t numElem, Int_t numRanks, Index_t allElem)
    {
+#ifdef REPARTITIONING
       // Position gradients
       m_delx_xi.resize(numRanks*numElem) ;
       m_delx_eta.resize(numRanks*numElem) ;
       m_delx_zeta.resize(numRanks*numElem) ;
+#endif
 
+#ifdef PERFORMANCE
+      m_delx_xi.resize(numElem) ;
+      m_delx_eta.resize(numElem) ;
+m_delx_zeta.resize(numElem) ;
+#endif
       // Velocity gradients
       m_delv_xi.resize(numRanks*numElem) ;
       m_delv_eta.resize(numRanks*numElem);
       m_delv_zeta.resize(numRanks*numElem) ;
-
-      //m_delv_xi.resize(allElem) ;
-      //m_delv_eta.resize(allElem);
-      //m_delv_zeta.resize(allElem) ;
    }
 
    void DeallocateGradients()
@@ -244,9 +284,17 @@ class Domain {
 
    void AllocateStrains(Int_t numElem)
    {
+#ifdef REPARTITIONING
       m_dxx.resize(numRanks()*numElem) ;
       m_dyy.resize(numRanks()*numElem) ;
       m_dzz.resize(numRanks()*numElem) ;
+#endif
+
+#ifdef PERFORMANCE
+      m_dxx.resize(numElem) ;
+      m_dyy.resize(numElem) ;
+      m_dzz.resize(numElem) ;
+#endif
    }
 
    void DeallocateStrains()
@@ -259,6 +307,7 @@ class Domain {
    // lulesh-repartitioning
    void re_distribute_data_structures(Laik_Group* new_group, Laik_Partitioning* p_exclusive, Laik_Partitioning* p_halo, Laik_Partitioning* p_overlapping, Laik_Transition *t_to_exclusive, Laik_Transition *t_to_halo, Laik_Transition *t_to_overlapping_init, Laik_Transition *t_to_overlapping_reduce){
 
+#ifdef REPARTITIONING
        m_x.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
        m_y.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
        m_z.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
@@ -268,20 +317,23 @@ class Domain {
        m_xdd.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
        m_ydd.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
        m_zdd.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
+#endif
        m_fx.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
        m_fy.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
        m_fz.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
        m_nodalMass.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
+#ifdef REPARTITIONING
        m_dxx.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
        m_dyy.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
        m_dzz.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+#endif
        m_delv_xi.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
        m_delv_eta.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
        m_delv_zeta.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+#ifdef REPARTITIONING
        m_delx_xi.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
        m_delx_eta.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
        m_delx_zeta.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
-       m_element_test.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
        m_e.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
        m_p.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
        m_q.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
@@ -295,9 +347,7 @@ class Domain {
        m_arealg.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
        m_ss.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
        m_elemMass.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
-
-       //m_element_test.test_print();
-
+#endif
        this -> world = new_group;
 }
 
@@ -310,15 +360,6 @@ class Domain {
    //
    // GETTERS
    //
-   laik_vector_overlapping<double>& get_x() { return m_x;} // buggy
-   laik_vector_overlapping<double>& get_y() { return m_y;} // buggy
-   laik_vector_overlapping<double>& get_z() { return m_z;} // buggy
-   laik_vector_overlapping<double>& get_xd() { return m_xd;}
-   laik_vector_overlapping<double>& get_yd() { return m_yd;}
-   laik_vector_overlapping<double>& get_zd() { return m_zd;}
-   laik_vector_overlapping<double>& get_xdd() { return m_xdd;}
-   laik_vector_overlapping<double>& get_ydd() { return m_ydd;}
-   laik_vector_overlapping<double>& get_zdd() { return m_zdd;}
    laik_vector_overlapping<double>& get_fx() { return m_fx;}
    laik_vector_overlapping<double>& get_fy() { return m_fy;}
    laik_vector_overlapping<double>& get_fz() { return m_fz;}
@@ -326,31 +367,6 @@ class Domain {
    laik_vector_halo<double>& get_delv_xi() { return m_delv_xi;}
    laik_vector_halo<double>& get_delv_eta() { return m_delv_eta;}
    laik_vector_halo<double>& get_delv_zeta() { return m_delv_zeta;}
-   laik_vector_halo<double>& get_dxx() { return m_dxx;}
-
-   laik_vector_halo<double> get_delx_xi() { return m_delx_xi;}    /* coordinate gradient -- temporary */
-   laik_vector_halo<double> get_delx_eta() { return m_delx_eta;}
-   laik_vector_halo<double> get_delx_zeta () { return m_delx_zeta;}
-
-   laik_vector_halo<double> get_e() { return m_e;}  /* energy */
-
-   laik_vector_halo<double> get_p () { return m_p;}   /* pressure */
-   laik_vector_halo<double> get_q () { return m_q;}  /* q */
-   laik_vector_halo<double> get_ql () { return m_ql;} /* linear term for q */
-   laik_vector_halo<double> get_qq() { return m_qq;}  /* quadratic term for q */
-
-   laik_vector_halo<double> get_v () { return m_v;}    /* relative volume */
-   laik_vector_halo<double> get_volo () { return m_volo;} /* reference volume */
-   //std::vector<Real_t> get_vnew () { return m_vnew;} /* new relative volume -- temporary */
-   laik_vector_halo<double> get_delv () { return m_delv;}  /* m_vnew - m_v */
-   laik_vector_halo<double> get_vdov () { return m_vdov;}  /* volume derivative over volume */
-
-   laik_vector_halo<double> get_arealg() { return m_arealg;}/* characteristic length of an element */
-
-   laik_vector_halo<double> get_ss() { return m_ss;}      /* "sound speed" */
-
-   laik_vector_halo<double> get_elemMass() { return m_elemMass;} /* mass */
-
    // ACCESSORS
    //
 
@@ -398,7 +414,6 @@ class Domain {
 
    Index_t*  nodelist(Index_t idx)    { return &m_nodelist[Index_t(8)*idx] ; }
 
-   Real_t& testVectorElement(Index_t idx) { return m_element_test[idx] ; }
    // elem connectivities through face
    Index_t&  lxim(Index_t idx) { return m_lxim[idx] ; }
    Index_t&  lxip(Index_t idx) { return m_lxip[idx] ; }
@@ -563,6 +578,7 @@ class Domain {
    //
 
    /* Node-centered */
+#ifdef REPARTITIONING
    laik_vector_overlapping<double> m_x ;  /* coordinates */
    laik_vector_overlapping<double> m_y ;
    laik_vector_overlapping<double> m_z ;
@@ -574,6 +590,22 @@ class Domain {
    laik_vector_overlapping<double> m_xdd ; /* accelerations */
    laik_vector_overlapping<double> m_ydd ;
    laik_vector_overlapping<double> m_zdd ;
+
+#endif
+
+#ifdef PERFORMANCE
+    std::vector<Real_t> m_x ;  /* coordinates */
+    std::vector<Real_t> m_y ;
+    std::vector<Real_t> m_z ;
+
+    std::vector<Real_t> m_xd ; /* velocities */
+    std::vector<Real_t> m_yd ;
+    std::vector<Real_t> m_zd ;
+
+    std::vector<Real_t> m_xdd ; /* accelerations */
+    std::vector<Real_t> m_ydd ;
+    std::vector<Real_t> m_zdd ;
+#endif
 
    laik_vector_overlapping<double> m_fx ;  /* forces */
    laik_vector_overlapping<double> m_fy ;
@@ -600,7 +632,6 @@ class Domain {
    std::vector <std::vector <Index_t> > m_regElemlist; // region indexset
 
    std::vector<Index_t>  m_nodelist ;     /* elemToNode connectivity */
-   laik_vector_halo<double> m_element_test ;
 
    std::vector<Index_t>  m_lxim ;  /* element connectivity across each face */
    std::vector<Index_t>  m_lxip ;
@@ -611,18 +642,23 @@ class Domain {
 
    std::vector<Int_t>    m_elemBC ;  /* symmetry/free-surface flags for each elem face */
 
+#ifdef REPARTITIONING
    laik_vector_halo<double> m_dxx ;  /* principal strains -- temporary */
    laik_vector_halo<double> m_dyy ;
    laik_vector_halo<double> m_dzz ;
+#endif
+
+#ifdef PERFORMANCE
+   std::vector<Real_t> m_dxx ;  /* principal strains -- temporary */
+   std::vector<Real_t> m_dyy ;
+   std::vector<Real_t> m_dzz ;
+#endif
 
    laik_vector_halo<double> m_delv_xi ;    /* velocity gradient -- temporary */
    laik_vector_halo<double> m_delv_eta ;
    laik_vector_halo<double> m_delv_zeta ;
 
-   //std::vector<Real_t> m_delv_xi ;
-   //std::vector<Real_t> m_delv_eta ;
-   //std::vector<Real_t> m_delv_zeta ;
-
+#ifdef REPARTITIONING
    laik_vector_halo<double> m_delx_xi ;    /* coordinate gradient -- temporary */
    laik_vector_halo<double> m_delx_eta ;
    laik_vector_halo<double> m_delx_zeta ;
@@ -645,6 +681,32 @@ class Domain {
    laik_vector_halo<double> m_ss ;      /* "sound speed" */
 
    laik_vector_halo<double> m_elemMass ;  /* mass */
+#endif
+
+#ifdef PERFORMANCE
+   std::vector<Real_t> m_delx_xi ;    /* coordinate gradient -- temporary */
+   std::vector<Real_t> m_delx_eta ;
+   std::vector<Real_t> m_delx_zeta ;
+
+   std::vector<Real_t> m_e ;   /* energy */
+
+   std::vector<Real_t> m_p ;   /* pressure */
+   std::vector<Real_t> m_q ;   /* q */
+   std::vector<Real_t> m_ql ;  /* linear term for q */
+   std::vector<Real_t> m_qq ;  /* quadratic term for q */
+
+   std::vector<Real_t> m_v ;     /* relative volume */
+   std::vector<Real_t> m_volo ;  /* reference volume */
+   std::vector<Real_t> m_vnew ;  /* new relative volume -- temporary */
+   std::vector<Real_t> m_delv ;  /* m_vnew - m_v */
+   std::vector<Real_t> m_vdov ;  /* volume derivative over volume */
+
+   std::vector<Real_t> m_arealg ;  /* characteristic length of an element */
+
+   std::vector<Real_t> m_ss ;      /* "sound speed" */
+
+   std::vector<Real_t> m_elemMass ;  /* mass */
+#endif
 
    // Cutoffs (treat as constants)
    const Real_t  m_e_cut ;             // energy tolerance 

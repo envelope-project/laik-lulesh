@@ -62,7 +62,7 @@ void laik_vector<T>::test_print(){
     T *base;
     uint64_t count;
     int nSlices = laik_my_slicecount(p1);
-    for (size_t s = 0; s < nSlices; s++)
+    for (int s = 0; s < nSlices; s++)
     {
         laik_map_def(data, s, (void**) &base, &count);
         for (uint64_t i = 0; i < count; i++)
@@ -79,7 +79,7 @@ template <typename T>
 void laik_vector_halo<T>::migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2, Laik_Transition* t_new_1, Laik_Transition* t_new_2){
     uint64_t cnt;
     int* base;
-    int slice = 0;
+    //int slice = 0;
 
     init_config_params(new_group);
 
@@ -459,7 +459,7 @@ template <typename T>
 void laik_vector_overlapping<T>::migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2, Laik_Transition* t_new_1, Laik_Transition* t_new_2){
     uint64_t cnt;
     int* base;
-    int slice = 0;
+    //int slice = 0;
 
     init_config_params(new_group);
 

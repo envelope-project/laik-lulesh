@@ -28,6 +28,7 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    :
    inst(inst),
    world(world),
+#ifdef REPARTITIONING
    m_x(inst, world, nodes, overlapping, overlapping, transitionToOverlappingInit, transitionToOverlappingReduce, LAIK_RO_Min),
    m_y(inst, world, nodes, overlapping, overlapping, transitionToOverlappingInit, transitionToOverlappingReduce, LAIK_RO_Min),
    m_z(inst, world, nodes, overlapping, overlapping, transitionToOverlappingInit, transitionToOverlappingReduce, LAIK_RO_Min),
@@ -37,20 +38,23 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    m_xdd(inst, world, nodes, overlapping, overlapping, transitionToOverlappingInit, transitionToOverlappingReduce, LAIK_RO_Min),
    m_ydd(inst, world, nodes, overlapping, overlapping, transitionToOverlappingInit, transitionToOverlappingReduce, LAIK_RO_Min),
    m_zdd(inst, world, nodes, overlapping, overlapping, transitionToOverlappingInit, transitionToOverlappingReduce, LAIK_RO_Min),
+#endif
    m_fx(inst, world, nodes, overlapping, overlapping, transitionToOverlappingInit, transitionToOverlappingReduce),
    m_fy(inst, world, nodes, overlapping, overlapping, transitionToOverlappingInit, transitionToOverlappingReduce),
    m_fz(inst, world, nodes, overlapping, overlapping, transitionToOverlappingInit, transitionToOverlappingReduce),
    m_nodalMass(inst, world, nodes, overlapping, overlapping, transitionToOverlappingInit, transitionToOverlappingReduce),
+#ifdef REPARTITIONING
    m_dxx(inst, world, elems, exclusive, halo, transitionToExclusive, transitionToHalo),
    m_dyy(inst, world, elems, exclusive, halo, transitionToExclusive, transitionToHalo),
    m_dzz(inst, world, elems, exclusive, halo, transitionToExclusive, transitionToHalo),
+#endif
    m_delv_xi(inst, world, elems, exclusive, halo, transitionToExclusive, transitionToHalo),
    m_delv_eta(inst, world, elems, exclusive, halo, transitionToExclusive, transitionToHalo),
    m_delv_zeta(inst, world, elems, exclusive, halo, transitionToExclusive, transitionToHalo),
+#ifdef REPARTITIONING
    m_delx_xi(inst, world, elems, exclusive, halo, transitionToExclusive, transitionToHalo),
    m_delx_eta(inst, world, elems, exclusive, halo, transitionToExclusive, transitionToHalo),
    m_delx_zeta(inst, world, elems, exclusive, halo, transitionToExclusive, transitionToHalo),
-   m_element_test(inst, world, elems, exclusive, halo, transitionToExclusive, transitionToHalo),
    m_e(inst, world, elems, exclusive, halo, transitionToExclusive, transitionToHalo),
    m_p(inst, world, elems, exclusive, halo, transitionToExclusive, transitionToHalo),
    m_q(inst, world, elems, exclusive, halo, transitionToExclusive, transitionToHalo),
@@ -64,7 +68,7 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    m_arealg(inst, world, elems, exclusive, halo, transitionToExclusive, transitionToHalo),
    m_ss(inst, world, elems, exclusive, halo, transitionToExclusive, transitionToHalo),
    m_elemMass(inst, world, elems, exclusive, halo, transitionToExclusive, transitionToHalo),
-
+#endif
    m_e_cut(Real_t(1.0e-7)),
    m_p_cut(Real_t(1.0e-7)),
    m_q_cut(Real_t(1.0e-7)),
@@ -236,12 +240,6 @@ void Domain::init_domain(Int_t numRanks, Index_t colLoc,
     }
     m_nodalMass.switch_to_read_phase();
     //m_nodalMass.switch_to_write_phase();
-
-     m_element_test.switch_to_write_phase();
-     for (Index_t i=0; i<numElem(); ++i) {
-        testVectorElement(i)=colLoc + rowLoc*tp + planeLoc*tp*tp; // TEST
-     }
-     m_element_test.switch_to_read_phase();
 
     // deposit initial energy
     // An energy of 3.948746e+7 is correct for a problem with

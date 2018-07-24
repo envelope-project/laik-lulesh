@@ -32,10 +32,10 @@ void runExclusivePartitioner(Laik_Partitioner* pr,
     int Rz= side;
     int Lx = Rx*Nx;
     int Ly = Ry*Ny;
-    int Lz = Rz*Nz;
+    //int Lz = Rz*Nz;
     int Pxy= Lx*Ly;
-    int Pxz= Lx*Lz;
-    int Pyz= Ly*Lz;
+    //int Pxz= Lx*Lz;
+    //int Pyz= Ly*Lz;
 
     // sine all the tasks run the same partitioning algorithm
     // we should loop over all the tasks and not just this
@@ -127,10 +127,10 @@ void runOverlapingPartitioner(Laik_Partitioner* pr,
     int Rz= side;
     int Lx = Rx*Nx;
     int Ly = Ry*Ny;
-    int Lz = Rz*Nz;
+    //int Lz = Rz*Nz;
     int Pxy= Lx*Ly;
-    int Pxz= Lx*Lz;
-    int Pyz= Ly*Lz;
+    //int Pxz= Lx*Lz;
+    //int Pyz= Ly*Lz;
 
     // sine all the tasks run the same partitioning algorithm
     // we should loop over all the tasks and not just this

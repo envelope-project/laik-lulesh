@@ -2040,9 +2040,6 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
    //
 
    Index_t numElem = domain.numElem() ;
-   Index_t numRanks;
-   numRanks = laik_size(domain.world);
-   //MPI_Comm_size(MPI_COMM_WORLD, &numRanks) ;
 
    if (numElem != 0) {
 
@@ -2070,7 +2067,7 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
       domain.get_delv_eta().switch_to_read_phase();
       domain.get_delv_zeta().switch_to_read_phase();
 
-      Domain_member fieldData[3] ;
+      //Domain_member fieldData[3] ;
       
       /* Transfer veloctiy gradients in the first order elements */
       /* problem->commElements->Transfer(CommElements::monoQ) ; */
@@ -2776,7 +2773,7 @@ int main(int argc, char *argv[])
    struct cmdLineOpts opts;
 
 #if USE_MPI   
-   Domain_member fieldData ;
+   //Domain_member fieldData ;
 
    Laik_Instance* inst = laik_init_mpi(&argc, &argv); 
    Laik_Group* world = laik_world(inst);
