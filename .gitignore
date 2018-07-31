@@ -10,3 +10,5 @@ laik-lulesh.creator
 laik-lulesh.creator.user
 laik-lulesh.files
 laik-lulesh.includes
+measurements/*
+*.dSYM

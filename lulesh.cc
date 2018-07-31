@@ -2910,6 +2910,7 @@ int main(int argc, char *argv[])
        // do it only for 8 -> 1
        // and do it once in the 5th iteration
        // so far de activated
+#if USE_MPI
 
        if (opts.repart>0 && locDom->cycle() == opts.cycle)
        {
@@ -2918,6 +2919,7 @@ int main(int argc, char *argv[])
 
            //int removeList[7] = {1,2,3,4,5,6,7};
            //Laik_Group* shrinked_group = laik_new_shrinked_group(world, 7, removeList);
+         double repart_start = MPI_Wtime();
 
           int cursize = laik_size(world);
           
@@ -2932,33 +2934,23 @@ int main(int argc, char *argv[])
             removeList[i] = i+opts.repart;
           }
           
+          laik_log((Laik_LogLevel)2, "NX: %d, Side: %d, NewSide: %d", opts.nx, side, (int)newside);
+
           //FIXME: Need to check if this is a integer
+
+          double new_nx = (double)opts.nx * (double)side / (double) newside;
+          double verifier;
+
+          if(modf(new_nx, &verifier) != 0.0){
+              printf("Repartitioning is not allowed for inbalanced domains after repartitioning. \n");
+              MPI_Abort(MPI_COMM_WORLD, -1); 
+          }
+
           opts.nx = opts.nx * side / (int) newside;
+
+          
             
-/*
-           int removeList[56];
-           for (int i = 0; i < 56; ++i) {
-               removeList[i]=i+8;
-           }
-           */
            Laik_Group* shrinked_group = laik_new_shrinked_group(world, diffsize, removeList);
-
-           /*
-           int removeList[19];
-           for (int i = 0; i < 19; ++i) {
-               removeList[i]=i+8;
-           }
-           Laik_Group* shrinked_group = laik_new_shrinked_group(world, 19, removeList);
-           */
-
-           /*
-           int removeList[124];
-           for (int i = 0; i < 124; ++i) {
-               removeList[i]=i+1;
-           }
-           Laik_Group* shrinked_group = laik_new_shrinked_group(world, 124, removeList);
-           */
-
 
            exclusivePartitioning = laik_new_partitioning(exclusive_partitioner(), shrinked_group, indexSpaceElements, 0);
            haloPartitioning = laik_new_partitioning(overlaping_partitioner(halo_depth), shrinked_group, indexSpaceElements, exclusivePartitioning);
@@ -2999,9 +2991,12 @@ int main(int argc, char *argv[])
            //locDom -> re_init_domain(laik_size(world), col, row, plane, 3,
            side, opts.numReg, opts.balance, opts.cost);
            locDom-> re_calculate_pointers();
-
+          double duration = MPI_Wtime() - repart_start;
            laik_log((Laik_LogLevel)2,"After repart\n");
+          printf("Repartition Done in %f s on Rank %d\n", duration, laik_myid(world));
+
        }
+#endif
 
 /*
 
