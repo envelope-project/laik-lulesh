@@ -2897,6 +2897,8 @@ int main(int argc, char *argv[])
    // BEGIN timestep to solution */
 #if USE_MPI   
    double start = MPI_Wtime();
+   double start2 = MPI_Wtime();
+   int repart_iter = 0;
 #else
    timeval start;
    gettimeofday(&start, NULL) ;
@@ -2911,9 +2913,21 @@ int main(int argc, char *argv[])
        // and do it once in the 5th iteration
        // so far de activated
 #if USE_MPI
-
+       
        if (opts.repart>0 && locDom->cycle() == opts.cycle)
        {
+
+           double intermediate_timer = MPI_Wtime() - start2;
+           
+           double itG;
+           MPI_Reduce(&intermediate_timer, &itG, 1, MPI_DOUBLE,
+              MPI_MAX, 0, MPI_COMM_WORLD);
+
+           if ((myRank == 0) && (opts.quiet == 0)) {
+              printf("Starting Repartitioning, current runtime = %f s\n", itG);
+              printf("Previous Time per Iteration: %f s \n", itG/locDom->cycle());
+           }
+           
            laik_log((Laik_LogLevel)2,"Before repart\n" );
            laik_log((Laik_LogLevel)2,"My ID in main world: %d\n", laik_myid(world) );
 
@@ -2995,6 +3009,9 @@ int main(int argc, char *argv[])
            laik_log((Laik_LogLevel)2,"After repart\n");
           printf("Repartition Done in %f s on Rank %d\n", duration, laik_myid(world));
 
+          
+          start2 = MPI_Wtime();
+          repart_iter = locDom->cycle();
        }
 #endif
 
@@ -3025,6 +3042,7 @@ int main(int argc, char *argv[])
    double elapsed_time;
 #if USE_MPI   
    elapsed_time = MPI_Wtime() - start;
+   double alternate_time = MPI_Wtime() - start2;
 #else
    timeval end;
    gettimeofday(&end, NULL) ;
@@ -3032,7 +3050,10 @@ int main(int argc, char *argv[])
 #endif
    double elapsed_timeG;
 #if USE_MPI   
+    double elapsed_timeG2;
    MPI_Reduce(&elapsed_time, &elapsed_timeG, 1, MPI_DOUBLE,
+              MPI_MAX, 0, MPI_COMM_WORLD);
+  MPI_Reduce(&alternate_time, &elapsed_timeG2, 1, MPI_DOUBLE,
               MPI_MAX, 0, MPI_COMM_WORLD);
 #else
    elapsed_timeG = elapsed_time;
@@ -3045,6 +3066,11 @@ int main(int argc, char *argv[])
    
    if ((myRank == 0) && (opts.quiet == 0)) {
       VerifyAndWriteFinalOutput(elapsed_timeG, *locDom, opts.nx, numRanks);
+#ifdef USE_MPI
+      if (opts.repart>0){
+        printf("Time After Repartitioing: %f, per Iteration %f\n", elapsed_timeG2, elapsed_timeG2/(locDom->cycle() - repart_iter));
+      }
+#endif
    }
 
 #if USE_MPI   
