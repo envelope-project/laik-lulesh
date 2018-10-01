@@ -377,13 +377,16 @@ void laik_vector_ex_repart<T>::migrate(Laik_Group* new_group, Laik_Partitioning*
     T* base;
     int nSlices;
 
-    int id =0;
+    //int id =0;
 
+    /*
     if (laik_myid(world)==id)
         printf("migration!\n" );
+    */
 
     init_config_params(new_group);
 
+    /*
     if (laik_myid(world)==id){
         printf("before switch!\n" );
         for (int i = 0; i < data_vector.size(); ++i) {
@@ -391,6 +394,7 @@ void laik_vector_ex_repart<T>::migrate(Laik_Group* new_group, Laik_Partitioning*
         }
         printf("\n");
     }
+    */
 
     laik_switchto_partitioning(data, p1, LAIK_DF_Preserve, LAIK_RO_None);
     // copy the data from stl vector into the laik container
@@ -402,6 +406,7 @@ void laik_vector_ex_repart<T>::migrate(Laik_Group* new_group, Laik_Partitioning*
         //std::copy( base, base + cnt, data_vector.begin() + n*count );
     }
 
+    /*
     if (laik_myid(world)==id){
         printf("copy to laik_vector done!\n" );
         nSlices = laik_my_slicecount(p1);
@@ -414,6 +419,7 @@ void laik_vector_ex_repart<T>::migrate(Laik_Group* new_group, Laik_Partitioning*
         }
         printf("\n");
     }
+    */
 
 
     // perform switches for communication
@@ -443,6 +449,7 @@ void laik_vector_ex_repart<T>::migrate(Laik_Group* new_group, Laik_Partitioning*
         //std::copy(data_vector.begin() + n*count ,data_vector.begin() + (n+1)*count-1 , base);
     }
 
+    /*
     if (laik_myid(world)==id){
         printf("before switch!\n" );
         for (int i = 0; i < data_vector.size(); ++i) {
@@ -450,6 +457,7 @@ void laik_vector_ex_repart<T>::migrate(Laik_Group* new_group, Laik_Partitioning*
         }
         printf("\n");
     }
+    */
 }
 
 template <typename T>
