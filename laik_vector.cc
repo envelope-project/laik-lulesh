@@ -366,6 +366,93 @@ void laik_vector_halo<T>::switch_to_read_phase(){
     state=0;
 }
 
+
+// ////////////////////////////////////////////////////////////////////////
+// implementation of laik_vector with halo partitioning (node partitioning)
+// for repartitioning of exclusive data structs
+// ////////////////////////////////////////////////////////////////////////
+template <typename T>
+void laik_vector_ex_repart<T>::migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2, Laik_Transition* t_new_1, Laik_Transition* t_new_2){
+    uint64_t cnt;
+    int* base;
+    //int slice = 0;
+
+    init_config_params(new_group);
+
+    laik_switchto_partitioning(data, p1, LAIK_DF_None, LAIK_RO_None);
+
+    // use the reservation API to precalculate the pointers
+    Laik_Reservation* reservation = laik_reservation_new(data);
+    laik_reservation_add(reservation, p_new_2);
+    laik_reservation_add(reservation, p_new_1);
+    laik_reservation_alloc(reservation);
+    laik_data_use_reservation(data, reservation);
+
+    laik_switchto_partitioning(data, p_new_1, LAIK_DF_Preserve, LAIK_RO_None);
+
+    if (laik_myid(new_group)< 0) {
+        return;
+    }
+
+    asW = laik_calc_actions(data, t_new_1, reservation, reservation);
+    asR = laik_calc_actions(data, t_new_2, reservation, reservation);
+
+    this -> p1=p_new_1;
+    this -> p2=p_new_2;
+    this -> toW=t_new_1;
+    this -> toR=t_new_2;
+    this -> world = new_group;
+    if (laik_myid(world)<0)
+        return ;
+
+    laik_switchto_partitioning(data, p1, LAIK_DF_None, LAIK_RO_None);
+    int nSlices = laik_my_slicecount(p1);
+    for (int n = 0; n < nSlices; n++)
+    {
+        laik_map_def(data, n, (void **)&base, &cnt);
+    }
+    laik_switchto_partitioning(data, p2, LAIK_DF_Preserve, LAIK_RO_None);
+
+    this -> state = 0;
+    this -> count = cnt;
+
+    this -> calculate_pointers();
+}
+
+
+template <typename T>
+laik_vector_ex_repart<T>::laik_vector_ex_repart(Laik_Instance *inst,
+                                   Laik_Group *world,
+                                      Laik_Space* indexSpace,
+                                      Laik_Partitioning *p1, Laik_Partitioning *p2, Laik_Transition* t1, Laik_Transition* t2, Laik_ReductionOperation operation):laik_vector<T>(inst,world, indexSpace, p1, p2, t1, t2, operation){}
+template <typename T>
+void laik_vector_ex_repart<T>::resize(int count){
+
+    int s =  count / laik_size(world);
+    data_vector.resize(s);
+}
+
+template <typename T>
+T* laik_vector_ex_repart<T>::calc_pointer(int idx, int state){
+     return &zero;
+}
+
+template <typename T>
+void laik_vector_ex_repart<T>::calculate_pointers(){
+
+}
+
+template <typename T>
+void laik_vector_ex_repart<T>::switch_to_write_phase(){
+
+}
+
+template <typename T>
+void laik_vector_ex_repart<T>::switch_to_read_phase(){
+
+}
+
+
 // ///////////////////////////////////////////////////////////
 // implementation of laik_vector with overlapping partitioning
 // (node partitioning)
@@ -502,4 +589,6 @@ void laik_vector_overlapping<T>::migrate(Laik_Group* new_group, Laik_Partitionin
 template class laik_vector<double>;
 template class laik_vector_halo<int>;
 template class laik_vector_halo<double>;
+template class laik_vector_ex_repart<int>;
+template class laik_vector_ex_repart<double>;
 template class laik_vector_overlapping<double>;

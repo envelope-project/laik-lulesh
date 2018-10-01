@@ -643,9 +643,9 @@ m_delx_zeta.resize(numElem) ;
    std::vector<Int_t>    m_elemBC ;  /* symmetry/free-surface flags for each elem face */
 
 #ifdef REPARTITIONING
-   laik_vector_halo<double> m_dxx ;  /* principal strains -- temporary */
-   laik_vector_halo<double> m_dyy ;
-   laik_vector_halo<double> m_dzz ;
+   laik_vector_ex_repart<double> m_dxx ;  /* principal strains -- temporary */
+   laik_vector_ex_repart<double> m_dyy ;
+   laik_vector_ex_repart<double> m_dzz ;
 #endif
 
 #ifdef PERFORMANCE
@@ -659,28 +659,28 @@ m_delx_zeta.resize(numElem) ;
    laik_vector_halo<double> m_delv_zeta ;
 
 #ifdef REPARTITIONING
-   laik_vector_halo<double> m_delx_xi ;    /* coordinate gradient -- temporary */
-   laik_vector_halo<double> m_delx_eta ;
-   laik_vector_halo<double> m_delx_zeta ;
+   laik_vector_ex_repart<double> m_delx_xi ;    /* coordinate gradient -- temporary */
+   laik_vector_ex_repart<double> m_delx_eta ;
+   laik_vector_ex_repart<double> m_delx_zeta ;
    
-   laik_vector_halo<double> m_e ;   /* energy */
+   laik_vector_ex_repart<double> m_e ;   /* energy */
 
-   laik_vector_halo<double> m_p ;   /* pressure */
-   laik_vector_halo<double> m_q ;   /* q */
-   laik_vector_halo<double> m_ql ;  /* linear term for q */
-   laik_vector_halo<double> m_qq ;  /* quadratic term for q */
+   laik_vector_ex_repart<double> m_p ;   /* pressure */
+   laik_vector_ex_repart<double> m_q ;   /* q */
+   laik_vector_ex_repart<double> m_ql ;  /* linear term for q */
+   laik_vector_ex_repart<double> m_qq ;  /* quadratic term for q */
 
-   laik_vector_halo<double> m_v ;     /* relative volume */
-   laik_vector_halo<double> m_volo ;  /* reference volume */
+   laik_vector_ex_repart<double> m_v ;     /* relative volume */
+   laik_vector_ex_repart<double> m_volo ;  /* reference volume */
    std::vector<Real_t> m_vnew ;  /* new relative volume -- temporary */
-   laik_vector_halo<double> m_delv ;  /* m_vnew - m_v */
-   laik_vector_halo<double> m_vdov ;  /* volume derivative over volume */
+   laik_vector_ex_repart<double> m_delv ;  /* m_vnew - m_v */
+   laik_vector_ex_repart<double> m_vdov ;  /* volume derivative over volume */
 
-   laik_vector_halo<double> m_arealg ;  /* characteristic length of an element */
+   laik_vector_ex_repart<double> m_arealg ;  /* characteristic length of an element */
    
-   laik_vector_halo<double> m_ss ;      /* "sound speed" */
+   laik_vector_ex_repart<double> m_ss ;      /* "sound speed" */
 
-   laik_vector_halo<double> m_elemMass ;  /* mass */
+   laik_vector_ex_repart<double> m_elemMass ;  /* mass */
 #endif
 
 #ifdef PERFORMANCE
