@@ -323,14 +323,15 @@ m_delx_zeta.resize(numElem) ;
        m_fz.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
        m_nodalMass.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
 #ifdef REPARTITIONING
-       m_dxx.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
-       m_dyy.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
-       m_dzz.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       //m_dxx.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       //m_dyy.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       //m_dzz.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
 #endif
        m_delv_xi.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
        m_delv_eta.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
        m_delv_zeta.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
 #ifdef REPARTITIONING
+       /*
        m_delx_xi.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
        m_delx_eta.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
        m_delx_zeta.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
@@ -345,8 +346,11 @@ m_delx_zeta.resize(numElem) ;
        m_delv.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
        m_vdov.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
        m_arealg.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       */
        m_ss.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       /*
        m_elemMass.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
+       */
 #endif
        this -> world = new_group;
 }
