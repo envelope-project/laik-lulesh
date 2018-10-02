@@ -3,6 +3,7 @@
 #include <lulesh.h>
 #include<limits.h>
 #include <type_traits>
+#include <string.h>
 
 template <typename T>
 laik_vector<T>::laik_vector(Laik_Instance* inst, Laik_Group* world, Laik_Space* indexSpace, Laik_Partitioning *p1, Laik_Partitioning *p2, Laik_Transition* t1, Laik_Transition* t2, Laik_ReductionOperation operation):reduction_operation(operation){
