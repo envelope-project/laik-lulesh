@@ -210,14 +210,6 @@ T& laik_vector_halo<T>::operator [](int idx){
     return *(this -> pointer_cache[idx]);
 }
 
-/*
-template <typename T>
-inline
-T& laik_vector_ex_repart<T>::operator [](int idx){
-    return *(this -> pointer_cache[idx]);
-}
-*/
-
 template <typename T>
 inline
 T& laik_vector_ex_repart<T>::operator [](int idx){
@@ -228,6 +220,12 @@ template <typename T>
 inline
 T& laik_vector_overlapping<T>::operator [](int idx){
     return *(this -> pointer_cache[idx]);
+}
+
+template <typename T>
+inline
+T& laik_vector_overlapping_repart<T>::operator [](int idx){
+    return this -> data_vector[idx];
 }
 
 #endif // LAIK_VECTOR

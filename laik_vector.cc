@@ -530,7 +530,6 @@ void laik_vector_overlapping<T>::resize(int count){
 
     size = count;
 
-
     if (std::is_same <T, double>::value) {
         data = laik_new_data(indexSpace, laik_Double );
 
@@ -656,26 +655,23 @@ void laik_vector_overlapping_repart<T>::migrate(Laik_Group* new_group, Laik_Part
     T* base;
     int nSlices;
 
+
     //int id =0;
 
-    /*
-    if (laik_myid(world)==id)
-        printf("migration!\n" );
-    */
+    //if (laik_myid(world)==id)
+    //    printf("migration!\n" );
 
     init_config_params(new_group);
 
-    /*
-    if (laik_myid(world)==id){
-        printf("before switch!\n" );
-        for (int i = 0; i < data_vector.size(); ++i) {
-            printf("%f\n",data_vector[i] );
-        }
-        printf("\n");
-    }
-    */
+    //if (laik_myid(world)==id){
+    //    printf("before switch!\n" );
+    //    for (int i = 0; i < data_vector.size(); ++i) {
+    //        printf("%f\n",data_vector[i] );
+    //    }
+    //    printf("\n");
+    //}
 
-    laik_switchto_partitioning(data, p1, LAIK_DF_Preserve, LAIK_RO_None);
+    laik_switchto_partitioning(data, p1, LAIK_DF_None, LAIK_RO_Min);
     // copy the data from stl vector into the laik container
     nSlices = laik_my_slicecount(p1);
     for (int n = 0; n < nSlices; n++)
@@ -700,10 +696,8 @@ void laik_vector_overlapping_repart<T>::migrate(Laik_Group* new_group, Laik_Part
     }
     */
 
-
     // perform switches for communication
-
-    laik_switchto_partitioning(data, p_new_1, LAIK_DF_Preserve, LAIK_RO_None);
+    laik_switchto_partitioning(data, p_new_1, LAIK_DF_Preserve, LAIK_RO_Min);
 
     this -> world = new_group;
     if (laik_myid(world)<0)
@@ -747,7 +741,8 @@ laik_vector_overlapping_repart<T>::laik_vector_overlapping_repart(Laik_Instance 
 template <typename T>
 void laik_vector_overlapping_repart<T>::resize(int count){
 
-    int s =  count / laik_size(world);
+    int side = cbrt (laik_size(world));
+    int s = (int) (cbrt (count)  - ( side + 1 ) + 0.1) + 1;
     data_vector.resize(s);
 
     this -> size = count;
@@ -760,7 +755,7 @@ void laik_vector_overlapping_repart<T>::resize(int count){
         data = laik_new_data(indexSpace, laik_Int64 );
     }
 
-    laik_switchto_partitioning(data, p1, LAIK_DF_None, reduction_operation);
+    laik_switchto_partitioning(data, p1, LAIK_DF_None, LAIK_RO_Min);
     uint64_t cnt;
     T* base;
     int nSlices = laik_my_slicecount(p1);
