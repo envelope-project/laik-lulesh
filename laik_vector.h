@@ -163,6 +163,48 @@ private:
 };
 
 template <typename T>
+class laik_vector_overlapping_repart:public laik_vector<T>
+{
+public:
+    laik_vector_overlapping_repart(Laik_Instance* inst, Laik_Group* world, Laik_Space* indexSpace, Laik_Partitioning *p1, Laik_Partitioning *p2, Laik_Transition* t1, Laik_Transition* t2, Laik_ReductionOperation operation = LAIK_RO_None);
+    inline T& operator [](int idx);
+    T* calc_pointer(int idx, int state);
+    void calculate_pointers();
+    void resize(int count);
+    void switch_to_write_phase();
+    void switch_to_read_phase();
+    void migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2, Laik_Transition* t_new_1, Laik_Transition* t_new_2);
+
+protected:
+    using laik_vector<T>::inst;
+    using laik_vector<T>::world;
+    using laik_vector<T>::size;
+    using laik_vector<T>::indexSpace;
+    using laik_vector<T>::p1;
+    using laik_vector<T>::p2;
+    using laik_vector<T>::toW;
+    using laik_vector<T>::toR;
+    using laik_vector<T>::asW;
+    using laik_vector<T>::asR;
+    using laik_vector<T>::data;
+    using laik_vector<T>::count;
+    using laik_vector<T>::f;
+    using laik_vector<T>::b;
+    using laik_vector<T>::u;
+    using laik_vector<T>::d;
+    using laik_vector<T>::l;
+    using laik_vector<T>::r;
+    using laik_vector<T>::state;
+    using laik_vector<T>::zero;
+    using laik_vector<T>::pointer_cache;
+    using laik_vector<T>::reduction_operation;
+    using laik_vector<T>::init_config_params;
+
+private:
+    std::vector<T> data_vector;
+};
+
+template <typename T>
 inline
 T& laik_vector_halo<T>::operator [](int idx){
     return *(this -> pointer_cache[idx]);
