@@ -353,7 +353,7 @@ void laik_vector_halo<T>::calculate_pointers(){
 
 template <typename T>
 void laik_vector_halo<T>::switch_to_write_phase(){
-    laik_exec_actions(asW);    
+    laik_exec_actions(asW);
     //laik_exec_transition(data,toW);
     //laik_switchto_phase(data, p1, LAIK_DF_CopyOut);
     state=1;
@@ -361,7 +361,7 @@ void laik_vector_halo<T>::switch_to_write_phase(){
 
 template <typename T>
 void laik_vector_halo<T>::switch_to_read_phase(){
-    laik_exec_actions(asR);    
+    laik_exec_actions(asR);
     //laik_exec_transition(data,toR);
     //laik_switchto_phase(data, p2, LAIK_DF_CopyIn);
     state=0;
@@ -656,21 +656,24 @@ void laik_vector_overlapping_repart<T>::migrate(Laik_Group* new_group, Laik_Part
     T* base;
     int nSlices;
 
+    /*
+    int id =0;
 
-    //int id =0;
-
-    //if (laik_myid(world)==id)
-    //    printf("migration!\n" );
+    if (laik_myid(world)==id)
+        printf("migration!\n" );
+    */
 
     init_config_params(new_group);
 
-    //if (laik_myid(world)==id){
-    //    printf("before switch!\n" );
-    //    for (int i = 0; i < data_vector.size(); ++i) {
-    //        printf("%f\n",data_vector[i] );
-    //    }
-    //    printf("\n");
-    //}
+    /*
+    if (laik_myid(world)==id){
+        printf("before switch!\n" );
+        for (int i = 0; i < data_vector.size(); ++i) {
+            printf("%f\n",data_vector[i] );
+        }
+        printf("\n");
+    }
+    */
 
     laik_switchto_partitioning(data, p1, LAIK_DF_None, LAIK_RO_Min);
     // copy the data from stl vector into the laik container
@@ -696,6 +699,7 @@ void laik_vector_overlapping_repart<T>::migrate(Laik_Group* new_group, Laik_Part
         printf("\n");
     }
     */
+
 
     // perform switches for communication
     laik_switchto_partitioning(data, p_new_1, LAIK_DF_Preserve, LAIK_RO_Min);
@@ -743,7 +747,8 @@ template <typename T>
 void laik_vector_overlapping_repart<T>::resize(int count){
 
     int side = cbrt (laik_size(world));
-    int s = (int) (cbrt (count)  - ( side + 1 ) + 0.1) + 1;
+    int s = (int) ((cbrt (count)  -  1 ) / side + 1 + 0.1 );
+    s = s*s*s;
     data_vector.resize(s);
 
     this -> size = count;
@@ -757,14 +762,9 @@ void laik_vector_overlapping_repart<T>::resize(int count){
     }
 
     laik_switchto_partitioning(data, p1, LAIK_DF_None, LAIK_RO_Min);
-    uint64_t cnt;
-    T* base;
-    int nSlices = laik_my_slicecount(p1);
-    for (int n = 0; n < nSlices; ++n)
-    {
-       laik_map_def(data, n, (void **)&base, &cnt);
-    }
-    this -> count = cnt;
+    Laik_TaskSlice* ts = laik_my_slice(p1, 0);
+    const Laik_Slice* sl = laik_taskslice_get_slice(ts);
+    this -> count = laik_slice_size(sl);
 }
 
 template <typename T>

@@ -580,17 +580,17 @@ m_delx_zeta.resize(numElem) ;
 
    /* Node-centered */
 #ifdef REPARTITIONING
-   laik_vector_overlapping<double> m_x ;  /* coordinates */
-   laik_vector_overlapping<double> m_y ;
-   laik_vector_overlapping<double> m_z ;
+   laik_vector_overlapping_repart<double> m_x ;  /* coordinates */
+   laik_vector_overlapping_repart<double> m_y ;
+   laik_vector_overlapping_repart<double> m_z ;
 
-   laik_vector_overlapping<double> m_xd ; /* velocities */
-   laik_vector_overlapping<double> m_yd ;
-   laik_vector_overlapping<double> m_zd ;
+   laik_vector_overlapping_repart<double> m_xd ; /* velocities */
+   laik_vector_overlapping_repart<double> m_yd ;
+   laik_vector_overlapping_repart<double> m_zd ;
 
-   laik_vector_overlapping<double> m_xdd ; /* accelerations */
-   laik_vector_overlapping<double> m_ydd ;
-   laik_vector_overlapping<double> m_zdd ;
+   laik_vector_overlapping_repart<double> m_xdd ; /* accelerations */
+   laik_vector_overlapping_repart<double> m_ydd ;
+   laik_vector_overlapping_repart<double> m_zdd ;
 
 #endif
 
