@@ -2817,6 +2817,13 @@ int main(int argc, char *argv[])
       printf("To print out progress, use -p\n");
       printf("To write an output file for VisIt, use -v\n");
       printf("See help (-h) for more options\n\n");
+	   
+#ifdef PERFORMANCE
+      printf(" \n=== TESTS ON PERFORMANCE MODE === \n");
+#endif
+#ifdef REPARTITIONING
+      printf(" \n=== TESTS ON REPARTITIONING MODE === \n");
+#endif
    }
 
    // Set up the mesh and decompose. Assumes regular cubes for now
