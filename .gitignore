@@ -12,3 +12,4 @@ laik-lulesh.files
 laik-lulesh.includes
 measurements/*
 *.dSYM
+*.out
