@@ -2859,6 +2859,18 @@ int main(int argc, char *argv[])
                                       overlapingPartitioning, overlapingPartitioning,
                                       LAIK_DF_Preserve, LAIK_RO_Sum);
 
+
+
+   // for repartitioning:
+   Laik_Partitioning *exclusivePartitioning2 = nullptr;
+   Laik_Partitioning *haloPartitioning2 = nullptr;
+   Laik_Partitioning *overlapingPartitioning2 = nullptr;
+   Laik_Partitioning *allPartitioning2 = nullptr;
+   Laik_Transition *transitionToExclusive2 = nullptr;
+   Laik_Transition *transitionToHalo2 = nullptr;
+   Laik_Transition *transitionToOverlappingInit2 = nullptr;
+   Laik_Transition *transitionToOverlappingReduce2 = nullptr;
+
    // time increamet reduction
    Laik_Space* indexSapce_dt = laik_new_space_1d(inst, 1);
    Laik_Partitioning * allPartitioning = laik_new_partitioning(laik_All, world, indexSapce_dt, 0);
@@ -2919,6 +2931,9 @@ int main(int argc, char *argv[])
        // do it only for 8 -> 1
        // and do it once in the 5th iteration
        // so far de activated
+
+// TODO remove the following def
+#define USE_MPI 1
 #if USE_MPI
        
        if (opts.repart>0 && locDom->cycle() == opts.cycle)
@@ -2973,27 +2988,27 @@ int main(int argc, char *argv[])
             
            Laik_Group* shrinked_group = laik_new_shrinked_group(world, diffsize, removeList);
 
-           exclusivePartitioning = laik_new_partitioning(exclusive_partitioner(), shrinked_group, indexSpaceElements, 0);
-           haloPartitioning = laik_new_partitioning(overlaping_partitioner(halo_depth), shrinked_group, indexSpaceElements, exclusivePartitioning);
-           overlapingPartitioning =laik_new_partitioning(overlaping_reduction_partitioner(halo_depth),
+           exclusivePartitioning2 = laik_new_partitioning(exclusive_partitioner(), shrinked_group, indexSpaceElements, 0);
+           haloPartitioning2 = laik_new_partitioning(overlaping_partitioner(halo_depth), shrinked_group, indexSpaceElements, exclusivePartitioning2);
+           overlapingPartitioning2 =laik_new_partitioning(overlaping_reduction_partitioner(halo_depth),
                                                          shrinked_group, indexSpaceNodes, 0);
-           allPartitioning = laik_new_partitioning(laik_All, shrinked_group, indexSapce_dt, 0);
+           allPartitioning2 = laik_new_partitioning(laik_All, shrinked_group, indexSapce_dt, 0);
            // re-calculate the transition object
-           transitionToExclusive = laik_calc_transition(indexSpaceElements,
-                                                                         haloPartitioning,
-                                                                         exclusivePartitioning, LAIK_DF_None, LAIK_RO_None);
-           transitionToHalo = laik_calc_transition(indexSpaceElements,
-                                                                    exclusivePartitioning,
-                                                                    haloPartitioning, LAIK_DF_Preserve, LAIK_RO_None);
-           transitionToOverlappingInit = laik_calc_transition(indexSpaceNodes,
-                                                                               overlapingPartitioning, overlapingPartitioning,
+           transitionToExclusive2 = laik_calc_transition(indexSpaceElements,
+                                                                         haloPartitioning2,
+                                                                         exclusivePartitioning2, LAIK_DF_None, LAIK_RO_None);
+           transitionToHalo2 = laik_calc_transition(indexSpaceElements,
+                                                                    exclusivePartitioning2,
+                                                                    haloPartitioning2, LAIK_DF_Preserve, LAIK_RO_None);
+           transitionToOverlappingInit2 = laik_calc_transition(indexSpaceNodes,
+                                                                               overlapingPartitioning2, overlapingPartitioning2,
                                                                                LAIK_DF_Init, LAIK_RO_Sum);
-           transitionToOverlappingReduce = laik_calc_transition(indexSpaceNodes,
-                                                                                 overlapingPartitioning, overlapingPartitioning,
+           transitionToOverlappingReduce2 = laik_calc_transition(indexSpaceNodes,
+                                                                                 overlapingPartitioning2, overlapingPartitioning2,
                                                                                  LAIK_DF_Preserve, LAIK_RO_Sum);
 
            // data migration for all the data structures
-           locDom->re_distribute_data_structures(shrinked_group, exclusivePartitioning, haloPartitioning, overlapingPartitioning, transitionToExclusive, transitionToHalo, transitionToOverlappingInit, transitionToOverlappingReduce);
+           locDom->re_distribute_data_structures(shrinked_group, exclusivePartitioning2, haloPartitioning2, overlapingPartitioning2, transitionToExclusive2, transitionToHalo2, transitionToOverlappingInit2, transitionToOverlappingReduce2);
 
            if (laik_myid(shrinked_group)==-1) {
                //laik_finalize(inst);
@@ -3001,8 +3016,8 @@ int main(int argc, char *argv[])
            }
 
            // only for dt, repartition and get the base pointer
-           laik_switchto_partitioning(laik_dt, allPartitioning, LAIK_DF_None, LAIK_RO_Min);
-           laik_switchto_partitioning(laik_dt, allPartitioning, LAIK_DF_Preserve, LAIK_RO_Min);
+           laik_switchto_partitioning(laik_dt, allPartitioning2, LAIK_DF_None, LAIK_RO_Min);
+           laik_switchto_partitioning(laik_dt, allPartitioning2, LAIK_DF_Preserve, LAIK_RO_Min);
            laik_map_def1(laik_dt, (void**) &dt_base, &dt_count);
 
            world = shrinked_group;
@@ -3019,6 +3034,17 @@ int main(int argc, char *argv[])
           
           start2 = MPI_Wtime();
           repart_iter = locDom->cycle();
+
+
+          allPartitioning = allPartitioning2;
+
+          laik_free_partitioning (exclusivePartitioning);
+          laik_free_partitioning (haloPartitioning);
+          laik_free_partitioning (overlapingPartitioning);
+          free (transitionToExclusive);
+          free (transitionToHalo);
+          free (transitionToOverlappingInit);
+          free (transitionToOverlappingReduce);
        }
 #endif
 
@@ -3035,6 +3061,7 @@ int main(int argc, char *argv[])
                
        }
 */
+
 
        TimeIncrement(*locDom, laik_dt, allPartitioning, *dt_base) ;
        LagrangeLeapFrog(*locDom) ;

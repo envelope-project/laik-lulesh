@@ -31,7 +31,7 @@ OBJECTS2.0 = $(SOURCES2.0:.cc=.o)
 TARGET = REPARTITIONING
 
 #Default build suggestions with OpenMP for g++
-OPT = -O3
+OPT = -O0 -g
 #CXXFLAGS = -g $(OPT) -std=c++11 -fopenmp -I. -Wall $(LAIK_INC) -DUSE_MPI=1 -DREPARTITIONING=1
 CXXFLAGS = $(OPT) -std=c++11 -fopenmp -I. -Wall $(LAIK_INC) -DUSE_MPI=1 -D$(TARGET)=1
 LDFLAGS = $(OPT) -std=c++11 -fopenmp -Wl,-rpath,$(abspath $(LAIK_ROOT)) $(LAIK_LIB)  -lmpi
