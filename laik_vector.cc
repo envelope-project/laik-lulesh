@@ -14,6 +14,7 @@ laik_vector<T>::laik_vector(Laik_Instance* inst, Laik_Group* world, Laik_Space* 
     this -> p2 = p2;
     this -> toW = t1;
     this -> toR = t2;
+    this -> pointer_cache = nullptr;
 
     this -> init_config_params(world);
 }
@@ -321,6 +322,9 @@ T* laik_vector_halo<T>::calc_pointer(int idx, int state){
 template <typename T>
 void laik_vector_halo<T>::calculate_pointers(){
     int numElems = count*count*count;
+
+    if (pointer_cache != nullptr)   free (pointer_cache);
+
     pointer_cache= (T**) malloc (numElems * sizeof(T*));
     laik_switchto_partitioning(data, p1, LAIK_DF_None, reduction_operation);
 
@@ -580,6 +584,9 @@ T* laik_vector_overlapping<T>::calc_pointer(int idx){
 
 template <typename T>
 void laik_vector_overlapping<T>::calculate_pointers(){
+
+    if (pointer_cache != nullptr)   free (pointer_cache);
+
     pointer_cache = (T**) malloc (size * sizeof(T*));
 
     for (int i = 0; i < size; ++i) {
