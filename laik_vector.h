@@ -54,31 +54,6 @@ public:
     void switch_to_write_phase();
     void switch_to_read_phase();
     void migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2, Laik_Transition* t_new_1, Laik_Transition* t_new_2);
-
-protected:
-    using laik_vector<T>::inst;
-    using laik_vector<T>::world;
-    using laik_vector<T>::size;
-    using laik_vector<T>::indexSpace;
-    using laik_vector<T>::p1;
-    using laik_vector<T>::p2;
-    using laik_vector<T>::toW;
-    using laik_vector<T>::toR;
-    using laik_vector<T>::asW;
-    using laik_vector<T>::asR;
-    using laik_vector<T>::data;
-    using laik_vector<T>::count;
-    using laik_vector<T>::f;
-    using laik_vector<T>::b;
-    using laik_vector<T>::u;
-    using laik_vector<T>::d;
-    using laik_vector<T>::l;
-    using laik_vector<T>::r;
-    using laik_vector<T>::state;
-    using laik_vector<T>::zero;
-    using laik_vector<T>::pointer_cache;
-    using laik_vector<T>::reduction_operation;
-    using laik_vector<T>::init_config_params;
 };
 
 template <typename T>
@@ -93,31 +68,6 @@ public:
     void switch_to_write_phase();
     void switch_to_read_phase();
     void migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2, Laik_Transition* t_new_1, Laik_Transition* t_new_2);
-
-protected:
-    using laik_vector<T>::inst;
-    using laik_vector<T>::world;
-    using laik_vector<T>::size;
-    using laik_vector<T>::indexSpace;
-    using laik_vector<T>::p1;
-    using laik_vector<T>::p2;
-    using laik_vector<T>::toW;
-    using laik_vector<T>::toR;
-    using laik_vector<T>::asW;
-    using laik_vector<T>::asR;
-    using laik_vector<T>::data;
-    using laik_vector<T>::count;
-    using laik_vector<T>::f;
-    using laik_vector<T>::b;
-    using laik_vector<T>::u;
-    using laik_vector<T>::d;
-    using laik_vector<T>::l;
-    using laik_vector<T>::r;
-    using laik_vector<T>::state;
-    using laik_vector<T>::zero;
-    using laik_vector<T>::pointer_cache;
-    using laik_vector<T>::reduction_operation;
-    using laik_vector<T>::init_config_params;
 };
 
 template <typename T>
@@ -132,31 +82,6 @@ public:
     void switch_to_write_phase();
     void switch_to_read_phase();
     void migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2, Laik_Transition* t_new_1, Laik_Transition* t_new_2);
-
-protected:
-    using laik_vector<T>::inst;
-    using laik_vector<T>::world;
-    using laik_vector<T>::size;
-    using laik_vector<T>::indexSpace;
-    using laik_vector<T>::p1;
-    using laik_vector<T>::p2;
-    using laik_vector<T>::toW;
-    using laik_vector<T>::toR;
-    using laik_vector<T>::asW;
-    using laik_vector<T>::asR;
-    using laik_vector<T>::data;
-    using laik_vector<T>::count;
-    using laik_vector<T>::f;
-    using laik_vector<T>::b;
-    using laik_vector<T>::u;
-    using laik_vector<T>::d;
-    using laik_vector<T>::l;
-    using laik_vector<T>::r;
-    using laik_vector<T>::state;
-    using laik_vector<T>::zero;
-    using laik_vector<T>::pointer_cache;
-    using laik_vector<T>::reduction_operation;
-    using laik_vector<T>::init_config_params;
 
 private:
     std::vector<T> data_vector;
@@ -174,31 +99,6 @@ public:
     void switch_to_write_phase();
     void switch_to_read_phase();
     void migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2, Laik_Transition* t_new_1, Laik_Transition* t_new_2);
-
-protected:
-    using laik_vector<T>::inst;
-    using laik_vector<T>::world;
-    using laik_vector<T>::size;
-    using laik_vector<T>::indexSpace;
-    using laik_vector<T>::p1;
-    using laik_vector<T>::p2;
-    using laik_vector<T>::toW;
-    using laik_vector<T>::toR;
-    using laik_vector<T>::asW;
-    using laik_vector<T>::asR;
-    using laik_vector<T>::data;
-    using laik_vector<T>::count;
-    using laik_vector<T>::f;
-    using laik_vector<T>::b;
-    using laik_vector<T>::u;
-    using laik_vector<T>::d;
-    using laik_vector<T>::l;
-    using laik_vector<T>::r;
-    using laik_vector<T>::state;
-    using laik_vector<T>::zero;
-    using laik_vector<T>::pointer_cache;
-    using laik_vector<T>::reduction_operation;
-    using laik_vector<T>::init_config_params;
 
 private:
     std::vector<T> data_vector;

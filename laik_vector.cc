@@ -83,41 +83,41 @@ void laik_vector_halo<T>::migrate(Laik_Group* new_group, Laik_Partitioning* p_ne
     int* base;
     //int slice = 0;
 
-    init_config_params(new_group);
+    this->init_config_params(new_group);
 
-    laik_switchto_partitioning(data, p1, LAIK_DF_None, LAIK_RO_None);
+    laik_switchto_partitioning(this->data, this->p1, LAIK_DF_None, LAIK_RO_None);
 
     // use the reservation API to precalculate the pointers
-    Laik_Reservation* reservation = laik_reservation_new(data);
+    Laik_Reservation* reservation = laik_reservation_new(this->data);
     laik_reservation_add(reservation, p_new_2);
     laik_reservation_add(reservation, p_new_1);
     laik_reservation_alloc(reservation);
-    laik_data_use_reservation(data, reservation);
+    laik_data_use_reservation(this->data, reservation);
 
-    laik_switchto_partitioning(data, p_new_1, LAIK_DF_Preserve, LAIK_RO_None);
+    laik_switchto_partitioning(this->data, p_new_1, LAIK_DF_Preserve, LAIK_RO_None);
 
     if (laik_myid(new_group)< 0) {
         return;
     }
 
-    asW = laik_calc_actions(data, t_new_1, reservation, reservation);
-    asR = laik_calc_actions(data, t_new_2, reservation, reservation);
+    this->asW = laik_calc_actions(this->data, t_new_1, reservation, reservation);
+    this->asR = laik_calc_actions(this->data, t_new_2, reservation, reservation);
 
     this -> p1=p_new_1;
     this -> p2=p_new_2;
     this -> toW=t_new_1;
     this -> toR=t_new_2;
     this -> world = new_group;
-    if (laik_myid(world)<0)
+    if (laik_myid(this->world)<0)
         return ;
 
-    laik_switchto_partitioning(data, p1, LAIK_DF_None, LAIK_RO_None);
-    int nSlices = laik_my_slicecount(p1);
+    laik_switchto_partitioning(this->data, this->p1, LAIK_DF_None, LAIK_RO_None);
+    int nSlices = laik_my_slicecount(this->p1);
     for (int n = 0; n < nSlices; n++)
     {
-        laik_map_def(data, n, (void **)&base, &cnt);
+        laik_map_def(this->data, n, (void **)&base, &cnt);
     }
-    laik_switchto_partitioning(data, p2, LAIK_DF_Preserve, LAIK_RO_None);
+    laik_switchto_partitioning(this->data, this->p2, LAIK_DF_Preserve, LAIK_RO_None);
 
     this -> state = 0;
     this -> count = cnt;
@@ -134,50 +134,45 @@ laik_vector_halo<T>::laik_vector_halo(Laik_Instance *inst,
 template <typename T>
 void laik_vector_halo<T>::resize(int count){
 
-    size = count;
+    this->size = count;
 
     if (std::is_same <T, double>::value) {
-        data = laik_new_data(indexSpace, laik_Double );
+        this->data = laik_new_data(this->indexSpace, laik_Double );
 
     }
     else if (std::is_same <T, int>::value){
-        data = laik_new_data(indexSpace, laik_Int64 );
+        this->data = laik_new_data(this->indexSpace, laik_Int64 );
     }
 
     // use the reservation API to precalculate the pointers
-    Laik_Reservation* reservation = laik_reservation_new(data);
-    laik_reservation_add(reservation, p2);
-    laik_reservation_add(reservation, p1);
+    Laik_Reservation* reservation = laik_reservation_new(this->data);
+    laik_reservation_add(reservation, this->p2);
+    laik_reservation_add(reservation, this->p1);
 
     laik_reservation_alloc(reservation);
-    laik_data_use_reservation(data, reservation);
+    laik_data_use_reservation(this->data, reservation);
 
-    asW = laik_calc_actions(data, toW, reservation, reservation);
-    asR = laik_calc_actions(data, toR, reservation, reservation);
+    this->asW = laik_calc_actions(this->data, this->toW, reservation, reservation);
+    this->asR = laik_calc_actions(this->data, this->toR, reservation, reservation);
 
     // go through the slices to just allocate the memory
     uint64_t cnt;
     T* base;
 
     //laik_exec_transition(data, toExclusive);
-    laik_switchto_partitioning(data, p1, LAIK_DF_None, reduction_operation);
-    int nSlices = laik_my_slicecount(p1);
+    laik_switchto_partitioning(this->data, this->p1, LAIK_DF_None, this->reduction_operation);
+    int nSlices = laik_my_slicecount(this->p1);
     for (int n = 0; n < nSlices; ++n)
     {
-       laik_map_def(data, n, (void **)&base, &cnt);
+       laik_map_def(this->data, n, (void **)&base, &cnt);
     }
     //laik_exec_transition(data, toHalo);
-    laik_switchto_partitioning(data, p2, LAIK_DF_Preserve, reduction_operation);
+    laik_switchto_partitioning(this->data, this->p2, LAIK_DF_Preserve, this->reduction_operation);
 
     this -> count = cnt;
     this -> calculate_pointers();
 }
 
-/*
-double& laik_vector_halo::operator [](int idx){
-    return *(this -> halo_pointers[idx]);
-}
-*/
 template <typename T>
 T* laik_vector_halo<T>::calc_pointer(int idx, int state){
     uint64_t cnt;
@@ -189,7 +184,7 @@ T* laik_vector_halo<T>::calc_pointer(int idx, int state){
     int index=0;
     int slice=-1;
     int side =-1;
-    int numElem=count*count*count;
+    int numElem=this->count*this->count*this->count;
 
     Index_t ghostIdx[6] ;  // offsets to ghost locations
 
@@ -198,35 +193,29 @@ T* laik_vector_halo<T>::calc_pointer(int idx, int state){
     }
 
     Int_t pidx = numElem ;
-    if (b) {
+    if (this->b) {
       ghostIdx[0] = pidx ;
-      pidx += count*count ;
+      pidx += this->count*this->count ;
     }
-    if (f) {
+    if (this->f) {
       ghostIdx[1] = pidx ;
-      pidx += count*count ;
+      pidx += this->count*this->count ;
     }
-    if (d) {
+    if (this->d) {
       ghostIdx[2] = pidx ;
-      pidx += count*count ;
+      pidx += this->count*this->count ;
     }
-    if (u) {
+    if (this->u) {
       ghostIdx[3] = pidx ;
-      pidx += count*count ;
+      pidx += this->count*this->count ;
     }
-    if (l) {
+    if (this->l) {
       ghostIdx[4] = pidx ;
-      pidx += count*count ;
+      pidx += this->count*this->count ;
     }
-    if (r) {
+    if (this->r) {
       ghostIdx[5] = pidx ;
     }
-
-    /*
-    for (int i = 0; i < 6; ++i) {
-            laik_log(Laik_LogLevel(2), "%d", ghostIdx[i]);
-    }
-    */
 
     for (int i = 0; i < 6; ++i) {
         if  (idx>=ghostIdx[i]){
@@ -235,101 +224,101 @@ T* laik_vector_halo<T>::calc_pointer(int idx, int state){
     }
     // tested OK
     if (state) {
-        i = idx % count;
-        slice = idx/count;
+        i = idx % this->count;
+        slice = idx/this->count;
     }
     else{
         // tested OK
         if (idx < numElem) {
-            i = idx%count;
-            j = (idx/count)%count;
-            k = idx/(count*count);
-            slice = (count+d+u)*(k+b)+(j+d);
-            i += l;
+            i = idx%this->count;
+            j = (idx/this->count)%this->count;
+            k = idx/(this->count*this->count);
+            slice = (this->count+this->d+this->u)*(k+this->b)+(j+this->d);
+            i += this->l;
         }
 
         // back
         // tested OK
         else if (side==0) {
             index =idx-ghostIdx[side];
-            i = index%count;
-            j = index/count;
+            i = index%this->count;
+            j = index/this->count;
             k = -1;
-            slice = (count+d+u)*(k+b)+(j+d);
-            i += l;
+            slice = (this->count+this->d+this->u)*(k+this->b)+(j+this->d);
+            i += this->l;
         }
         // front
         // tested OK
         else if (side==1) {
             index =idx-ghostIdx[side];
-            i = index%count;
-            j = index/count;
-            k = count;
-            slice = (count+d+u)*(k+b)+(j+d);
-            i += l;
+            i = index%this->count;
+            j = index/this->count;
+            k = this->count;
+            slice = (this->count+this->d+this->u)*(k+this->b)+(j+this->d);
+            i += this->l;
         }
         //down
         //tested OK
         else if (side==2) {
             index =idx-ghostIdx[side];
-            i = index%count;
+            i = index%this->count;
             j = -1;
-            k = index/count;
-            slice = (count+d+u)*(k+b)+(j+d);
-            i += l;
+            k = index/this->count;
+            slice = (this->count+this->d+this->u)*(k+this->b)+(j+this->d);
+            i += this->l;
         }
         //up
         //tested OK
         else if (side==3) {
             index =idx-ghostIdx[side];
-            i = index%count;
-            j = count;
-            k = index/count;
-            slice = (count+d+u)*(k+b)+(j+d);
-            i += l;
+            i = index%this->count;
+            j = this->count;
+            k = index/this->count;
+            slice = (this->count+this->d+this->u)*(k+this->b)+(j+this->d);
+            i += this->l;
         }
         //left
         //tested OK
         else if (side==4) {
             index =idx-ghostIdx[side];
             i = -1;
-            j = index%count;
-            k = index/count;
-            slice = (count+d+u)*(k+b)+(j+d);
-            i += l;
+            j = index%this->count;
+            k = index/this->count;
+            slice = (this->count+this->d+this->u)*(k+this->b)+(j+this->d);
+            i += this->l;
         }
         //right
         //tested OK
         else if (side==5) {
             index =idx-ghostIdx[side];
-            i = count;
-            j = index%count;
-            k = index/count;
-            slice = (count+d+u)*(k+b)+(j+d);
-            i += l;
+            i = this->count;
+            j = index%this->count;
+            k = index/this->count;
+            slice = (this->count+this->d+this->u)*(k+this->b)+(j+this->d);
+            i += this->l;
         }
     }
 
     if (slice>-1) {
-        laik_map_def(data, slice, (void **)&base, &cnt);
+        laik_map_def(this->data, slice, (void **)&base, &cnt);
         //laik_log(Laik_LogLevel(2),"state: %d, idx: %d, pointer: %x", state, idx, base+i);
         return base+i;
     }
 
-    return &zero;
+    return &(this->zero);
 }
 
 template <typename T>
 void laik_vector_halo<T>::calculate_pointers(){
-    int numElems = count*count*count;
+    int numElems = this->count*this->count*this->count;
 
-    if (pointer_cache != nullptr)   free (pointer_cache);
+    if (this->pointer_cache != nullptr)   free (this->pointer_cache);
 
-    pointer_cache= (T**) malloc (numElems * sizeof(T*));
-    laik_switchto_partitioning(data, p1, LAIK_DF_None, reduction_operation);
+    this->pointer_cache= (T**) malloc (numElems * sizeof(T*));
+    laik_switchto_partitioning(this->data, this->p1, LAIK_DF_None, this->reduction_operation);
 
     for (int i = 0; i < numElems; ++i) {
-        pointer_cache [i] = calc_pointer(i,1);
+        this->pointer_cache [i] = calc_pointer(i,1);
     }
     // test
     /*
@@ -338,12 +327,12 @@ void laik_vector_halo<T>::calculate_pointers(){
     }
     */
 
-    int numElemsTotal = numElems + (b+f+d+u+l+r)*count*count;
-    pointer_cache= (T**) malloc (numElemsTotal * sizeof(T*));
-    laik_switchto_partitioning(data, p2, LAIK_DF_Preserve, reduction_operation);
+    int numElemsTotal = numElems + (this->b+this->f+this->d+this->u+this->l+this->r)*this->count*this->count;
+    this->pointer_cache= (T**) malloc (numElemsTotal * sizeof(T*));
+    laik_switchto_partitioning(this->data, this->p2, LAIK_DF_Preserve, this->reduction_operation);
 
     for (int i = 0; i < numElemsTotal; ++i) {
-        pointer_cache [i] = calc_pointer(i,0);
+        this->pointer_cache [i] = calc_pointer(i,0);
     }
     // test
     /*
@@ -357,18 +346,18 @@ void laik_vector_halo<T>::calculate_pointers(){
 
 template <typename T>
 void laik_vector_halo<T>::switch_to_write_phase(){
-    laik_exec_actions(asW);
+    laik_exec_actions(this->asW);
     //laik_exec_transition(data,toW);
     //laik_switchto_phase(data, p1, LAIK_DF_CopyOut);
-    state=1;
+    this->state=1;
 }
 
 template <typename T>
 void laik_vector_halo<T>::switch_to_read_phase(){
-    laik_exec_actions(asR);
+    laik_exec_actions(this->asR);
     //laik_exec_transition(data,toR);
     //laik_switchto_phase(data, p2, LAIK_DF_CopyIn);
-    state=0;
+    this->state=0;
 }
 
 
@@ -382,57 +371,24 @@ void laik_vector_ex_repart<T>::migrate(Laik_Group* new_group, Laik_Partitioning*
     T* base;
     int nSlices;
 
-    //int id =0;
+    this->init_config_params(new_group);
 
-    /*
-    if (laik_myid(world)==id)
-        printf("migration!\n" );
-    */
-
-    init_config_params(new_group);
-
-    /*
-    if (laik_myid(world)==id){
-        printf("before switch!\n" );
-        for (int i = 0; i < data_vector.size(); ++i) {
-            printf("%f\n",data_vector[i] );
-        }
-        printf("\n");
-    }
-    */
-
-    laik_switchto_partitioning(data, p1, LAIK_DF_Preserve, LAIK_RO_None);
+    laik_switchto_partitioning(this->data, this->p1, LAIK_DF_Preserve, LAIK_RO_None);
     // copy the data from stl vector into the laik container
-    nSlices = laik_my_slicecount(p1);
+    nSlices = laik_my_slicecount(this->p1);
     for (int n = 0; n < nSlices; n++)
     {
-        laik_map_def(data, n, (void **)&base, &cnt);
+        laik_map_def(this->data, n, (void **)&base, &cnt);
         memcpy(base, &data_vector[0] + n*cnt, cnt*sizeof(T));
         //std::copy( base, base + cnt, data_vector.begin() + n*count );
     }
 
-    /*
-    if (laik_myid(world)==id){
-        printf("copy to laik_vector done!\n" );
-        nSlices = laik_my_slicecount(p1);
-        for (int n = 0; n < nSlices; n++)
-        {
-            laik_map_def(data, n, (void **)&base, &cnt);
-            for (int i = 0; i < cnt; ++i) {
-                        printf("%f\n",base[i] );
-            }
-        }
-        printf("\n");
-    }
-    */
-
-
     // perform switches for communication
 
-    laik_switchto_partitioning(data, p_new_1, LAIK_DF_Preserve, LAIK_RO_None);
+    laik_switchto_partitioning(this->data, p_new_1, LAIK_DF_Preserve, LAIK_RO_None);
 
     this -> world = new_group;
-    if (laik_myid(world)<0)
+    if (laik_myid(this->world)<0)
         return ;
 
     this -> p1=p_new_1;
@@ -441,28 +397,18 @@ void laik_vector_ex_repart<T>::migrate(Laik_Group* new_group, Laik_Partitioning*
     this -> toR=t_new_2;
 
     // resize vector
-    laik_map_def(data, 0, (void **)&base, &cnt);
+    laik_map_def(this->data, 0, (void **)&base, &cnt);
     int s = cnt*cnt*cnt;
     data_vector.resize(s);
 
     // copy the data back into the stl vecotrs
-    nSlices = laik_my_slicecount(p1);
+    nSlices = laik_my_slicecount(this->p1);
     for (int n = 0; n < nSlices; n++)
     {
-        laik_map_def(data, n, (void **)&base, &cnt);
+        laik_map_def(this->data, n, (void **)&base, &cnt);
         memcpy(&data_vector[0] + n*cnt, base, cnt*sizeof(T));
         //std::copy(data_vector.begin() + n*count ,data_vector.begin() + (n+1)*count-1 , base);
     }
-
-    /*
-    if (laik_myid(world)==id){
-        printf("before switch!\n" );
-        for (int i = 0; i < data_vector.size(); ++i) {
-            printf("%f\n",data_vector[i] );
-        }
-        printf("\n");
-    }
-    */
 }
 
 template <typename T>
@@ -473,33 +419,33 @@ laik_vector_ex_repart<T>::laik_vector_ex_repart(Laik_Instance *inst,
 template <typename T>
 void laik_vector_ex_repart<T>::resize(int count){
 
-    int s =  count / laik_size(world);
+    int s =  count / laik_size(this->world);
     data_vector.resize(s);
 
     this -> size = count;
 
     if (std::is_same <T, double>::value) {
-        data = laik_new_data(indexSpace, laik_Double );
+        this->data = laik_new_data(this->indexSpace, laik_Double );
 
     }
     else if (std::is_same <T, int>::value){
-        data = laik_new_data(indexSpace, laik_Int64 );
+        this->data = laik_new_data(this->indexSpace, laik_Int64 );
     }
 
-    laik_switchto_partitioning(data, p1, LAIK_DF_None, reduction_operation);
+    laik_switchto_partitioning(this->data, this->p1, LAIK_DF_None, this->reduction_operation);
     uint64_t cnt;
     T* base;
-    int nSlices = laik_my_slicecount(p1);
+    int nSlices = laik_my_slicecount(this->p1);
     for (int n = 0; n < nSlices; ++n)
     {
-       laik_map_def(data, n, (void **)&base, &cnt);
+       laik_map_def(this->data, n, (void **)&base, &cnt);
     }
     this -> count = cnt;
 }
 
 template <typename T>
 T* laik_vector_ex_repart<T>::calc_pointer(int idx, int state){
-     return &zero;
+     return &(this->zero);
 }
 
 template <typename T>
@@ -533,31 +479,31 @@ laik_vector_overlapping<T>::laik_vector_overlapping(Laik_Instance *inst,
 template <typename T>
 void laik_vector_overlapping<T>::resize(int count){
 
-    size = count;
+    this->size = count;
 
     if (std::is_same <T, double>::value) {
-        data = laik_new_data(indexSpace, laik_Double );
+        this->data = laik_new_data(this->indexSpace, laik_Double );
 
     }
     else if (std::is_same <T, int>::value){
-        data = laik_new_data(indexSpace, laik_Int64 );
+        this->data = laik_new_data(this->indexSpace, laik_Int64 );
     }
     // use the reservation API to precalculate the pointers
 
-    Laik_Reservation* reservation = laik_reservation_new(data);
-    laik_reservation_add(reservation, p1);
+    Laik_Reservation* reservation = laik_reservation_new(this->data);
+    laik_reservation_add(reservation, this->p1);
 
     laik_reservation_alloc(reservation);
-    laik_data_use_reservation(data, reservation);
+    laik_data_use_reservation(this->data, reservation);
 
     // precalculate the transition object
 
-    asW = laik_calc_actions(data, toW, reservation, reservation);
-    asR = laik_calc_actions(data, toR, reservation, reservation);
+    this->asW = laik_calc_actions(this->data, this->toW, reservation, reservation);
+    this->asR = laik_calc_actions(this->data, this->toR, reservation, reservation);
 
     // go through the slices to just allocate the memory
-    laik_switchto_partitioning(data, p1, LAIK_DF_None, reduction_operation );
-    Laik_TaskSlice* ts = laik_my_slice(p1, 0);
+    laik_switchto_partitioning(this->data, this->p1, LAIK_DF_None, this->reduction_operation );
+    Laik_TaskSlice* ts = laik_my_slice(this->p1, 0);
     const Laik_Slice* s = laik_taskslice_get_slice(ts);
     this -> count = laik_slice_size(s);
     this -> calculate_pointers();
@@ -574,10 +520,10 @@ T* laik_vector_overlapping<T>::calc_pointer(int idx){
     uint64_t cnt;
     T* base;
 
-    int i = (idx % (count*count) ) % count;
+    int i = (idx % (this->count*this->count) ) % this->count;
     int l_idx = i;
-    int slice = idx/count;
-    laik_map_def(data, slice, (void **)&base, &cnt);
+    int slice = idx/this->count;
+    laik_map_def(this->data, slice, (void **)&base, &cnt);
 
     return base+l_idx;
 }
@@ -585,18 +531,18 @@ T* laik_vector_overlapping<T>::calc_pointer(int idx){
 template <typename T>
 void laik_vector_overlapping<T>::calculate_pointers(){
 
-    if (pointer_cache != nullptr)   free (pointer_cache);
+    if (this->pointer_cache != nullptr)   free (this->pointer_cache);
 
-    pointer_cache = (T**) malloc (size * sizeof(T*));
+    this->pointer_cache = (T**) malloc (this->size * sizeof(T*));
 
-    for (int i = 0; i < size; ++i) {
-        pointer_cache [i] = calc_pointer(i);
+    for (int i = 0; i < this->size; ++i) {
+        this->pointer_cache [i] = calc_pointer(i);
     }
 }
 
 template <typename T>
 void laik_vector_overlapping<T>::switch_to_write_phase(){
-    laik_exec_actions(asW);
+    laik_exec_actions(this->asW);
     //laik_exec_transition(data,toW);
     //laik_switchto_phase(data, p1, Laik_DataFlow
     //                    ( LAIK_DF_ReduceOut | LAIK_DF_Sum ) );
@@ -604,7 +550,7 @@ void laik_vector_overlapping<T>::switch_to_write_phase(){
 
 template <typename T>
 void laik_vector_overlapping<T>::switch_to_read_phase(){
-    laik_exec_actions(asR);
+    laik_exec_actions(this->asR);
     //laik_exec_transition(data,toR);
     //laik_switchto_phase(data, p1, LAIK_DF_CopyIn);
 }
@@ -615,39 +561,39 @@ void laik_vector_overlapping<T>::migrate(Laik_Group* new_group, Laik_Partitionin
     int* base;
     //int slice = 0;
 
-    init_config_params(new_group);
+    this->init_config_params(new_group);
 
-    laik_switchto_partitioning(data, p1, LAIK_DF_None, LAIK_RO_Min);
+    laik_switchto_partitioning(this->data, this->p1, LAIK_DF_None, LAIK_RO_Min);
 
-    Laik_Reservation* reservation = laik_reservation_new(data);
+    Laik_Reservation* reservation = laik_reservation_new(this->data);
     laik_reservation_add(reservation, p_new_1);
     laik_reservation_alloc(reservation);
-    laik_data_use_reservation(data, reservation);
+    laik_data_use_reservation(this->data, reservation);
 
-    laik_switchto_partitioning(data, p_new_1, LAIK_DF_Preserve, LAIK_RO_Min);
+    laik_switchto_partitioning(this->data, p_new_1, LAIK_DF_Preserve, LAIK_RO_Min);
 
     if (laik_myid(new_group)< 0) {
         return;
     }
 
-    asW = laik_calc_actions(data, t_new_1, reservation, reservation);
-    asR = laik_calc_actions(data, t_new_2, reservation, reservation);
+    this->asW = laik_calc_actions(this->data, t_new_1, reservation, reservation);
+    this->asR = laik_calc_actions(this->data, t_new_2, reservation, reservation);
 
     this -> p1=p_new_1;
     this -> p2=p_new_2;
     this -> toW=t_new_1;
     this -> toR=t_new_2;
     this -> world = new_group;
-    if (laik_myid(world)<0)
+    if (laik_myid(this->world)<0)
         return ;
 
-    laik_switchto_partitioning(data, p1, LAIK_DF_None, LAIK_RO_Min );
-    int nSlices = laik_my_slicecount(p1);
+    laik_switchto_partitioning(this->data, this->p1, LAIK_DF_None, LAIK_RO_Min );
+    int nSlices = laik_my_slicecount(this->p1);
     for (int n = 0; n < nSlices; n++)
     {
-        laik_map_def(data, n, (void **)&base, &cnt);
+        laik_map_def(this->data, n, (void **)&base, &cnt);
     }
-    laik_switchto_partitioning(data, p2, LAIK_DF_Preserve, LAIK_RO_Min);
+    laik_switchto_partitioning(this->data, this->p2, LAIK_DF_Preserve, LAIK_RO_Min);
 
     this -> count = cnt;
     this -> calculate_pointers();
@@ -663,56 +609,23 @@ void laik_vector_overlapping_repart<T>::migrate(Laik_Group* new_group, Laik_Part
     T* base;
     int nSlices;
 
-    /*
-    int id =0;
+    this->init_config_params(new_group);
 
-    if (laik_myid(world)==id)
-        printf("migration!\n" );
-    */
-
-    init_config_params(new_group);
-
-    /*
-    if (laik_myid(world)==id){
-        printf("before switch!\n" );
-        for (int i = 0; i < data_vector.size(); ++i) {
-            printf("%f\n",data_vector[i] );
-        }
-        printf("\n");
-    }
-    */
-
-    laik_switchto_partitioning(data, p1, LAIK_DF_None, LAIK_RO_Min);
+    laik_switchto_partitioning(this->data, this->p1, LAIK_DF_None, LAIK_RO_Min);
     // copy the data from stl vector into the laik container
-    nSlices = laik_my_slicecount(p1);
+    nSlices = laik_my_slicecount(this->p1);
     for (int n = 0; n < nSlices; n++)
     {
-        laik_map_def(data, n, (void **)&base, &cnt);
+        laik_map_def(this->data, n, (void **)&base, &cnt);
         memcpy(base, &data_vector[0] + n*cnt, cnt*sizeof(T));
         //std::copy( base, base + cnt, data_vector.begin() + n*count );
     }
 
-    /*
-    if (laik_myid(world)==id){
-        printf("copy to laik_vector done!\n" );
-        nSlices = laik_my_slicecount(p1);
-        for (int n = 0; n < nSlices; n++)
-        {
-            laik_map_def(data, n, (void **)&base, &cnt);
-            for (int i = 0; i < cnt; ++i) {
-                        printf("%f\n",base[i] );
-            }
-        }
-        printf("\n");
-    }
-    */
-
-
     // perform switches for communication
-    laik_switchto_partitioning(data, p_new_1, LAIK_DF_Preserve, LAIK_RO_Min);
+    laik_switchto_partitioning(this->data, p_new_1, LAIK_DF_Preserve, LAIK_RO_Min);
 
     this -> world = new_group;
-    if (laik_myid(world)<0)
+    if (laik_myid(this->world)<0)
         return ;
 
     this -> p1=p_new_1;
@@ -721,28 +634,19 @@ void laik_vector_overlapping_repart<T>::migrate(Laik_Group* new_group, Laik_Part
     this -> toR=t_new_2;
 
     // resize vector
-    laik_map_def(data, 0, (void **)&base, &cnt);
+    laik_map_def(this->data, 0, (void **)&base, &cnt);
     int s = cnt*cnt*cnt;
     data_vector.resize(s);
 
     // copy the data back into the stl vecotrs
-    nSlices = laik_my_slicecount(p1);
+    nSlices = laik_my_slicecount(this->p1);
     for (int n = 0; n < nSlices; n++)
     {
-        laik_map_def(data, n, (void **)&base, &cnt);
+        laik_map_def(this->data, n, (void **)&base, &cnt);
         memcpy(&data_vector[0] + n*cnt, base, cnt*sizeof(T));
         //std::copy(data_vector.begin() + n*count ,data_vector.begin() + (n+1)*count-1 , base);
     }
 
-    /*
-    if (laik_myid(world)==id){
-        printf("before switch!\n" );
-        for (int i = 0; i < data_vector.size(); ++i) {
-            printf("%f\n",data_vector[i] );
-        }
-        printf("\n");
-    }
-    */
 }
 
 template <typename T>
@@ -753,7 +657,7 @@ laik_vector_overlapping_repart<T>::laik_vector_overlapping_repart(Laik_Instance 
 template <typename T>
 void laik_vector_overlapping_repart<T>::resize(int count){
 
-    int side = cbrt (laik_size(world));
+    int side = cbrt (laik_size(this->world));
     int s = (int) ((cbrt (count)  -  1 ) / side + 1 + 0.1 );
     s = s*s*s;
     data_vector.resize(s);
@@ -761,22 +665,22 @@ void laik_vector_overlapping_repart<T>::resize(int count){
     this -> size = count;
 
     if (std::is_same <T, double>::value) {
-        data = laik_new_data(indexSpace, laik_Double );
+        this->data = laik_new_data(this->indexSpace, laik_Double );
 
     }
     else if (std::is_same <T, int>::value){
-        data = laik_new_data(indexSpace, laik_Int64 );
+        this->data = laik_new_data(this->indexSpace, laik_Int64 );
     }
 
-    laik_switchto_partitioning(data, p1, LAIK_DF_None, LAIK_RO_Min);
-    Laik_TaskSlice* ts = laik_my_slice(p1, 0);
+    laik_switchto_partitioning(this->data, this->p1, LAIK_DF_None, LAIK_RO_Min);
+    Laik_TaskSlice* ts = laik_my_slice(this->p1, 0);
     const Laik_Slice* sl = laik_taskslice_get_slice(ts);
     this -> count = laik_slice_size(sl);
 }
 
 template <typename T>
 T* laik_vector_overlapping_repart<T>::calc_pointer(int idx, int state){
-     return &zero;
+     return &(this->zero);
 }
 
 template <typename T>
