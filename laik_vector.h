@@ -12,6 +12,7 @@ template <typename T>
 class laik_vector
 {
 public:
+    // constructor
     laik_vector(Laik_Instance* inst, Laik_Group* world, Laik_Space* indexSpace,
  Laik_Partitioning *p1, Laik_Partitioning *p2, Laik_Transition* t1, Laik_Transition* t2, Laik_ReductionOperation operation = LAIK_RO_None);
     
@@ -22,6 +23,7 @@ public:
     virtual void switch_to_write_phase() = 0;
     virtual void switch_to_read_phase() = 0;
     virtual void migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2, Laik_Transition* t_new_1, Laik_Transition* t_new_2) = 0;
+    
     void test_print();
     void init_config_params(Laik_Group* group);
 
@@ -33,10 +35,10 @@ protected:
     Laik_Space* indexSpace;
     Laik_Partitioning *p1;
     Laik_Partitioning *p2;
-    Laik_Transition *toW;
-    Laik_Transition *toR;
-    Laik_ActionSeq* asW;
-    Laik_ActionSeq* asR;
+    Laik_Transition *t1; // toW
+    Laik_Transition *t2; // toR
+    Laik_ActionSeq* as1; // asW
+    Laik_ActionSeq* as2; // asR
     Laik_Data* data;
 
     T **pointer_cache;

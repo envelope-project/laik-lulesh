@@ -1,7 +1,7 @@
 #include <laik_vector.h>
 #include <laik_partitioners.h>
 #include <lulesh.h>
-#include<limits.h>
+#include <limits.h>
 #include <type_traits>
 #include <string.h>
 
@@ -12,8 +12,8 @@ laik_vector<T>::laik_vector(Laik_Instance* inst, Laik_Group* world, Laik_Space* 
     this-> indexSpace = indexSpace;
     this -> p1 = p1;
     this -> p2 = p2;
-    this -> toW = t1;
-    this -> toR = t2;
+    this -> t1 = t1;
+    this -> t2 = t2;
     this -> pointer_cache = nullptr;
 
     this -> init_config_params(world);
@@ -100,13 +100,13 @@ void laik_vector_halo<T>::migrate(Laik_Group* new_group, Laik_Partitioning* p_ne
         return;
     }
 
-    this->asW = laik_calc_actions(this->data, t_new_1, reservation, reservation);
-    this->asR = laik_calc_actions(this->data, t_new_2, reservation, reservation);
+    this->as1 = laik_calc_actions(this->data, t_new_1, reservation, reservation);
+    this->as2 = laik_calc_actions(this->data, t_new_2, reservation, reservation);
 
     this -> p1=p_new_1;
     this -> p2=p_new_2;
-    this -> toW=t_new_1;
-    this -> toR=t_new_2;
+    this -> t1=t_new_1;
+    this -> t2=t_new_2;
     this -> world = new_group;
     if (laik_myid(this->world)<0)
         return ;
@@ -152,8 +152,8 @@ void laik_vector_halo<T>::resize(int count){
     laik_reservation_alloc(reservation);
     laik_data_use_reservation(this->data, reservation);
 
-    this->asW = laik_calc_actions(this->data, this->toW, reservation, reservation);
-    this->asR = laik_calc_actions(this->data, this->toR, reservation, reservation);
+    this->as1 = laik_calc_actions(this->data, this->t1, reservation, reservation);
+    this->as2 = laik_calc_actions(this->data, this->t2, reservation, reservation);
 
     // go through the slices to just allocate the memory
     uint64_t cnt;
@@ -346,16 +346,16 @@ void laik_vector_halo<T>::calculate_pointers(){
 
 template <typename T>
 void laik_vector_halo<T>::switch_to_write_phase(){
-    laik_exec_actions(this->asW);
-    //laik_exec_transition(data,toW);
+    laik_exec_actions(this->as1);
+    //laik_exec_transition(data,t1);
     //laik_switchto_phase(data, p1, LAIK_DF_CopyOut);
     this->state=1;
 }
 
 template <typename T>
 void laik_vector_halo<T>::switch_to_read_phase(){
-    laik_exec_actions(this->asR);
-    //laik_exec_transition(data,toR);
+    laik_exec_actions(this->as2);
+    //laik_exec_transition(data,t2);
     //laik_switchto_phase(data, p2, LAIK_DF_CopyIn);
     this->state=0;
 }
@@ -393,8 +393,8 @@ void laik_vector_ex_repart<T>::migrate(Laik_Group* new_group, Laik_Partitioning*
 
     this -> p1=p_new_1;
     this -> p2=p_new_2;
-    this -> toW=t_new_1;
-    this -> toR=t_new_2;
+    this -> t1=t_new_1;
+    this -> t2=t_new_2;
 
     // resize vector
     laik_map_def(this->data, 0, (void **)&base, &cnt);
@@ -498,8 +498,8 @@ void laik_vector_overlapping<T>::resize(int count){
 
     // precalculate the transition object
 
-    this->asW = laik_calc_actions(this->data, this->toW, reservation, reservation);
-    this->asR = laik_calc_actions(this->data, this->toR, reservation, reservation);
+    this->as1 = laik_calc_actions(this->data, this->t1, reservation, reservation);
+    this->as2 = laik_calc_actions(this->data, this->t2, reservation, reservation);
 
     // go through the slices to just allocate the memory
     laik_switchto_partitioning(this->data, this->p1, LAIK_DF_None, this->reduction_operation );
@@ -542,16 +542,16 @@ void laik_vector_overlapping<T>::calculate_pointers(){
 
 template <typename T>
 void laik_vector_overlapping<T>::switch_to_write_phase(){
-    laik_exec_actions(this->asW);
-    //laik_exec_transition(data,toW);
+    laik_exec_actions(this->as1);
+    //laik_exec_transition(data,t1);
     //laik_switchto_phase(data, p1, Laik_DataFlow
     //                    ( LAIK_DF_ReduceOut | LAIK_DF_Sum ) );
 }
 
 template <typename T>
 void laik_vector_overlapping<T>::switch_to_read_phase(){
-    laik_exec_actions(this->asR);
-    //laik_exec_transition(data,toR);
+    laik_exec_actions(this->as2);
+    //laik_exec_transition(data,t2);
     //laik_switchto_phase(data, p1, LAIK_DF_CopyIn);
 }
 
@@ -576,13 +576,13 @@ void laik_vector_overlapping<T>::migrate(Laik_Group* new_group, Laik_Partitionin
         return;
     }
 
-    this->asW = laik_calc_actions(this->data, t_new_1, reservation, reservation);
-    this->asR = laik_calc_actions(this->data, t_new_2, reservation, reservation);
+    this->as1 = laik_calc_actions(this->data, t_new_1, reservation, reservation);
+    this->as2 = laik_calc_actions(this->data, t_new_2, reservation, reservation);
 
     this -> p1=p_new_1;
     this -> p2=p_new_2;
-    this -> toW=t_new_1;
-    this -> toR=t_new_2;
+    this -> t1=t_new_1;
+    this -> t2=t_new_2;
     this -> world = new_group;
     if (laik_myid(this->world)<0)
         return ;
@@ -630,8 +630,8 @@ void laik_vector_overlapping_repart<T>::migrate(Laik_Group* new_group, Laik_Part
 
     this -> p1=p_new_1;
     this -> p2=p_new_2;
-    this -> toW=t_new_1;
-    this -> toR=t_new_2;
+    this -> t1=t_new_1;
+    this -> t2=t_new_2;
 
     // resize vector
     laik_map_def(this->data, 0, (void **)&base, &cnt);
