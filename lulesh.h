@@ -559,8 +559,8 @@ m_delx_zeta.resize(numElem) ;
 
    //laik communication
    void communicateNodalMass(){
-       m_nodalMass.switch_to_write_phase();
-       m_nodalMass.switch_to_read_phase();
+       m_nodalMass.switch_to_p1();
+       m_nodalMass.switch_to_p2();
    }
 #endif
 

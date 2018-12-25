@@ -1169,9 +1169,9 @@ static inline void CalcForceForNodes(Domain& domain)
   //         domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
   //         true, false) ;
 
-  domain.get_fx().switch_to_write_phase();
-  domain.get_fy().switch_to_write_phase();
-  domain.get_fz().switch_to_write_phase();
+  domain.get_fx().switch_to_p1();
+  domain.get_fy().switch_to_p1();
+  domain.get_fz().switch_to_p1();
 #endif
 
 #pragma omp parallel for firstprivate(numNode)
@@ -1186,12 +1186,12 @@ static inline void CalcForceForNodes(Domain& domain)
 
 
 #if USE_MPI
-  domain.get_fx().switch_to_read_phase();
-  //domain.get_fx().switch_to_write_phase();
-  domain.get_fy().switch_to_read_phase();
-  //domain.get_fy().switch_to_write_phase();
-  domain.get_fz().switch_to_read_phase();
-  //domain.get_fz().switch_to_write_phase();
+  domain.get_fx().switch_to_p2();
+  //domain.get_fx().switch_to_p1();
+  domain.get_fy().switch_to_p2();
+  //domain.get_fy().switch_to_p1();
+  domain.get_fz().switch_to_p2();
+  //domain.get_fz().switch_to_p1();
 /*
   Domain_member fieldData[3] ;
   fieldData[0] = &Domain::fx ;
@@ -2053,9 +2053,9 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
       //CommRecv(domain, MSG_MONOQ, 3,
       //         domain.sizeX(), domain.sizeY(), domain.sizeZ(),
       //         true, true) ;
-      domain.get_delv_xi().switch_to_write_phase();
-      domain.get_delv_eta().switch_to_write_phase();
-      domain.get_delv_zeta().switch_to_write_phase();
+      domain.get_delv_xi().switch_to_p1();
+      domain.get_delv_eta().switch_to_p1();
+      domain.get_delv_zeta().switch_to_p1();
 #endif      
 
       /* Calculate velocity gradients */
@@ -2063,9 +2063,9 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
 
 #if USE_MPI      
 
-      domain.get_delv_xi().switch_to_read_phase();
-      domain.get_delv_eta().switch_to_read_phase();
-      domain.get_delv_zeta().switch_to_read_phase();
+      domain.get_delv_xi().switch_to_p2();
+      domain.get_delv_eta().switch_to_p2();
+      domain.get_delv_zeta().switch_to_p2();
 
       //Domain_member fieldData[3] ;
       

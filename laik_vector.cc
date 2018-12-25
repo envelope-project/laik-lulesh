@@ -122,7 +122,7 @@ void laik_vector_halo<T>::migrate(Laik_Group* new_group, Laik_Partitioning* p_ne
     this -> state = 0;
     this -> count = cnt;
 
-    this -> calculate_pointers();
+    this -> precalculate_base_pointers();
 }
 
 
@@ -170,7 +170,7 @@ void laik_vector_halo<T>::resize(int count){
     laik_switchto_partitioning(this->data, this->p2, LAIK_DF_Preserve, this->reduction_operation);
 
     this -> count = cnt;
-    this -> calculate_pointers();
+    this -> precalculate_base_pointers();
 }
 
 template <typename T>
@@ -309,7 +309,7 @@ T* laik_vector_halo<T>::calc_pointer(int idx, int state){
 }
 
 template <typename T>
-void laik_vector_halo<T>::calculate_pointers(){
+void laik_vector_halo<T>::precalculate_base_pointers(){
     int numElems = this->count*this->count*this->count;
 
     if (this->pointer_cache != nullptr)   free (this->pointer_cache);
@@ -345,7 +345,7 @@ void laik_vector_halo<T>::calculate_pointers(){
 }
 
 template <typename T>
-void laik_vector_halo<T>::switch_to_write_phase(){
+void laik_vector_halo<T>::switch_to_p1(){
     laik_exec_actions(this->as1);
     //laik_exec_transition(data,t1);
     //laik_switchto_phase(data, p1, LAIK_DF_CopyOut);
@@ -353,7 +353,7 @@ void laik_vector_halo<T>::switch_to_write_phase(){
 }
 
 template <typename T>
-void laik_vector_halo<T>::switch_to_read_phase(){
+void laik_vector_halo<T>::switch_to_p2(){
     laik_exec_actions(this->as2);
     //laik_exec_transition(data,t2);
     //laik_switchto_phase(data, p2, LAIK_DF_CopyIn);
@@ -449,17 +449,17 @@ T* laik_vector_ex_repart<T>::calc_pointer(int idx, int state){
 }
 
 template <typename T>
-void laik_vector_ex_repart<T>::calculate_pointers(){
+void laik_vector_ex_repart<T>::precalculate_base_pointers(){
 
 }
 
 template <typename T>
-void laik_vector_ex_repart<T>::switch_to_write_phase(){
+void laik_vector_ex_repart<T>::switch_to_p1(){
 
 }
 
 template <typename T>
-void laik_vector_ex_repart<T>::switch_to_read_phase(){
+void laik_vector_ex_repart<T>::switch_to_p2(){
 
 }
 
@@ -506,7 +506,7 @@ void laik_vector_overlapping<T>::resize(int count){
     Laik_TaskSlice* ts = laik_my_slice(this->p1, 0);
     const Laik_Slice* s = laik_taskslice_get_slice(ts);
     this -> count = laik_slice_size(s);
-    this -> calculate_pointers();
+    this -> precalculate_base_pointers();
 }
 
 /*
@@ -529,7 +529,7 @@ T* laik_vector_overlapping<T>::calc_pointer(int idx){
 }
 
 template <typename T>
-void laik_vector_overlapping<T>::calculate_pointers(){
+void laik_vector_overlapping<T>::precalculate_base_pointers(){
 
     if (this->pointer_cache != nullptr)   free (this->pointer_cache);
 
@@ -541,7 +541,7 @@ void laik_vector_overlapping<T>::calculate_pointers(){
 }
 
 template <typename T>
-void laik_vector_overlapping<T>::switch_to_write_phase(){
+void laik_vector_overlapping<T>::switch_to_p1(){
     laik_exec_actions(this->as1);
     //laik_exec_transition(data,t1);
     //laik_switchto_phase(data, p1, Laik_DataFlow
@@ -549,7 +549,7 @@ void laik_vector_overlapping<T>::switch_to_write_phase(){
 }
 
 template <typename T>
-void laik_vector_overlapping<T>::switch_to_read_phase(){
+void laik_vector_overlapping<T>::switch_to_p2(){
     laik_exec_actions(this->as2);
     //laik_exec_transition(data,t2);
     //laik_switchto_phase(data, p1, LAIK_DF_CopyIn);
@@ -596,7 +596,7 @@ void laik_vector_overlapping<T>::migrate(Laik_Group* new_group, Laik_Partitionin
     laik_switchto_partitioning(this->data, this->p2, LAIK_DF_Preserve, LAIK_RO_Min);
 
     this -> count = cnt;
-    this -> calculate_pointers();
+    this -> precalculate_base_pointers();
 }
 
 // ////////////////////////////////////////////////////////////////////////
@@ -684,17 +684,17 @@ T* laik_vector_overlapping_repart<T>::calc_pointer(int idx, int state){
 }
 
 template <typename T>
-void laik_vector_overlapping_repart<T>::calculate_pointers(){
+void laik_vector_overlapping_repart<T>::precalculate_base_pointers(){
 
 }
 
 template <typename T>
-void laik_vector_overlapping_repart<T>::switch_to_write_phase(){
+void laik_vector_overlapping_repart<T>::switch_to_p1(){
 
 }
 
 template <typename T>
-void laik_vector_overlapping_repart<T>::switch_to_read_phase(){
+void laik_vector_overlapping_repart<T>::switch_to_p2(){
 
 }
 
