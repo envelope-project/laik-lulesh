@@ -9,55 +9,6 @@
 // implementation of laik_vector with halo partitioning (node partitioning)
 // ////////////////////////////////////////////////////////////////////////
 template <typename T>
-void laik_vector_comm_exclusive_halo<T>::migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2, Laik_Transition* t_new_1, Laik_Transition* t_new_2){
-    uint64_t cnt;
-    int* base;
-    //int slice = 0;
-
-    this->init_config_params(new_group);
-
-    laik_switchto_partitioning(this->data, this->p1, LAIK_DF_None, LAIK_RO_None);
-
-    // use the reservation API to precalculate the pointers
-    Laik_Reservation* reservation = laik_reservation_new(this->data);
-    laik_reservation_add(reservation, p_new_2);
-    laik_reservation_add(reservation, p_new_1);
-    laik_reservation_alloc(reservation);
-    laik_data_use_reservation(this->data, reservation);
-
-    laik_switchto_partitioning(this->data, p_new_1, LAIK_DF_Preserve, LAIK_RO_None);
-
-    if (laik_myid(new_group)< 0) {
-        return;
-    }
-
-    this->as1 = laik_calc_actions(this->data, t_new_1, reservation, reservation);
-    this->as2 = laik_calc_actions(this->data, t_new_2, reservation, reservation);
-
-    this -> p1=p_new_1;
-    this -> p2=p_new_2;
-    this -> t1=t_new_1;
-    this -> t2=t_new_2;
-    this -> world = new_group;
-    if (laik_myid(this->world)<0)
-        return ;
-
-    laik_switchto_partitioning(this->data, this->p1, LAIK_DF_None, LAIK_RO_None);
-    int nSlices = laik_my_slicecount(this->p1);
-    for (int n = 0; n < nSlices; n++)
-    {
-        laik_map_def(this->data, n, (void **)&base, &cnt);
-    }
-    laik_switchto_partitioning(this->data, this->p2, LAIK_DF_Preserve, LAIK_RO_None);
-
-    this -> state = 0;
-    this -> count = cnt;
-
-    this -> precalculate_base_pointers();
-}
-
-
-template <typename T>
 laik_vector_comm_exclusive_halo<T>::laik_vector_comm_exclusive_halo(Laik_Instance *inst,
                                    Laik_Group *world,
                                       Laik_Space* indexSpace,
@@ -290,6 +241,55 @@ void laik_vector_comm_exclusive_halo<T>::switch_to_p2(){
     //laik_switchto_phase(data, p2, LAIK_DF_CopyIn);
     this->state=0;
 }
+
+template <typename T>
+void laik_vector_comm_exclusive_halo<T>::migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2, Laik_Transition* t_new_1, Laik_Transition* t_new_2){
+    uint64_t cnt;
+    int* base;
+    //int slice = 0;
+
+    this->init_config_params(new_group);
+
+    laik_switchto_partitioning(this->data, this->p1, LAIK_DF_None, LAIK_RO_None);
+
+    // use the reservation API to precalculate the pointers
+    Laik_Reservation* reservation = laik_reservation_new(this->data);
+    laik_reservation_add(reservation, p_new_2);
+    laik_reservation_add(reservation, p_new_1);
+    laik_reservation_alloc(reservation);
+    laik_data_use_reservation(this->data, reservation);
+
+    laik_switchto_partitioning(this->data, p_new_1, LAIK_DF_Preserve, LAIK_RO_None);
+
+    if (laik_myid(new_group)< 0) {
+        return;
+    }
+
+    this->as1 = laik_calc_actions(this->data, t_new_1, reservation, reservation);
+    this->as2 = laik_calc_actions(this->data, t_new_2, reservation, reservation);
+
+    this -> p1=p_new_1;
+    this -> p2=p_new_2;
+    this -> t1=t_new_1;
+    this -> t2=t_new_2;
+    this -> world = new_group;
+    if (laik_myid(this->world)<0)
+        return ;
+
+    laik_switchto_partitioning(this->data, this->p1, LAIK_DF_None, LAIK_RO_None);
+    int nSlices = laik_my_slicecount(this->p1);
+    for (int n = 0; n < nSlices; n++)
+    {
+        laik_map_def(this->data, n, (void **)&base, &cnt);
+    }
+    laik_switchto_partitioning(this->data, this->p2, LAIK_DF_Preserve, LAIK_RO_None);
+
+    this -> state = 0;
+    this -> count = cnt;
+
+    this -> precalculate_base_pointers();
+}
+
 
 template class laik_vector_comm_exclusive_halo<double>;
 

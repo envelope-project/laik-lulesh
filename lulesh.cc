@@ -3026,7 +3026,6 @@ int main(int argc, char *argv[])
            locDom -> re_init_domain(laik_size(world), col, row, plane, opts.nx,
            //locDom -> re_init_domain(laik_size(world), col, row, plane, 3,
            side, opts.numReg, opts.balance, opts.cost);
-           locDom-> re_calculate_pointers();
           double duration = MPI_Wtime() - repart_start;
            laik_log((Laik_LogLevel)2,"After repart\n");
           printf("Repartition Done in %f s on Rank %d\n", duration, laik_myid(world));

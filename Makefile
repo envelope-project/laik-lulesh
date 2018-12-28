@@ -26,6 +26,7 @@ SOURCES2.0 = \
 	lulesh-init.cc \
 	laik_partitioners.cc \
 	laik_vector.cc \
+	laik-lulesh-repartition.cc \
 	laik_vector_comm_exclusive_halo.cc \
 	laik_vector_comm_overlapping_overlapping.cc \
 	laik_vector_repart_exclusive.cc \
