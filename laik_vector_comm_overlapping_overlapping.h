@@ -4,10 +4,10 @@
 #include"laik_vector.h"
 
 template <typename T>
-class laik_vector_overlapping:public laik_vector<T>
+class laik_vector_comm_overlapping_overlapping:public laik_vector<T>
 {
 public:
-    laik_vector_overlapping(Laik_Instance* inst, Laik_Group* world, Laik_Space* indexSpace, Laik_Partitioning *p1, Laik_Partitioning *p2, Laik_Transition* t1, Laik_Transition* t2, Laik_ReductionOperation operation = LAIK_RO_Sum);
+    laik_vector_comm_overlapping_overlapping(Laik_Instance* inst, Laik_Group* world, Laik_Space* indexSpace, Laik_Partitioning *p1, Laik_Partitioning *p2, Laik_Transition* t1, Laik_Transition* t2, Laik_ReductionOperation operation = LAIK_RO_Sum);
     inline T& operator [](int idx) override;
     T* calc_pointer(int idx);
     void precalculate_base_pointers() override;
@@ -19,7 +19,7 @@ public:
 
 template <typename T>
 inline
-T& laik_vector_overlapping<T>::operator [](int idx){
+T& laik_vector_comm_overlapping_overlapping<T>::operator [](int idx){
     return *(this -> pointer_cache[idx]);
 }
 

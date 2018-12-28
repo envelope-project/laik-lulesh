@@ -9,7 +9,7 @@
 // implementation of laik_vector with halo partitioning (node partitioning)
 // ////////////////////////////////////////////////////////////////////////
 template <typename T>
-void laik_vector_halo<T>::migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2, Laik_Transition* t_new_1, Laik_Transition* t_new_2){
+void laik_vector_comm_exclusive_halo<T>::migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2, Laik_Transition* t_new_1, Laik_Transition* t_new_2){
     uint64_t cnt;
     int* base;
     //int slice = 0;
@@ -58,12 +58,12 @@ void laik_vector_halo<T>::migrate(Laik_Group* new_group, Laik_Partitioning* p_ne
 
 
 template <typename T>
-laik_vector_halo<T>::laik_vector_halo(Laik_Instance *inst,
+laik_vector_comm_exclusive_halo<T>::laik_vector_comm_exclusive_halo(Laik_Instance *inst,
                                    Laik_Group *world,
                                       Laik_Space* indexSpace,
                                       Laik_Partitioning *p1, Laik_Partitioning *p2, Laik_Transition* t1, Laik_Transition* t2, Laik_ReductionOperation operation):laik_vector<T>(inst,world, indexSpace, p1, p2, t1, t2, operation){}
 template <typename T>
-void laik_vector_halo<T>::resize(int count){
+void laik_vector_comm_exclusive_halo<T>::resize(int count){
 
     this->size = count;
 
@@ -105,7 +105,7 @@ void laik_vector_halo<T>::resize(int count){
 }
 
 template <typename T>
-T* laik_vector_halo<T>::calc_pointer(int idx, int state){
+T* laik_vector_comm_exclusive_halo<T>::calc_pointer(int idx, int state){
     uint64_t cnt;
     T* base;
 
@@ -240,7 +240,7 @@ T* laik_vector_halo<T>::calc_pointer(int idx, int state){
 }
 
 template <typename T>
-void laik_vector_halo<T>::precalculate_base_pointers(){
+void laik_vector_comm_exclusive_halo<T>::precalculate_base_pointers(){
     int numElems = this->count*this->count*this->count;
 
     if (this->pointer_cache != nullptr)   free (this->pointer_cache);
@@ -276,7 +276,7 @@ void laik_vector_halo<T>::precalculate_base_pointers(){
 }
 
 template <typename T>
-void laik_vector_halo<T>::switch_to_p1(){
+void laik_vector_comm_exclusive_halo<T>::switch_to_p1(){
     laik_exec_actions(this->as1);
     //laik_exec_transition(data,t1);
     //laik_switchto_phase(data, p1, LAIK_DF_CopyOut);
@@ -284,13 +284,13 @@ void laik_vector_halo<T>::switch_to_p1(){
 }
 
 template <typename T>
-void laik_vector_halo<T>::switch_to_p2(){
+void laik_vector_comm_exclusive_halo<T>::switch_to_p2(){
     laik_exec_actions(this->as2);
     //laik_exec_transition(data,t2);
     //laik_switchto_phase(data, p2, LAIK_DF_CopyIn);
     this->state=0;
 }
 
-template class laik_vector_halo<double>;
+template class laik_vector_comm_exclusive_halo<double>;
 
 

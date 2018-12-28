@@ -82,12 +82,5 @@ void laik_vector<T>::test_print(){
 
 
 
-
 template class laik_vector<double>;
-//template class laik_vector_halo<int>;
-//template class laik_vector_halo<double>;
-//template class laik_vector_ex_repart<int>;
-//template class laik_vector_ex_repart<double>;
-//template class laik_vector_overlapping<double>;
-//template class laik_vector_overlapping_repart<double>;
 

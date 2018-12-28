@@ -10,7 +10,7 @@
 // for repartitioning of exclusive data structs
 // ////////////////////////////////////////////////////////////////////////
 template <typename T>
-void laik_vector_ex_repart<T>::migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2, Laik_Transition* t_new_1, Laik_Transition* t_new_2){
+void laik_vector_repart_exclusive<T>::migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2, Laik_Transition* t_new_1, Laik_Transition* t_new_2){
     uint64_t cnt;
     T* base;
     int nSlices;
@@ -56,12 +56,12 @@ void laik_vector_ex_repart<T>::migrate(Laik_Group* new_group, Laik_Partitioning*
 }
 
 template <typename T>
-laik_vector_ex_repart<T>::laik_vector_ex_repart(Laik_Instance *inst,
+laik_vector_repart_exclusive<T>::laik_vector_repart_exclusive(Laik_Instance *inst,
                                    Laik_Group *world,
                                       Laik_Space* indexSpace,
                                       Laik_Partitioning *p1, Laik_Partitioning *p2, Laik_Transition* t1, Laik_Transition* t2, Laik_ReductionOperation operation):laik_vector<T>(inst,world, indexSpace, p1, p2, t1, t2, operation){}
 template <typename T>
-void laik_vector_ex_repart<T>::resize(int count){
+void laik_vector_repart_exclusive<T>::resize(int count){
 
     int s =  count / laik_size(this->world);
     data_vector.resize(s);
@@ -88,25 +88,25 @@ void laik_vector_ex_repart<T>::resize(int count){
 }
 
 template <typename T>
-T* laik_vector_ex_repart<T>::calc_pointer(int idx, int state){
+T* laik_vector_repart_exclusive<T>::calc_pointer(int idx, int state){
      return &(this->zero);
 }
 
 template <typename T>
-void laik_vector_ex_repart<T>::precalculate_base_pointers(){
+void laik_vector_repart_exclusive<T>::precalculate_base_pointers(){
 
 }
 
 template <typename T>
-void laik_vector_ex_repart<T>::switch_to_p1(){
+void laik_vector_repart_exclusive<T>::switch_to_p1(){
 
 }
 
 template <typename T>
-void laik_vector_ex_repart<T>::switch_to_p2(){
+void laik_vector_repart_exclusive<T>::switch_to_p2(){
 
 }
 
 
 
-template class laik_vector_ex_repart<double>;
+template class laik_vector_repart_exclusive<double>;

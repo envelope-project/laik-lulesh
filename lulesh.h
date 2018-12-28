@@ -364,13 +364,13 @@ m_delx_zeta.resize(numElem) ;
    //
    // GETTERS
    //
-   laik_vector_overlapping<double>& get_fx() { return m_fx;}
-   laik_vector_overlapping<double>& get_fy() { return m_fy;}
-   laik_vector_overlapping<double>& get_fz() { return m_fz;}
-   laik_vector_overlapping<double>& get_nodalMass() { return m_nodalMass;}
-   laik_vector_halo<double>& get_delv_xi() { return m_delv_xi;}
-   laik_vector_halo<double>& get_delv_eta() { return m_delv_eta;}
-   laik_vector_halo<double>& get_delv_zeta() { return m_delv_zeta;}
+   laik_vector_comm_overlapping_overlapping<double>& get_fx() { return m_fx;}
+   laik_vector_comm_overlapping_overlapping<double>& get_fy() { return m_fy;}
+   laik_vector_comm_overlapping_overlapping<double>& get_fz() { return m_fz;}
+   laik_vector_comm_overlapping_overlapping<double>& get_nodalMass() { return m_nodalMass;}
+   laik_vector_comm_exclusive_halo<double>& get_delv_xi() { return m_delv_xi;}
+   laik_vector_comm_exclusive_halo<double>& get_delv_eta() { return m_delv_eta;}
+   laik_vector_comm_exclusive_halo<double>& get_delv_zeta() { return m_delv_zeta;}
    // ACCESSORS
    //
 
@@ -583,17 +583,17 @@ m_delx_zeta.resize(numElem) ;
 
    /* Node-centered */
 #ifdef REPARTITIONING
-   laik_vector_overlapping_repart<double> m_x ;  /* coordinates */
-   laik_vector_overlapping_repart<double> m_y ;
-   laik_vector_overlapping_repart<double> m_z ;
+   laik_vector_repart_overlapping<double> m_x ;  /* coordinates */
+   laik_vector_repart_overlapping<double> m_y ;
+   laik_vector_repart_overlapping<double> m_z ;
 
-   laik_vector_overlapping_repart<double> m_xd ; /* velocities */
-   laik_vector_overlapping_repart<double> m_yd ;
-   laik_vector_overlapping_repart<double> m_zd ;
+   laik_vector_repart_overlapping<double> m_xd ; /* velocities */
+   laik_vector_repart_overlapping<double> m_yd ;
+   laik_vector_repart_overlapping<double> m_zd ;
 
-   laik_vector_overlapping_repart<double> m_xdd ; /* accelerations */
-   laik_vector_overlapping_repart<double> m_ydd ;
-   laik_vector_overlapping_repart<double> m_zdd ;
+   laik_vector_repart_overlapping<double> m_xdd ; /* accelerations */
+   laik_vector_repart_overlapping<double> m_ydd ;
+   laik_vector_repart_overlapping<double> m_zdd ;
 
 #endif
 
@@ -611,11 +611,11 @@ m_delx_zeta.resize(numElem) ;
     std::vector<Real_t> m_zdd ;
 #endif
 
-   laik_vector_overlapping<double> m_fx ;  /* forces */
-   laik_vector_overlapping<double> m_fy ;
-   laik_vector_overlapping<double> m_fz ;
+   laik_vector_comm_overlapping_overlapping<double> m_fx ;  /* forces */
+   laik_vector_comm_overlapping_overlapping<double> m_fy ;
+   laik_vector_comm_overlapping_overlapping<double> m_fz ;
 
-   laik_vector_overlapping<double> m_nodalMass ;  /* mass */
+   laik_vector_comm_overlapping_overlapping<double> m_nodalMass ;  /* mass */
 
    std::vector<Index_t> m_symmX ;  /* symmetry plane nodesets */
    std::vector<Index_t> m_symmY ;
@@ -647,9 +647,9 @@ m_delx_zeta.resize(numElem) ;
    std::vector<Int_t>    m_elemBC ;  /* symmetry/free-surface flags for each elem face */
 
 #ifdef REPARTITIONING
-   laik_vector_ex_repart<double> m_dxx ;  /* principal strains -- temporary */
-   laik_vector_ex_repart<double> m_dyy ;
-   laik_vector_ex_repart<double> m_dzz ;
+   laik_vector_repart_exclusive<double> m_dxx ;  /* principal strains -- temporary */
+   laik_vector_repart_exclusive<double> m_dyy ;
+   laik_vector_repart_exclusive<double> m_dzz ;
 #endif
 
 #ifdef PERFORMANCE
@@ -658,33 +658,33 @@ m_delx_zeta.resize(numElem) ;
    std::vector<Real_t> m_dzz ;
 #endif
 
-   laik_vector_halo<double> m_delv_xi ;    /* velocity gradient -- temporary */
-   laik_vector_halo<double> m_delv_eta ;
-   laik_vector_halo<double> m_delv_zeta ;
+   laik_vector_comm_exclusive_halo<double> m_delv_xi ;    /* velocity gradient -- temporary */
+   laik_vector_comm_exclusive_halo<double> m_delv_eta ;
+   laik_vector_comm_exclusive_halo<double> m_delv_zeta ;
 
 #ifdef REPARTITIONING
-   laik_vector_ex_repart<double> m_delx_xi ;    /* coordinate gradient -- temporary */
-   laik_vector_ex_repart<double> m_delx_eta ;
-   laik_vector_ex_repart<double> m_delx_zeta ;
+   laik_vector_repart_exclusive<double> m_delx_xi ;    /* coordinate gradient -- temporary */
+   laik_vector_repart_exclusive<double> m_delx_eta ;
+   laik_vector_repart_exclusive<double> m_delx_zeta ;
    
-   laik_vector_ex_repart<double> m_e ;   /* energy */
+   laik_vector_repart_exclusive<double> m_e ;   /* energy */
 
-   laik_vector_ex_repart<double> m_p ;   /* pressure */
-   laik_vector_ex_repart<double> m_q ;   /* q */
-   laik_vector_ex_repart<double> m_ql ;  /* linear term for q */
-   laik_vector_ex_repart<double> m_qq ;  /* quadratic term for q */
+   laik_vector_repart_exclusive<double> m_p ;   /* pressure */
+   laik_vector_repart_exclusive<double> m_q ;   /* q */
+   laik_vector_repart_exclusive<double> m_ql ;  /* linear term for q */
+   laik_vector_repart_exclusive<double> m_qq ;  /* quadratic term for q */
 
-   laik_vector_ex_repart<double> m_v ;     /* relative volume */
-   laik_vector_ex_repart<double> m_volo ;  /* reference volume */
+   laik_vector_repart_exclusive<double> m_v ;     /* relative volume */
+   laik_vector_repart_exclusive<double> m_volo ;  /* reference volume */
    std::vector<Real_t> m_vnew ;  /* new relative volume -- temporary */
-   laik_vector_ex_repart<double> m_delv ;  /* m_vnew - m_v */
-   laik_vector_ex_repart<double> m_vdov ;  /* volume derivative over volume */
+   laik_vector_repart_exclusive<double> m_delv ;  /* m_vnew - m_v */
+   laik_vector_repart_exclusive<double> m_vdov ;  /* volume derivative over volume */
 
-   laik_vector_ex_repart<double> m_arealg ;  /* characteristic length of an element */
+   laik_vector_repart_exclusive<double> m_arealg ;  /* characteristic length of an element */
    
-   laik_vector_ex_repart<double> m_ss ;      /* "sound speed" */
+   laik_vector_repart_exclusive<double> m_ss ;      /* "sound speed" */
 
-   laik_vector_ex_repart<double> m_elemMass ;  /* mass */
+   laik_vector_repart_exclusive<double> m_elemMass ;  /* mass */
 #endif
 
 #ifdef PERFORMANCE
