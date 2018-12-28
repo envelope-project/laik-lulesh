@@ -25,7 +25,12 @@ SOURCES2.0 = \
 	lulesh-util.cc \
 	lulesh-init.cc \
 	laik_partitioners.cc \
-	laik_vector.cc
+	laik_vector.cc \
+	laik_vector_comm_exclusive_halo.cc \
+	laik_vector_comm_overlapping_overlapping.cc \
+	laik_vector_repart_exclusive.cc \
+	laik_vector_repart_overlapping.cc
+
 OBJECTS2.0 = $(SOURCES2.0:.cc=.o)
 
 TARGET = REPARTITIONING
@@ -67,6 +72,9 @@ lulesh2.0: $(OBJECTS2.0)
 clean:
 	/bin/rm -f *.o *~ $(OBJECTS) $(LULESH_EXEC)
 	/bin/rm -rf *.dSYM
+
+sync:
+	rsync -a . lxhalle:laik-lulesh/
 
 tar: clean
 	cd .. ; tar cvf lulesh-2.0.tar LULESH-2.0 ; mv lulesh-2.0.tar LULESH-2.0
