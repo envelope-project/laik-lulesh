@@ -43,7 +43,7 @@ void laik_vector_repart_exclusive<T>::resize(int count){
 
 template <typename T>
 T* laik_vector_repart_exclusive<T>::calc_pointer(int idx, int state){
-     return &(this->zero);
+
 }
 
 template <typename T>
@@ -67,7 +67,7 @@ void laik_vector_repart_exclusive<T>::migrate(Laik_Group* new_group, Laik_Partit
     T* base;
     int nSlices;
 
-    this->init_config_params(new_group);
+    this -> state = 0;
 
     laik_switchto_partitioning(this->data, this->p1, LAIK_DF_Preserve, LAIK_RO_None);
     // copy the data from stl vector into the laik container

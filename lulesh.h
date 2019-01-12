@@ -776,4 +776,10 @@ void CommMonoQ(Domain& domain);
 void InitMeshDecomp(Int_t numRanks, Int_t myRank,
                     Int_t *col, Int_t *row, Int_t *plane, Int_t *side);
 
+// helper function for laik implementation
+// this function set six flags based to identify
+// if a domain locates on edges of the global domain
+void init_config_params(Laik_Group* group, int& b ,int& f, int& d,int& u, int& l, int& r);
+
+
 #endif

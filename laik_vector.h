@@ -90,12 +90,7 @@ protected:
 
     int state;                                      // state variable to indicate which partitioning is active; p1:1, p2:0
 
-    // TODO remove the following out -> lulesh specific
-    int count;                                      // helper to keep track of size of slices
-    int f,b,u,d,l,r;                                // flags for location of domain on edges of cube
-
-    // TODO remove this
-    T zero;                                         // zero value to return zero if needed in functions
+    int count;                                      // helper value for counting, e.g., size of slices
 
     // internal member methods
     // vitrual to be implemented in each concrete laik_vector
@@ -111,9 +106,6 @@ protected:
      * @brief test_print printing laik_vector for debug
      */
     void test_print();
-
-    // TODO this is lulesh specific and it has to be moved out of laik_vector
-    void init_config_params(Laik_Group* group);
 };
 
 #endif // LAIK_VECTOR

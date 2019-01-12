@@ -21,47 +21,8 @@ laik_vector<T>::laik_vector(Laik_Instance* inst, Laik_Group* world, Laik_Space* 
     this -> t2 = t2;
     this -> pointer_cache = nullptr;
 
-    this -> init_config_params(world);
-}
-
-template <typename T>
-void laik_vector<T>::init_config_params(Laik_Group* group){
-    int col, row, plane, side;
-    InitMeshDecomp(laik_size(group), laik_myid(group), &col, &row, &plane, &side);
-
-    b=1;
-    f=1;
-    d=1;
-    u=1;
-    l=1;
-    r=1;
-
-    if (col==0) {
-        l=0;
-    }
-
-    if (col==side-1) {
-        r=0;
-    }
-
-    if (row==0) {
-        d=0;
-    }
-
-    if (row==side-1) {
-        u=0;
-    }
-
-    if (plane==0) {
-        b=0;
-    }
-
-    if (plane==side-1) {
-        f=0;
-    }
-
-    state=0;
-    zero=0;
+    //this -> init_config_params(world);
+    this -> state = 0;
 }
 
 template <typename T>
@@ -79,8 +40,6 @@ void laik_vector<T>::test_print(){
         laik_log(Laik_LogLevel(2),"\n");
     }
 }
-
-
 
 template class laik_vector<double>;
 

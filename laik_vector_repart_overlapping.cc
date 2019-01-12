@@ -40,7 +40,7 @@ void laik_vector_repart_overlapping<T>::resize(int count){
 
 template <typename T>
 T* laik_vector_repart_overlapping<T>::calc_pointer(int idx, int state){
-     return &(this->zero);
+
 }
 
 template <typename T>
@@ -64,7 +64,7 @@ void laik_vector_repart_overlapping<T>::migrate(Laik_Group* new_group, Laik_Part
     T* base;
     int nSlices;
 
-    this->init_config_params(new_group);
+    this -> state = 0;
 
     laik_switchto_partitioning(this->data, this->p1, LAIK_DF_None, LAIK_RO_Min);
     // copy the data from stl vector into the laik container

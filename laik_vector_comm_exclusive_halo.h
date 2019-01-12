@@ -9,7 +9,7 @@ class laik_vector_comm_exclusive_halo:public laik_vector<T>
 public:
     laik_vector_comm_exclusive_halo(Laik_Instance* inst, Laik_Group* world, Laik_Space* indexSpace, Laik_Partitioning *p1, Laik_Partitioning *p2, Laik_Transition* t1, Laik_Transition* t2, Laik_ReductionOperation operation = LAIK_RO_None);
     inline T& operator [](int idx) override;
-    T* calc_pointer(int idx, int state);
+    T* calc_pointer(int idx, int state, int b, int f, int d, int u, int l, int r);
     void precalculate_base_pointers() override;
     void resize(int count) override;
     void switch_to_p1() override;

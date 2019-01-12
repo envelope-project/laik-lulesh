@@ -19,11 +19,11 @@ void laik_vector_comm_exclusive_halo<T>::resize(int count){
     this->size = count;
 
     if (std::is_same <T, double>::value) {
-        this->data = laik_new_data(this->indexSpace, laik_Double );
+        this -> data = laik_new_data(this->indexSpace, laik_Double );
 
     }
     else if (std::is_same <T, int>::value){
-        this->data = laik_new_data(this->indexSpace, laik_Int64 );
+        this -> data = laik_new_data(this->indexSpace, laik_Int64 );
     }
 
     // use the reservation API to precalculate the pointers
@@ -48,15 +48,17 @@ void laik_vector_comm_exclusive_halo<T>::resize(int count){
     {
        laik_map_def(this->data, n, (void **)&base, &cnt);
     }
-    //laik_exec_transition(data, toHalo);
+    //laik_exec_transition(this->data, toHalo);
     laik_switchto_partitioning(this->data, this->p2, LAIK_DF_Preserve, this->reduction_operation);
 
+    this -> state = 0;
     this -> count = cnt;
+
     this -> precalculate_base_pointers();
 }
 
 template <typename T>
-T* laik_vector_comm_exclusive_halo<T>::calc_pointer(int idx, int state){
+T* laik_vector_comm_exclusive_halo<T>::calc_pointer(int idx, int state, int b, int f, int d, int u, int l, int r){
     uint64_t cnt;
     T* base;
 
@@ -75,27 +77,27 @@ T* laik_vector_comm_exclusive_halo<T>::calc_pointer(int idx, int state){
     }
 
     Int_t pidx = numElem ;
-    if (this->b) {
+    if (b) {
       ghostIdx[0] = pidx ;
       pidx += this->count*this->count ;
     }
-    if (this->f) {
+    if (f) {
       ghostIdx[1] = pidx ;
       pidx += this->count*this->count ;
     }
-    if (this->d) {
+    if (d) {
       ghostIdx[2] = pidx ;
       pidx += this->count*this->count ;
     }
-    if (this->u) {
+    if (u) {
       ghostIdx[3] = pidx ;
       pidx += this->count*this->count ;
     }
-    if (this->l) {
+    if (l) {
       ghostIdx[4] = pidx ;
       pidx += this->count*this->count ;
     }
-    if (this->r) {
+    if (r) {
       ghostIdx[5] = pidx ;
     }
 
@@ -115,8 +117,8 @@ T* laik_vector_comm_exclusive_halo<T>::calc_pointer(int idx, int state){
             i = idx%this->count;
             j = (idx/this->count)%this->count;
             k = idx/(this->count*this->count);
-            slice = (this->count+this->d+this->u)*(k+this->b)+(j+this->d);
-            i += this->l;
+            slice = (this->count+d+u)*(k+b)+(j+d);
+            i += l;
         }
 
         // back
@@ -126,8 +128,8 @@ T* laik_vector_comm_exclusive_halo<T>::calc_pointer(int idx, int state){
             i = index%this->count;
             j = index/this->count;
             k = -1;
-            slice = (this->count+this->d+this->u)*(k+this->b)+(j+this->d);
-            i += this->l;
+            slice = (this->count+d+u)*(k+b)+(j+d);
+            i += l;
         }
         // front
         // tested OK
@@ -136,8 +138,8 @@ T* laik_vector_comm_exclusive_halo<T>::calc_pointer(int idx, int state){
             i = index%this->count;
             j = index/this->count;
             k = this->count;
-            slice = (this->count+this->d+this->u)*(k+this->b)+(j+this->d);
-            i += this->l;
+            slice = (this->count+d+u)*(k+b)+(j+d);
+            i += l;
         }
         //down
         //tested OK
@@ -146,8 +148,8 @@ T* laik_vector_comm_exclusive_halo<T>::calc_pointer(int idx, int state){
             i = index%this->count;
             j = -1;
             k = index/this->count;
-            slice = (this->count+this->d+this->u)*(k+this->b)+(j+this->d);
-            i += this->l;
+            slice = (this->count+d+u)*(k+b)+(j+d);
+            i += l;
         }
         //up
         //tested OK
@@ -156,8 +158,8 @@ T* laik_vector_comm_exclusive_halo<T>::calc_pointer(int idx, int state){
             i = index%this->count;
             j = this->count;
             k = index/this->count;
-            slice = (this->count+this->d+this->u)*(k+this->b)+(j+this->d);
-            i += this->l;
+            slice = (this->count+d+u)*(k+b)+(j+d);
+            i += l;
         }
         //left
         //tested OK
@@ -166,8 +168,8 @@ T* laik_vector_comm_exclusive_halo<T>::calc_pointer(int idx, int state){
             i = -1;
             j = index%this->count;
             k = index/this->count;
-            slice = (this->count+this->d+this->u)*(k+this->b)+(j+this->d);
-            i += this->l;
+            slice = (this->count+d+u)*(k+b)+(j+d);
+            i += l;
         }
         //right
         //tested OK
@@ -176,8 +178,8 @@ T* laik_vector_comm_exclusive_halo<T>::calc_pointer(int idx, int state){
             i = this->count;
             j = index%this->count;
             k = index/this->count;
-            slice = (this->count+this->d+this->u)*(k+this->b)+(j+this->d);
-            i += this->l;
+            slice = (this->count+d+u)*(k+b)+(j+d);
+            i += l;
         }
     }
 
@@ -187,11 +189,13 @@ T* laik_vector_comm_exclusive_halo<T>::calc_pointer(int idx, int state){
         return base+i;
     }
 
-    return &(this->zero);
 }
 
 template <typename T>
 void laik_vector_comm_exclusive_halo<T>::precalculate_base_pointers(){
+    int b, f, d, u, l, r;
+    init_config_params(this->world, b , f, d, u, l, r);
+
     int numElems = this->count*this->count*this->count;
 
     if (this->pointer_cache != nullptr)   free (this->pointer_cache);
@@ -200,7 +204,7 @@ void laik_vector_comm_exclusive_halo<T>::precalculate_base_pointers(){
     laik_switchto_partitioning(this->data, this->p1, LAIK_DF_None, this->reduction_operation);
 
     for (int i = 0; i < numElems; ++i) {
-        this->pointer_cache [i] = calc_pointer(i,1);
+        this->pointer_cache [i] = calc_pointer(i,1, b, f, d, u, l, r);
     }
     // test
     /*
@@ -209,12 +213,12 @@ void laik_vector_comm_exclusive_halo<T>::precalculate_base_pointers(){
     }
     */
 
-    int numElemsTotal = numElems + (this->b+this->f+this->d+this->u+this->l+this->r)*this->count*this->count;
+    int numElemsTotal = numElems + (b+f+d+u+l+r)*this->count*this->count;
     this->pointer_cache= (T**) malloc (numElemsTotal * sizeof(T*));
     laik_switchto_partitioning(this->data, this->p2, LAIK_DF_Preserve, this->reduction_operation);
 
     for (int i = 0; i < numElemsTotal; ++i) {
-        this->pointer_cache [i] = calc_pointer(i,0);
+        this->pointer_cache [i] = calc_pointer(i,0, b, f, d, u, l, r);
     }
     // test
     /*
@@ -229,16 +233,16 @@ void laik_vector_comm_exclusive_halo<T>::precalculate_base_pointers(){
 template <typename T>
 void laik_vector_comm_exclusive_halo<T>::switch_to_p1(){
     laik_exec_actions(this->as1);
-    //laik_exec_transition(data,t1);
-    //laik_switchto_phase(data, p1, LAIK_DF_CopyOut);
+    //laik_exec_transition(this->data,t1);
+    //laik_switchto_phase(this->data, p1, LAIK_DF_CopyOut);
     this->state=1;
 }
 
 template <typename T>
 void laik_vector_comm_exclusive_halo<T>::switch_to_p2(){
     laik_exec_actions(this->as2);
-    //laik_exec_transition(data,t2);
-    //laik_switchto_phase(data, p2, LAIK_DF_CopyIn);
+    //laik_exec_transition(this->data,t2);
+    //laik_switchto_phase(this->data, p2, LAIK_DF_CopyIn);
     this->state=0;
 }
 
@@ -247,8 +251,6 @@ void laik_vector_comm_exclusive_halo<T>::migrate(Laik_Group* new_group, Laik_Par
     uint64_t cnt;
     int* base;
     //int slice = 0;
-
-    this->init_config_params(new_group);
 
     laik_switchto_partitioning(this->data, this->p1, LAIK_DF_None, LAIK_RO_None);
 

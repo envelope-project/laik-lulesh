@@ -75,7 +75,7 @@ clean:
 	/bin/rm -rf *.dSYM
 
 sync:
-	rsync -a . lxhalle:laik-lulesh/
+	rsync -a . sksmall:laik-lulesh/
 
 tar: clean
 	cd .. ; tar cvf lulesh-2.0.tar LULESH-2.0 ; mv lulesh-2.0.tar LULESH-2.0

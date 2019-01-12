@@ -48,6 +48,7 @@ void laik_vector_comm_overlapping_overlapping<T>::resize(int count){
     Laik_TaskSlice* ts = laik_my_slice(this->p1, 0);
     const Laik_Slice* s = laik_taskslice_get_slice(ts);
     this -> count = laik_slice_size(s);
+    this -> state = 0;
     this -> precalculate_base_pointers();
 }
 
@@ -71,7 +72,7 @@ T* laik_vector_comm_overlapping_overlapping<T>::calc_pointer(int idx){
 }
 
 template <typename T>
-void laik_vector_comm_overlapping_overlapping<T>::precalculate_base_pointers(){
+void laik_vector_comm_overlapping_overlapping<T>::precalculate_base_pointers(){    
 
     if (this->pointer_cache != nullptr)   free (this->pointer_cache);
 
@@ -102,8 +103,6 @@ void laik_vector_comm_overlapping_overlapping<T>::migrate(Laik_Group* new_group,
     uint64_t cnt;
     int* base;
     //int slice = 0;
-
-    this->init_config_params(new_group);
 
     laik_switchto_partitioning(this->data, this->p1, LAIK_DF_None, LAIK_RO_Min);
 
@@ -138,6 +137,8 @@ void laik_vector_comm_overlapping_overlapping<T>::migrate(Laik_Group* new_group,
     laik_switchto_partitioning(this->data, this->p2, LAIK_DF_Preserve, LAIK_RO_Min);
 
     this -> count = cnt;
+    this -> state = 0;
+
     this -> precalculate_base_pointers();
 }
 
