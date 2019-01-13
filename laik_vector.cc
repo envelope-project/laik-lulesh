@@ -41,5 +41,9 @@ void laik_vector<T>::test_print(){
     }
 }
 
+template <typename T>
+void laik_vector<T>::clear(){}
+
+
 template class laik_vector<double>;
 

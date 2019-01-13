@@ -69,6 +69,11 @@ public:
      */
     virtual void migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2, Laik_Transition* t_new_1, Laik_Transition* t_new_2) = 0;
 
+    /**
+     * @brief clearing laik_vectors
+     */
+    void clear();
+
 protected:
     // members from laik
     Laik_Instance* inst;                            // laik context

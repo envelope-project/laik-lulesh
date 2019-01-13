@@ -136,7 +136,11 @@ class Domain {
 
    public:
 
-   // Constructor
+    /**
+    * @brief Constructor Domain updated to use additional
+    *        parameters. The partitionings and transitions
+    *        are needed to construct the laik_vectors used
+    */
    Domain(Int_t numRanks, Index_t colLoc,
           Index_t rowLoc, Index_t planeLoc,
           Index_t nx, Int_t tp, Int_t nr, Int_t balance, Int_t cost,
@@ -145,10 +149,47 @@ class Domain {
           Laik_Partitioning *exclusive, Laik_Partitioning *halo, Laik_Partitioning *overlapping,
           Laik_Transition *transitionToExclusive, Laik_Transition *transitionToHalo, Laik_Transition *transitionToOverlappingInit,Laik_Transition * transitionToOverlappingReduce);
 
+   /**
+    * @brief this method is extracted from the constructor of Domain
+    *        The constructor only calls this and it does the initialization
+    *        The reason for this change is that after repartitioning
+    *        some parts of the constructor has to be re-executed (
+    *        of course not the zero initialization of data) to update
+    *        some parameters
+    * @param numRanks
+    * @param colLoc
+    * @param rowLoc
+    * @param planeLoc
+    * @param nx
+    * @param tp
+    * @param nr
+    * @param balance
+    * @param cost
+    */
    void init_domain(Int_t numRanks, Index_t colLoc,
                     Index_t rowLoc, Index_t planeLoc,
                     Index_t nx, Int_t tp, Int_t nr, Int_t balance, Int_t cost);
 
+   /**
+    * @brief this method initializes the parameters that are
+    *        set in the controctor of Domain
+    *        similar to init_domain but it is only used for
+    *        repartitioning as it does not include all the
+    *        codes in the constructor of Domain in the ref-
+    *        erence implementation. For example it skips
+    *        initializing the fields to zero since this
+    *        initialization would remove the data and
+    *        leads to incorrect results after repartitioning.
+    * @param numRanks
+    * @param colLoc
+    * @param rowLoc
+    * @param planeLoc
+    * @param nx
+    * @param tp
+    * @param nr
+    * @param balance
+    * @param cost
+    */
    void re_init_domain(Int_t numRanks, Index_t colLoc,
                        Index_t rowLoc, Index_t planeLoc,
                        Index_t nx, Int_t tp, Int_t nr, Int_t balance, Int_t cost);
@@ -276,13 +317,13 @@ m_delx_zeta.resize(numElem) ;
 
    void DeallocateGradients()
    {
-      //m_delx_zeta.clear() ;
-      //m_delx_eta.clear() ;
-      //m_delx_xi.clear() ;
+      m_delx_zeta.clear() ;
+      m_delx_eta.clear() ;
+      m_delx_xi.clear() ;
 
-      //m_delv_zeta.clear() ;
-      //m_delv_eta.clear() ;
-      //m_delv_xi.clear() ;
+      m_delv_zeta.clear() ;
+      m_delv_eta.clear() ;
+      m_delv_xi.clear() ;
    }
 
    void AllocateStrains(Int_t numElem)
@@ -302,16 +343,16 @@ m_delx_zeta.resize(numElem) ;
 
    void DeallocateStrains()
    {
-      //m_dzz.clear() ;
-      //m_dyy.clear() ;
-      //m_dxx.clear() ;
+      m_dzz.clear() ;
+      m_dyy.clear() ;
+      m_dxx.clear() ;
    }
 
-   // lulesh-repartitioning
-   void re_distribute_data_structures(Laik_Group* new_group, Laik_Partitioning* p_exclusive, Laik_Partitioning* p_halo, Laik_Partitioning* p_overlapping, Laik_Transition *t_to_exclusive, Laik_Transition *t_to_halo, Laik_Transition *t_to_overlapping_init, Laik_Transition *t_to_overlapping_reduce);
-   
-   //
    // GETTERS
+   // for accessing laik_vectors out of Domain
+   // this is not needed by lulesh as lulesh implements
+   // accessors to the data independent of the container.
+   // (only for debugging)
    //
    laik_vector_comm_overlapping_overlapping<double>& get_fx() { return m_fx;}
    laik_vector_comm_overlapping_overlapping<double>& get_fy() { return m_fy;}
@@ -320,6 +361,7 @@ m_delx_zeta.resize(numElem) ;
    laik_vector_comm_exclusive_halo<double>& get_delv_xi() { return m_delv_xi;}
    laik_vector_comm_exclusive_halo<double>& get_delv_eta() { return m_delv_eta;}
    laik_vector_comm_exclusive_halo<double>& get_delv_zeta() { return m_delv_zeta;}
+
    // ACCESSORS
    //
 
@@ -487,13 +529,6 @@ m_delx_zeta.resize(numElem) ;
    
    Index_t&  maxPlaneSize()       { return m_maxPlaneSize ; }
    Index_t&  maxEdgeSize()        { return m_maxEdgeSize ; }
-   
-   // LAIK-related data
-   // the domain needs to
-   // know about the laik instance
-   // and laik group
-   Laik_Instance *inst;
-   Laik_Group *world;
 
    //
    // MPI-Related additional data
@@ -515,6 +550,28 @@ m_delx_zeta.resize(numElem) ;
        m_nodalMass.switch_to_p2();
    }
 #endif
+
+   // LAIK-related additional data
+   // the domain needs to
+   // know about the laik instance
+   // and laik group
+   Laik_Instance *inst;
+   Laik_Group *world;
+
+   // LAIK-related  method
+   /**
+    * @brief helper function for calling migration and data re-distribution
+    *        in all laik_vectors so they perfor re-distribution.
+    * @param new_group
+    * @param p_exclusive
+    * @param p_halo
+    * @param p_overlapping
+    * @param t_to_exclusive
+    * @param t_to_halo
+    * @param t_to_overlapping_init
+    * @param t_to_overlapping_reduce
+    */
+   void re_distribute_data_structures(Laik_Group* new_group, Laik_Partitioning* p_exclusive, Laik_Partitioning* p_halo, Laik_Partitioning* p_overlapping, Laik_Transition *t_to_exclusive, Laik_Transition *t_to_halo, Laik_Transition *t_to_overlapping_init, Laik_Transition *t_to_overlapping_reduce);
 
   private:
 
@@ -781,5 +838,65 @@ void InitMeshDecomp(Int_t numRanks, Int_t myRank,
 // if a domain locates on edges of the global domain
 void init_config_params(Laik_Group* group, int& b ,int& f, int& d,int& u, int& l, int& r);
 
+/**
+ * @brief helper functions for facilitating calculation of
+ *        partitionings and transitions
+ * @param world
+ * @param indexSpaceElements
+ * @param indexSpaceNodes
+ * @param indexSapceDt
+ * @param exclusivePartitioning
+ * @param haloPartitioning
+ * @param overlapingPartitioning
+ * @param allPartitioning
+ * @param transitionToExclusive
+ * @param transitionToHalo
+ * @param transitionToOverlappingInit
+ * @param transitionToOverlappingReduce
+ */
+void create_partitionings_and_transitions(  Laik_Group *&world,
+                                            Laik_Space *&indexSpaceElements,
+                                            Laik_Space *&indexSpaceNodes,
+                                            Laik_Space *&indexSapceDt,
+                                            Laik_Partitioning *&exclusivePartitioning,
+                                            Laik_Partitioning *&haloPartitioning,
+                                            Laik_Partitioning *&overlapingPartitioning,
+                                            Laik_Partitioning *&allPartitioning,
+                                            Laik_Transition *&transitionToExclusive,
+                                            Laik_Transition *&transitionToHalo,
+                                            Laik_Transition *&transitionToOverlappingInit,
+                                            Laik_Transition *&transitionToOverlappingReduce);
+
+/**
+ * @brief helper function to remove unusing
+ *        partitioning and transitions
+ * @param exclusivePartitioning
+ * @param haloPartitioning
+ * @param overlapingPartitioning
+ * @param allPartitioning
+ * @param transitionToExclusive
+ * @param transitionToHalo
+ * @param transitionToOverlappingInit
+ * @param transitionToOverlappingReduce
+ */
+void remove_partitionings_and_transitions(Laik_Partitioning *&exclusivePartitioning,
+                                          Laik_Partitioning *&haloPartitioning,
+                                          Laik_Partitioning *&overlapingPartitioning,
+                                          Laik_Partitioning *&allPartitioning,
+                                          Laik_Transition *&transitionToExclusive,
+                                          Laik_Transition *&transitionToHalo,
+                                          Laik_Transition *&transitionToOverlappingInit,
+                                          Laik_Transition *&transitionToOverlappingReduce);
+
+/**
+ * @brief helper function for calculation of removing list of processes from the process group
+ * @param world
+ * @param opts
+ * @param side
+ * @param newside
+ * @param diffsize
+ * @param removeList
+ */
+void calculate_removing_list(Laik_Group* world, cmdLineOpts& opts, double side, double& newside, int& diffsize, int *&removeList);
 
 #endif
