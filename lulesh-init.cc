@@ -217,7 +217,7 @@ void Domain::init_domain(Int_t numRanks, Index_t colLoc,
     cycle()   = Int_t(0) ;
 
     // initialize field data
-    m_nodalMass.switch_to_write_phase();
+    m_nodalMass.switch_to_p1();
     for (Index_t i=0; i<numElem(); ++i) {
        Real_t x_local[8], y_local[8], z_local[8] ;
        Index_t *elemToNode = nodelist(i) ;
@@ -238,8 +238,8 @@ void Domain::init_domain(Int_t numRanks, Index_t colLoc,
           nodalMass(idx) += volume / Real_t(8.0) ;
        }
     }
-    m_nodalMass.switch_to_read_phase();
-    //m_nodalMass.switch_to_write_phase();
+    m_nodalMass.switch_to_p2();
+    //m_nodalMass.switch_to_p1();
 
     // deposit initial energy
     // An energy of 3.948746e+7 is correct for a problem with

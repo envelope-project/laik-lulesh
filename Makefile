@@ -25,13 +25,19 @@ SOURCES2.0 = \
 	lulesh-util.cc \
 	lulesh-init.cc \
 	laik_partitioners.cc \
-	laik_vector.cc
+	laik_vector.cc \
+	laik-lulesh-repartition.cc \
+	laik_vector_comm_exclusive_halo.cc \
+	laik_vector_comm_overlapping_overlapping.cc \
+	laik_vector_repart_exclusive.cc \
+	laik_vector_repart_overlapping.cc
+
 OBJECTS2.0 = $(SOURCES2.0:.cc=.o)
 
 TARGET = REPARTITIONING
 
 #Default build suggestions with OpenMP for g++
-OPT = -O3
+OPT = -O0 -g
 #CXXFLAGS = -g $(OPT) -std=c++11 -fopenmp -I. -Wall $(LAIK_INC) -DUSE_MPI=1 -DREPARTITIONING=1
 CXXFLAGS = $(OPT) -std=c++11 -fopenmp -I. -Wall $(LAIK_INC) -DUSE_MPI=1 -D$(TARGET)=1
 LDFLAGS = $(OPT) -std=c++11 -fopenmp -Wl,-rpath,$(abspath $(LAIK_ROOT)) $(LAIK_LIB)  -lmpi
@@ -67,6 +73,9 @@ lulesh2.0: $(OBJECTS2.0)
 clean:
 	/bin/rm -f *.o *~ $(OBJECTS) $(LULESH_EXEC)
 	/bin/rm -rf *.dSYM
+
+sync:
+	rsync -a . sksmall:laik-lulesh/
 
 tar: clean
 	cd .. ; tar cvf lulesh-2.0.tar LULESH-2.0 ; mv lulesh-2.0.tar LULESH-2.0

@@ -7,225 +7,110 @@ extern "C"{
 }
 #include<vector>
 
+
+/**
+ * @brief laik_vector: abstract class
+ * abstraction for laik data container,
+ * 2 partintionings and transitions and
+ * communication action sequences to switch
+ * between the partitionings.
+ * laik_vector encapsulates Laik_Data and allows
+ * access to data using local indices.
+ */
 template <typename T>
 class laik_vector
 {
 public:
+    /**
+     * @brief laik_vector constructor
+     * @param inst laik context which is already initialized
+     * @param world laik process group on which the partitionings are defined
+     * @param indexSpace index space to partition
+     * @param p1 first paritioning
+     * @param p2 second partitoining
+     * @param t1 first transition
+     * @param t2 second transisition
+     * @param operation reduction operation for switching between p1 and p2
+     */
     laik_vector(Laik_Instance* inst, Laik_Group* world, Laik_Space* indexSpace,
  Laik_Partitioning *p1, Laik_Partitioning *p2, Laik_Transition* t1, Laik_Transition* t2, Laik_ReductionOperation operation = LAIK_RO_None);
-    void resize(int count);
-    inline T& operator [](int idx);
-    virtual void calculate_pointers() = 0;
-    void switch_to_write_phase();
-    void switch_to_read_phase();
+    
+    // virtual member functions to be implemented in conrete laik_vectors
+    /**
+     * @brief resize public method to initialize laik_containers
+     * @param count local size of 1d index space
+     */
+    virtual void resize(int count) = 0;
+
+    /**
+     * @brief operator [] de-referencing operator
+     * @param idx local index to be referenced in the Laik_Data
+     * @return the idx-th element in the continer
+     */
+    inline virtual T& operator [](int idx) = 0;
+
+    /**
+     * @brief switch_to_p1 method to switch to p1
+     */
+    virtual void switch_to_p1() = 0;
+
+    /**
+     * @brief switch_to_p2 method to switch to p2
+     */
+    virtual void switch_to_p2() = 0;
+
+    /**
+     * @brief migrate method to migrate to new process groups
+     * @param new_group target process group
+     * @param p_new_1 first partitioning on the new_group
+     * @param p_new_2 second partitioning on the new_group
+     * @param t_new_1 transition to p_new_1
+     * @param t_new_2 transition to p_new_2
+     */
     virtual void migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2, Laik_Transition* t_new_1, Laik_Transition* t_new_2) = 0;
+
+    /**
+     * @brief clearing laik_vectors
+     */
+    void clear();
+
+protected:
+    // members from laik
+    Laik_Instance* inst;                            // laik context
+    Laik_Group* world;                              // working process group
+    Laik_ReductionOperation reduction_operation;    // reduction operation when switching (could be used for switching to p1 or p2)
+    Laik_Space* indexSpace;                         // indexSpace index space to partition
+    Laik_Partitioning *p1;                          // p1 first paritioning
+    Laik_Partitioning *p2;                          // p2 second paritioning
+    Laik_Transition *t1;                            // t1 first transition  (toW)
+    Laik_Transition *t2;                            // t2 second transition (toR)
+    Laik_ActionSeq* as1;                            // action sequence corresponding to t1 (asW)
+    Laik_ActionSeq* as2;                            // action sequence corresponding to t1 (asR)
+    Laik_Data* data;                                // laik data container
+
+
+    T **pointer_cache;                              // base pointers of Laik_Slices
+    
+    int size;                                       // limit of accessible local indices
+
+    int state;                                      // state variable to indicate which partitioning is active; p1:1, p2:0
+
+    int count;                                      // helper value for counting, e.g., size of slices
+
+    // internal member methods
+    // vitrual to be implemented in each concrete laik_vector
+    /**
+     * @brief precalculate_base_pointers
+     * method to precalculate the base pointers of each Laik_Slice in the partitionings
+     * this is used to calculate the base pointers only once and the precalculated
+     * pointers are valid for as long as the partitionings are not changed.
+     */
+    virtual void precalculate_base_pointers() = 0;
+
+    /**
+     * @brief test_print printing laik_vector for debug
+     */
     void test_print();
-    void init_config_params(Laik_Group* group);
-
-protected:
-    Laik_Instance* inst;
-    Laik_Group* world;
-    int size;
-    Laik_Space* indexSpace;
-    Laik_Partitioning *p1;
-    Laik_Partitioning *p2;
-    Laik_Transition *toW;
-    Laik_Transition *toR;
-    Laik_ActionSeq* asW;
-    Laik_ActionSeq* asR;
-    Laik_Data* data;
-    int count;
-    int f,b,u,d,l,r;
-    int state;
-    T zero;
-    T **pointer_cache;
-    Laik_ReductionOperation reduction_operation;
 };
-
-template <typename T>
-class laik_vector_halo:public laik_vector<T>
-{
-public:
-    laik_vector_halo(Laik_Instance* inst, Laik_Group* world, Laik_Space* indexSpace, Laik_Partitioning *p1, Laik_Partitioning *p2, Laik_Transition* t1, Laik_Transition* t2, Laik_ReductionOperation operation = LAIK_RO_None);
-    inline T& operator [](int idx);
-    T* calc_pointer(int idx, int state);
-    void calculate_pointers();
-    void resize(int count);
-    void switch_to_write_phase();
-    void switch_to_read_phase();
-    void migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2, Laik_Transition* t_new_1, Laik_Transition* t_new_2);
-
-protected:
-    using laik_vector<T>::inst;
-    using laik_vector<T>::world;
-    using laik_vector<T>::size;
-    using laik_vector<T>::indexSpace;
-    using laik_vector<T>::p1;
-    using laik_vector<T>::p2;
-    using laik_vector<T>::toW;
-    using laik_vector<T>::toR;
-    using laik_vector<T>::asW;
-    using laik_vector<T>::asR;
-    using laik_vector<T>::data;
-    using laik_vector<T>::count;
-    using laik_vector<T>::f;
-    using laik_vector<T>::b;
-    using laik_vector<T>::u;
-    using laik_vector<T>::d;
-    using laik_vector<T>::l;
-    using laik_vector<T>::r;
-    using laik_vector<T>::state;
-    using laik_vector<T>::zero;
-    using laik_vector<T>::pointer_cache;
-    using laik_vector<T>::reduction_operation;
-    using laik_vector<T>::init_config_params;
-};
-
-template <typename T>
-class laik_vector_overlapping:public laik_vector<T>
-{
-public:
-    laik_vector_overlapping(Laik_Instance* inst, Laik_Group* world, Laik_Space* indexSpace, Laik_Partitioning *p1, Laik_Partitioning *p2, Laik_Transition* t1, Laik_Transition* t2, Laik_ReductionOperation operation = LAIK_RO_Sum);
-    inline T& operator [](int idx);
-    T* calc_pointer(int idx);
-    void calculate_pointers();
-    void resize(int count);
-    void switch_to_write_phase();
-    void switch_to_read_phase();
-    void migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2, Laik_Transition* t_new_1, Laik_Transition* t_new_2);
-
-protected:
-    using laik_vector<T>::inst;
-    using laik_vector<T>::world;
-    using laik_vector<T>::size;
-    using laik_vector<T>::indexSpace;
-    using laik_vector<T>::p1;
-    using laik_vector<T>::p2;
-    using laik_vector<T>::toW;
-    using laik_vector<T>::toR;
-    using laik_vector<T>::asW;
-    using laik_vector<T>::asR;
-    using laik_vector<T>::data;
-    using laik_vector<T>::count;
-    using laik_vector<T>::f;
-    using laik_vector<T>::b;
-    using laik_vector<T>::u;
-    using laik_vector<T>::d;
-    using laik_vector<T>::l;
-    using laik_vector<T>::r;
-    using laik_vector<T>::state;
-    using laik_vector<T>::zero;
-    using laik_vector<T>::pointer_cache;
-    using laik_vector<T>::reduction_operation;
-    using laik_vector<T>::init_config_params;
-};
-
-template <typename T>
-class laik_vector_ex_repart:public laik_vector<T>
-{
-public:
-    laik_vector_ex_repart(Laik_Instance* inst, Laik_Group* world, Laik_Space* indexSpace, Laik_Partitioning *p1, Laik_Partitioning *p2, Laik_Transition* t1, Laik_Transition* t2, Laik_ReductionOperation operation = LAIK_RO_None);
-    inline T& operator [](int idx);
-    T* calc_pointer(int idx, int state);
-    void calculate_pointers();
-    void resize(int count);
-    void switch_to_write_phase();
-    void switch_to_read_phase();
-    void migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2, Laik_Transition* t_new_1, Laik_Transition* t_new_2);
-
-protected:
-    using laik_vector<T>::inst;
-    using laik_vector<T>::world;
-    using laik_vector<T>::size;
-    using laik_vector<T>::indexSpace;
-    using laik_vector<T>::p1;
-    using laik_vector<T>::p2;
-    using laik_vector<T>::toW;
-    using laik_vector<T>::toR;
-    using laik_vector<T>::asW;
-    using laik_vector<T>::asR;
-    using laik_vector<T>::data;
-    using laik_vector<T>::count;
-    using laik_vector<T>::f;
-    using laik_vector<T>::b;
-    using laik_vector<T>::u;
-    using laik_vector<T>::d;
-    using laik_vector<T>::l;
-    using laik_vector<T>::r;
-    using laik_vector<T>::state;
-    using laik_vector<T>::zero;
-    using laik_vector<T>::pointer_cache;
-    using laik_vector<T>::reduction_operation;
-    using laik_vector<T>::init_config_params;
-
-private:
-    std::vector<T> data_vector;
-};
-
-template <typename T>
-class laik_vector_overlapping_repart:public laik_vector<T>
-{
-public:
-    laik_vector_overlapping_repart(Laik_Instance* inst, Laik_Group* world, Laik_Space* indexSpace, Laik_Partitioning *p1, Laik_Partitioning *p2, Laik_Transition* t1, Laik_Transition* t2, Laik_ReductionOperation operation = LAIK_RO_None);
-    inline T& operator [](int idx);
-    T* calc_pointer(int idx, int state);
-    void calculate_pointers();
-    void resize(int count);
-    void switch_to_write_phase();
-    void switch_to_read_phase();
-    void migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2, Laik_Transition* t_new_1, Laik_Transition* t_new_2);
-
-protected:
-    using laik_vector<T>::inst;
-    using laik_vector<T>::world;
-    using laik_vector<T>::size;
-    using laik_vector<T>::indexSpace;
-    using laik_vector<T>::p1;
-    using laik_vector<T>::p2;
-    using laik_vector<T>::toW;
-    using laik_vector<T>::toR;
-    using laik_vector<T>::asW;
-    using laik_vector<T>::asR;
-    using laik_vector<T>::data;
-    using laik_vector<T>::count;
-    using laik_vector<T>::f;
-    using laik_vector<T>::b;
-    using laik_vector<T>::u;
-    using laik_vector<T>::d;
-    using laik_vector<T>::l;
-    using laik_vector<T>::r;
-    using laik_vector<T>::state;
-    using laik_vector<T>::zero;
-    using laik_vector<T>::pointer_cache;
-    using laik_vector<T>::reduction_operation;
-    using laik_vector<T>::init_config_params;
-
-private:
-    std::vector<T> data_vector;
-};
-
-template <typename T>
-inline
-T& laik_vector_halo<T>::operator [](int idx){
-    return *(this -> pointer_cache[idx]);
-}
-
-template <typename T>
-inline
-T& laik_vector_ex_repart<T>::operator [](int idx){
-    return this -> data_vector[idx];
-}
-
-template <typename T>
-inline
-T& laik_vector_overlapping<T>::operator [](int idx){
-    return *(this -> pointer_cache[idx]);
-}
-
-template <typename T>
-inline
-T& laik_vector_overlapping_repart<T>::operator [](int idx){
-    return this -> data_vector[idx];
-}
 
 #endif // LAIK_VECTOR

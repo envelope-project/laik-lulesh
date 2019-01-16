@@ -26,8 +26,11 @@
 
 #include <math.h>
 #include <vector>
-//#include <laik_port.h>
 #include <laik_vector.h>
+#include "laik_vector_comm_exclusive_halo.h"
+#include "laik_vector_comm_overlapping_overlapping.h"
+#include "laik_vector_repart_exclusive.h"
+#include "laik_vector_repart_overlapping.h"
 
 //**************************************************
 // Allow flexibility for arithmetic representations 
@@ -133,7 +136,11 @@ class Domain {
 
    public:
 
-   // Constructor
+    /**
+    * @brief Constructor Domain updated to use additional
+    *        parameters. The partitionings and transitions
+    *        are needed to construct the laik_vectors used
+    */
    Domain(Int_t numRanks, Index_t colLoc,
           Index_t rowLoc, Index_t planeLoc,
           Index_t nx, Int_t tp, Int_t nr, Int_t balance, Int_t cost,
@@ -142,10 +149,47 @@ class Domain {
           Laik_Partitioning *exclusive, Laik_Partitioning *halo, Laik_Partitioning *overlapping,
           Laik_Transition *transitionToExclusive, Laik_Transition *transitionToHalo, Laik_Transition *transitionToOverlappingInit,Laik_Transition * transitionToOverlappingReduce);
 
+   /**
+    * @brief this method is extracted from the constructor of Domain
+    *        The constructor only calls this and it does the initialization
+    *        The reason for this change is that after repartitioning
+    *        some parts of the constructor has to be re-executed (
+    *        of course not the zero initialization of data) to update
+    *        some parameters
+    * @param numRanks
+    * @param colLoc
+    * @param rowLoc
+    * @param planeLoc
+    * @param nx
+    * @param tp
+    * @param nr
+    * @param balance
+    * @param cost
+    */
    void init_domain(Int_t numRanks, Index_t colLoc,
                     Index_t rowLoc, Index_t planeLoc,
                     Index_t nx, Int_t tp, Int_t nr, Int_t balance, Int_t cost);
 
+   /**
+    * @brief this method initializes the parameters that are
+    *        set in the controctor of Domain
+    *        similar to init_domain but it is only used for
+    *        repartitioning as it does not include all the
+    *        codes in the constructor of Domain in the ref-
+    *        erence implementation. For example it skips
+    *        initializing the fields to zero since this
+    *        initialization would remove the data and
+    *        leads to incorrect results after repartitioning.
+    * @param numRanks
+    * @param colLoc
+    * @param rowLoc
+    * @param planeLoc
+    * @param nx
+    * @param tp
+    * @param nr
+    * @param balance
+    * @param cost
+    */
    void re_init_domain(Int_t numRanks, Index_t colLoc,
                        Index_t rowLoc, Index_t planeLoc,
                        Index_t nx, Int_t tp, Int_t nr, Int_t balance, Int_t cost);
@@ -273,13 +317,13 @@ m_delx_zeta.resize(numElem) ;
 
    void DeallocateGradients()
    {
-      //m_delx_zeta.clear() ;
-      //m_delx_eta.clear() ;
-      //m_delx_xi.clear() ;
+      m_delx_zeta.clear() ;
+      m_delx_eta.clear() ;
+      m_delx_xi.clear() ;
 
-      //m_delv_zeta.clear() ;
-      //m_delv_eta.clear() ;
-      //m_delv_xi.clear() ;
+      m_delv_zeta.clear() ;
+      m_delv_eta.clear() ;
+      m_delv_xi.clear() ;
    }
 
    void AllocateStrains(Int_t numElem)
@@ -299,75 +343,25 @@ m_delx_zeta.resize(numElem) ;
 
    void DeallocateStrains()
    {
-      //m_dzz.clear() ;
-      //m_dyy.clear() ;
-      //m_dxx.clear() ;
+      m_dzz.clear() ;
+      m_dyy.clear() ;
+      m_dxx.clear() ;
    }
 
-   // lulesh-repartitioning
-   void re_distribute_data_structures(Laik_Group* new_group, Laik_Partitioning* p_exclusive, Laik_Partitioning* p_halo, Laik_Partitioning* p_overlapping, Laik_Transition *t_to_exclusive, Laik_Transition *t_to_halo, Laik_Transition *t_to_overlapping_init, Laik_Transition *t_to_overlapping_reduce){
-
-#ifdef REPARTITIONING
-       m_x.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
-       m_y.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
-       m_z.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
-       m_xd.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
-       m_yd.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
-       m_zd.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
-       m_xdd.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
-       m_ydd.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
-       m_zdd.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
-#endif
-       m_fx.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
-       m_fy.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
-       m_fz.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
-       m_nodalMass.migrate(new_group, p_overlapping, p_overlapping, t_to_overlapping_init, t_to_overlapping_reduce);
-#ifdef REPARTITIONING
-       m_dxx.migrate(new_group, p_exclusive,nullptr, nullptr, nullptr);
-       m_dyy.migrate(new_group, p_exclusive,nullptr, nullptr, nullptr);
-       m_dzz.migrate(new_group, p_exclusive,nullptr, nullptr, nullptr);
-#endif
-       m_delv_xi.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
-       m_delv_eta.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
-       m_delv_zeta.migrate(new_group, p_exclusive, p_halo, t_to_exclusive, t_to_halo);
-#ifdef REPARTITIONING
-       m_delx_xi.migrate(new_group, p_exclusive,nullptr, nullptr, nullptr);
-       m_delx_eta.migrate(new_group, p_exclusive,nullptr, nullptr, nullptr);
-       m_delx_zeta.migrate(new_group, p_exclusive,nullptr, nullptr, nullptr);
-       m_e.migrate(new_group, p_exclusive,nullptr, nullptr, nullptr);
-       m_p.migrate(new_group, p_exclusive,nullptr, nullptr, nullptr);
-       m_q.migrate(new_group, p_exclusive,nullptr, nullptr, nullptr);
-       m_ql.migrate(new_group, p_exclusive,nullptr, nullptr, nullptr);
-       m_qq.migrate(new_group, p_exclusive,nullptr, nullptr, nullptr);
-       m_v.migrate(new_group, p_exclusive,nullptr, nullptr, nullptr);
-       m_volo.migrate(new_group, p_exclusive,nullptr, nullptr, nullptr);
-       //m_vnew.migrate(new_group, p_exclusive,nullptr, nullptr, nullptr);
-       m_delv.migrate(new_group, p_exclusive,nullptr, nullptr, nullptr);
-       m_vdov.migrate(new_group, p_exclusive,nullptr, nullptr, nullptr);
-       m_arealg.migrate(new_group, p_exclusive,nullptr, nullptr, nullptr);
-       m_ss.migrate(new_group, p_exclusive,nullptr, nullptr, nullptr);
-       m_elemMass.migrate(new_group, p_exclusive,nullptr, nullptr, nullptr);
-
-#endif
-       this -> world = new_group;
-}
-
-   void re_calculate_pointers(){
-
-       //TODO call pointer calculation fo each data container
-
-   }
-   
-   //
    // GETTERS
+   // for accessing laik_vectors out of Domain
+   // this is not needed by lulesh as lulesh implements
+   // accessors to the data independent of the container.
+   // (only for debugging)
    //
-   laik_vector_overlapping<double>& get_fx() { return m_fx;}
-   laik_vector_overlapping<double>& get_fy() { return m_fy;}
-   laik_vector_overlapping<double>& get_fz() { return m_fz;}
-   laik_vector_overlapping<double>& get_nodalMass() { return m_nodalMass;}
-   laik_vector_halo<double>& get_delv_xi() { return m_delv_xi;}
-   laik_vector_halo<double>& get_delv_eta() { return m_delv_eta;}
-   laik_vector_halo<double>& get_delv_zeta() { return m_delv_zeta;}
+   laik_vector_comm_overlapping_overlapping<double>& get_fx() { return m_fx;}
+   laik_vector_comm_overlapping_overlapping<double>& get_fy() { return m_fy;}
+   laik_vector_comm_overlapping_overlapping<double>& get_fz() { return m_fz;}
+   laik_vector_comm_overlapping_overlapping<double>& get_nodalMass() { return m_nodalMass;}
+   laik_vector_comm_exclusive_halo<double>& get_delv_xi() { return m_delv_xi;}
+   laik_vector_comm_exclusive_halo<double>& get_delv_eta() { return m_delv_eta;}
+   laik_vector_comm_exclusive_halo<double>& get_delv_zeta() { return m_delv_zeta;}
+
    // ACCESSORS
    //
 
@@ -535,13 +529,6 @@ m_delx_zeta.resize(numElem) ;
    
    Index_t&  maxPlaneSize()       { return m_maxPlaneSize ; }
    Index_t&  maxEdgeSize()        { return m_maxEdgeSize ; }
-   
-   // LAIK-related data
-   // the domain needs to
-   // know about the laik instance
-   // and laik group
-   Laik_Instance *inst;
-   Laik_Group *world;
 
    //
    // MPI-Related additional data
@@ -559,10 +546,32 @@ m_delx_zeta.resize(numElem) ;
 
    //laik communication
    void communicateNodalMass(){
-       m_nodalMass.switch_to_write_phase();
-       m_nodalMass.switch_to_read_phase();
+       m_nodalMass.switch_to_p1();
+       m_nodalMass.switch_to_p2();
    }
 #endif
+
+   // LAIK-related additional data
+   // the domain needs to
+   // know about the laik instance
+   // and laik group
+   Laik_Instance *inst;
+   Laik_Group *world;
+
+   // LAIK-related  method
+   /**
+    * @brief helper function for calling migration and data re-distribution
+    *        in all laik_vectors so they perfor re-distribution.
+    * @param new_group
+    * @param p_exclusive
+    * @param p_halo
+    * @param p_overlapping
+    * @param t_to_exclusive
+    * @param t_to_halo
+    * @param t_to_overlapping_init
+    * @param t_to_overlapping_reduce
+    */
+   void re_distribute_data_structures(Laik_Group* new_group, Laik_Partitioning* p_exclusive, Laik_Partitioning* p_halo, Laik_Partitioning* p_overlapping, Laik_Transition *t_to_exclusive, Laik_Transition *t_to_halo, Laik_Transition *t_to_overlapping_init, Laik_Transition *t_to_overlapping_reduce);
 
   private:
 
@@ -580,17 +589,17 @@ m_delx_zeta.resize(numElem) ;
 
    /* Node-centered */
 #ifdef REPARTITIONING
-   laik_vector_overlapping_repart<double> m_x ;  /* coordinates */
-   laik_vector_overlapping_repart<double> m_y ;
-   laik_vector_overlapping_repart<double> m_z ;
+   laik_vector_repart_overlapping<double> m_x ;  /* coordinates */
+   laik_vector_repart_overlapping<double> m_y ;
+   laik_vector_repart_overlapping<double> m_z ;
 
-   laik_vector_overlapping_repart<double> m_xd ; /* velocities */
-   laik_vector_overlapping_repart<double> m_yd ;
-   laik_vector_overlapping_repart<double> m_zd ;
+   laik_vector_repart_overlapping<double> m_xd ; /* velocities */
+   laik_vector_repart_overlapping<double> m_yd ;
+   laik_vector_repart_overlapping<double> m_zd ;
 
-   laik_vector_overlapping_repart<double> m_xdd ; /* accelerations */
-   laik_vector_overlapping_repart<double> m_ydd ;
-   laik_vector_overlapping_repart<double> m_zdd ;
+   laik_vector_repart_overlapping<double> m_xdd ; /* accelerations */
+   laik_vector_repart_overlapping<double> m_ydd ;
+   laik_vector_repart_overlapping<double> m_zdd ;
 
 #endif
 
@@ -608,11 +617,11 @@ m_delx_zeta.resize(numElem) ;
     std::vector<Real_t> m_zdd ;
 #endif
 
-   laik_vector_overlapping<double> m_fx ;  /* forces */
-   laik_vector_overlapping<double> m_fy ;
-   laik_vector_overlapping<double> m_fz ;
+   laik_vector_comm_overlapping_overlapping<double> m_fx ;  /* forces */
+   laik_vector_comm_overlapping_overlapping<double> m_fy ;
+   laik_vector_comm_overlapping_overlapping<double> m_fz ;
 
-   laik_vector_overlapping<double> m_nodalMass ;  /* mass */
+   laik_vector_comm_overlapping_overlapping<double> m_nodalMass ;  /* mass */
 
    std::vector<Index_t> m_symmX ;  /* symmetry plane nodesets */
    std::vector<Index_t> m_symmY ;
@@ -644,9 +653,9 @@ m_delx_zeta.resize(numElem) ;
    std::vector<Int_t>    m_elemBC ;  /* symmetry/free-surface flags for each elem face */
 
 #ifdef REPARTITIONING
-   laik_vector_ex_repart<double> m_dxx ;  /* principal strains -- temporary */
-   laik_vector_ex_repart<double> m_dyy ;
-   laik_vector_ex_repart<double> m_dzz ;
+   laik_vector_repart_exclusive<double> m_dxx ;  /* principal strains -- temporary */
+   laik_vector_repart_exclusive<double> m_dyy ;
+   laik_vector_repart_exclusive<double> m_dzz ;
 #endif
 
 #ifdef PERFORMANCE
@@ -655,33 +664,33 @@ m_delx_zeta.resize(numElem) ;
    std::vector<Real_t> m_dzz ;
 #endif
 
-   laik_vector_halo<double> m_delv_xi ;    /* velocity gradient -- temporary */
-   laik_vector_halo<double> m_delv_eta ;
-   laik_vector_halo<double> m_delv_zeta ;
+   laik_vector_comm_exclusive_halo<double> m_delv_xi ;    /* velocity gradient -- temporary */
+   laik_vector_comm_exclusive_halo<double> m_delv_eta ;
+   laik_vector_comm_exclusive_halo<double> m_delv_zeta ;
 
 #ifdef REPARTITIONING
-   laik_vector_ex_repart<double> m_delx_xi ;    /* coordinate gradient -- temporary */
-   laik_vector_ex_repart<double> m_delx_eta ;
-   laik_vector_ex_repart<double> m_delx_zeta ;
+   laik_vector_repart_exclusive<double> m_delx_xi ;    /* coordinate gradient -- temporary */
+   laik_vector_repart_exclusive<double> m_delx_eta ;
+   laik_vector_repart_exclusive<double> m_delx_zeta ;
    
-   laik_vector_ex_repart<double> m_e ;   /* energy */
+   laik_vector_repart_exclusive<double> m_e ;   /* energy */
 
-   laik_vector_ex_repart<double> m_p ;   /* pressure */
-   laik_vector_ex_repart<double> m_q ;   /* q */
-   laik_vector_ex_repart<double> m_ql ;  /* linear term for q */
-   laik_vector_ex_repart<double> m_qq ;  /* quadratic term for q */
+   laik_vector_repart_exclusive<double> m_p ;   /* pressure */
+   laik_vector_repart_exclusive<double> m_q ;   /* q */
+   laik_vector_repart_exclusive<double> m_ql ;  /* linear term for q */
+   laik_vector_repart_exclusive<double> m_qq ;  /* quadratic term for q */
 
-   laik_vector_ex_repart<double> m_v ;     /* relative volume */
-   laik_vector_ex_repart<double> m_volo ;  /* reference volume */
+   laik_vector_repart_exclusive<double> m_v ;     /* relative volume */
+   laik_vector_repart_exclusive<double> m_volo ;  /* reference volume */
    std::vector<Real_t> m_vnew ;  /* new relative volume -- temporary */
-   laik_vector_ex_repart<double> m_delv ;  /* m_vnew - m_v */
-   laik_vector_ex_repart<double> m_vdov ;  /* volume derivative over volume */
+   laik_vector_repart_exclusive<double> m_delv ;  /* m_vnew - m_v */
+   laik_vector_repart_exclusive<double> m_vdov ;  /* volume derivative over volume */
 
-   laik_vector_ex_repart<double> m_arealg ;  /* characteristic length of an element */
+   laik_vector_repart_exclusive<double> m_arealg ;  /* characteristic length of an element */
    
-   laik_vector_ex_repart<double> m_ss ;      /* "sound speed" */
+   laik_vector_repart_exclusive<double> m_ss ;      /* "sound speed" */
 
-   laik_vector_ex_repart<double> m_elemMass ;  /* mass */
+   laik_vector_repart_exclusive<double> m_elemMass ;  /* mass */
 #endif
 
 #ifdef PERFORMANCE
@@ -823,5 +832,71 @@ void CommMonoQ(Domain& domain);
 // lulesh-init
 void InitMeshDecomp(Int_t numRanks, Int_t myRank,
                     Int_t *col, Int_t *row, Int_t *plane, Int_t *side);
+
+// helper function for laik implementation
+// this function set six flags based to identify
+// if a domain locates on edges of the global domain
+void init_config_params(Laik_Group* group, int& b ,int& f, int& d,int& u, int& l, int& r);
+
+/**
+ * @brief helper functions for facilitating calculation of
+ *        partitionings and transitions
+ * @param world
+ * @param indexSpaceElements
+ * @param indexSpaceNodes
+ * @param indexSapceDt
+ * @param exclusivePartitioning
+ * @param haloPartitioning
+ * @param overlapingPartitioning
+ * @param allPartitioning
+ * @param transitionToExclusive
+ * @param transitionToHalo
+ * @param transitionToOverlappingInit
+ * @param transitionToOverlappingReduce
+ */
+void create_partitionings_and_transitions(  Laik_Group *&world,
+                                            Laik_Space *&indexSpaceElements,
+                                            Laik_Space *&indexSpaceNodes,
+                                            Laik_Space *&indexSapceDt,
+                                            Laik_Partitioning *&exclusivePartitioning,
+                                            Laik_Partitioning *&haloPartitioning,
+                                            Laik_Partitioning *&overlapingPartitioning,
+                                            Laik_Partitioning *&allPartitioning,
+                                            Laik_Transition *&transitionToExclusive,
+                                            Laik_Transition *&transitionToHalo,
+                                            Laik_Transition *&transitionToOverlappingInit,
+                                            Laik_Transition *&transitionToOverlappingReduce);
+
+/**
+ * @brief helper function to remove unusing
+ *        partitioning and transitions
+ * @param exclusivePartitioning
+ * @param haloPartitioning
+ * @param overlapingPartitioning
+ * @param allPartitioning
+ * @param transitionToExclusive
+ * @param transitionToHalo
+ * @param transitionToOverlappingInit
+ * @param transitionToOverlappingReduce
+ */
+void remove_partitionings_and_transitions(Laik_Partitioning *&exclusivePartitioning,
+                                          Laik_Partitioning *&haloPartitioning,
+                                          Laik_Partitioning *&overlapingPartitioning,
+                                          Laik_Partitioning *&allPartitioning,
+                                          Laik_Transition *&transitionToExclusive,
+                                          Laik_Transition *&transitionToHalo,
+                                          Laik_Transition *&transitionToOverlappingInit,
+                                          Laik_Transition *&transitionToOverlappingReduce);
+
+/**
+ * @brief helper function for calculation of removing list of processes from the process group
+ * @param world
+ * @param opts
+ * @param side
+ * @param newside
+ * @param diffsize
+ * @param removeList
+ */
+void calculate_removing_list(Laik_Group* world, cmdLineOpts& opts, double side, double& newside, int& diffsize, int *&removeList);
 
 #endif
