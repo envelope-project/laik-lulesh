@@ -9,19 +9,15 @@
  * @param  oldP: 
  * @retval None
  */
-void runExclusivePartitioner(Laik_Partitioner* pr,
-                                   Laik_Partitioning* p,
-                             Laik_Partitioning* oldP)
+void runExclusivePartitioner(Laik_SliceReceiver* rcv, Laik_PartitionerParams* par)
 {
-    Laik_Group* world = laik_partitioning_get_group(p);
-    int numRanks = laik_size(world);
-    int myRank = laik_myid(world);
+    int numRanks = laik_size(par->group);
+    int myRank = laik_myid(par->group);
     int col, row, plane, side;
     InitMeshDecomp(numRanks, myRank, &col, &row, &plane, &side);
 
     // get the size of the
-    Laik_Space* space = laik_partitioning_get_space(p);
-    const Laik_Slice* slice = laik_space_asslice(space);
+    const Laik_Slice* slice = laik_space_asslice(par->space);
     int edgeElems= (int) (cbrt( (slice->to.i[0]+1) / numRanks ) + 0.1 );
 
     int Nx=edgeElems;
@@ -69,8 +65,8 @@ void runExclusivePartitioner(Laik_Partitioner* pr,
                         to = nx + Lx*ny + Pxy*nz +
                                 rx*Nx + ry*Lx*Ny + Pxy*Nz*rz;
 
-                        laik_slice_init_1d(&slc, space, from, to);
-                        laik_append_slice(p,r,&slc,tag,0);
+                        laik_slice_init_1d(&slc, par->space, from, to);
+                        laik_append_slice(rcv, r, &slc, tag, 0);
                     }
                 }
             }
@@ -94,23 +90,19 @@ Laik_Partitioner* exclusive_partitioner()
  * @param  oldP: 
  * @retval None
  */
-void runOverlapingPartitioner(Laik_Partitioner* pr,
-                                   Laik_Partitioning* p,
-                              Laik_Partitioning* oldP)
+void runOverlapingPartitioner(Laik_SliceReceiver* rcv, Laik_PartitionerParams* par)
 {
-    Laik_Group* world = laik_partitioning_get_group(p);
-    int numRanks = laik_size(world);
-    int myRank = laik_myid(world);
+    int numRanks = laik_size(par->group);
+    int myRank = laik_myid(par->group);
     int col, row, plane, side;
     InitMeshDecomp(numRanks, myRank, &col, &row, &plane, &side);
 
     // get the size of the
-    Laik_Space* space = laik_partitioning_get_space(p);
-    const Laik_Slice* slice = laik_space_asslice(space);
+    const Laik_Slice* slice = laik_space_asslice(par->space);
     int edgeElems= (int) ( cbrt( (slice->to.i[0]+1) / numRanks) + 0.1 );
 
     // the number of halos in each boundary
-    int d = *(int*) laik_partitioner_data(pr);
+    int d = *(int*) laik_partitioner_data(par->partitioner);
 
     if (d>edgeElems)
     {
@@ -165,8 +157,8 @@ void runOverlapingPartitioner(Laik_Partitioner* pr,
                         to = nx + Lx*ny + Pxy*nz +
                                 rx*Nx + ry*Lx*Ny + Pxy*Nz*rz;
 
-                        laik_slice_init_1d(&slc, space, from, to);
-                        laik_append_slice(p,r,&slc,tag,0);
+                        laik_slice_init_1d(&slc, par->space, from, to);
+                        laik_append_slice(rcv, r, &slc, tag, 0);
                         //laik_log((Laik_LogLevel)2,"tag: %d\n",tag);
                     }
                 }
@@ -190,27 +182,22 @@ Laik_Partitioner* overlaping_partitioner(int &depth)
                                 (void*) &depth, LAIK_PF_Merge);
 }
 
-void runOverlapingReductionPartitioner(Laik_Partitioner* pr,
-                                       Laik_Partitioning* p,
-                                       Laik_Partitioning* oldP)
+void runOverlapingReductionPartitioner(Laik_SliceReceiver* rcv, Laik_PartitionerParams* par)
 {
-
-    Laik_Group* world = laik_partitioning_get_group(p);
-    int numRanks = laik_size(world);
-    int myRank = laik_myid(world);
+    int numRanks = laik_size(par->group);
+    int myRank = laik_myid(par->group);
     int col, row, plane, side;
     InitMeshDecomp(numRanks, myRank, &col, &row, &plane, &side);
 
     // get the size of the
-    Laik_Space* space = laik_partitioning_get_space(p);
-    const Laik_Slice* slice = laik_space_asslice(space);
+    const Laik_Slice* slice = laik_space_asslice(par->space);
     int edgeNodes= (int) ( (cbrt( (slice->to.i[0]+1)) -1)/
             cbrt(numRanks) + 1   + 0.1);
 
     //laik_log ((Laik_LogLevel)2, "elems: %d", edgeNodes);
 
     // the number of halos in each boundary
-    int d = *(int*) laik_partitioner_data(pr);
+    int d = *(int*) laik_partitioner_data(par->partitioner);
 
     if (d>edgeNodes)
     {
@@ -264,8 +251,8 @@ void runOverlapingReductionPartitioner(Laik_Partitioner* pr,
                         from = nx + Lx*ny + Pxy*nz +  rx*(Nx-1) + ry*Lx*(Ny-1) + rz*Pxy*(Nz-1);
                         nx=Nx;
                         to = nx + Lx*ny + Pxy*nz +  rx*(Nx-1) + ry*Lx*(Ny-1) + rz*Pxy*(Nz-1);
-                        laik_slice_init_1d(&slc, space, from, to);
-                        laik_append_slice(p,r,&slc,tag,0);
+                        laik_slice_init_1d(&slc, par->space, from, to);
+                        laik_append_slice(rcv, r, &slc, tag, 0);
                     }
                 }
             }
