@@ -4,15 +4,18 @@
 *.d
 *~
 lulesh2.0
-.vscode
-laik-lulesh.config
-laik-lulesh.creator
-laik-lulesh.creator.user
-laik-lulesh.files
-laik-lulesh.includes
 measurements/*
 *.dSYM
 *.xcodeproj
 *.out
 Makefile.local
 Makefile.config
+
+# IDE settings/support
+.vscode
+laik-lulesh.config
+laik-lulesh.creator
+laik-lulesh.creator.user
+laik-lulesh.files
+laik-lulesh.includes
+compile_commands.json
