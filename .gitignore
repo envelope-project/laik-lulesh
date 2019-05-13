@@ -14,3 +14,5 @@ measurements/*
 *.dSYM
 *.xcodeproj
 *.out
+Makefile.local
+Makefile.config
