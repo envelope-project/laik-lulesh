@@ -114,10 +114,27 @@ void create_partitionings_and_transitions(  Laik_Group *&world,
     // distribution does not change during
     // the iterations. Only for re-partitioning
     // they have to be recalculated
+#ifdef MEMOPT
+    // only keep slices required for calculating given transitions
+    exclusivePartitioning = laik_new_empty_partitioning(world, indexSpaceElements,
+                                                        exclusive_partitioner(), 0);
+    haloPartitioning = laik_new_empty_partitioning(world, indexSpaceElements,
+                                                   overlaping_partitioner(halo_depth), 0);
+    laik_partitioning_store_myslices(exclusivePartitioning);
+    laik_partitioning_store_myslices(haloPartitioning);
+    laik_partitioning_store_intersectslices(exclusivePartitioning, haloPartitioning);
+    laik_partitioning_store_intersectslices(haloPartitioning, exclusivePartitioning);
+
+    overlapingPartitioning = laik_new_empty_partitioning(world, indexSpaceNodes,
+                                                         overlaping_reduction_partitioner(halo_depth), 0);
+    laik_partitioning_store_myslices(overlapingPartitioning);
+    laik_partitioning_store_intersectslices(overlapingPartitioning, overlapingPartitioning);
+#else
     exclusivePartitioning = laik_new_partitioning(exclusive_partitioner(), world, indexSpaceElements, 0);
     haloPartitioning = laik_new_partitioning(overlaping_partitioner(halo_depth), world, indexSpaceElements, exclusivePartitioning);
     overlapingPartitioning =laik_new_partitioning(overlaping_reduction_partitioner(halo_depth),
                                                   world, indexSpaceNodes, 0);
+#endif
     // create all partitioning for dt to perform reductions
     allPartitioning = laik_new_partitioning(laik_All, world, indexSapceDt, 0);
 

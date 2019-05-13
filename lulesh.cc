@@ -2975,6 +2975,10 @@ int main(int argc, char *argv[])
                                                 exclusivePartitioning2, haloPartitioning2, overlapingPartitioning2, allPartitioning2,
                                                 transitionToExclusive2, transitionToHalo2, transitionToOverlappingInit2, transitionToOverlappingReduce2);
 
+#ifdef MEMOPT
+            laik_partitioning_store_intersectslices(exclusivePartitioning, exclusivePartitioning2);
+            laik_partitioning_store_intersectslices(overlapingPartitioning, overlapingPartitioning2);
+#endif
            // migrate data for all the data structures
            locDom->re_distribute_data_structures(shrinked_group, exclusivePartitioning2, haloPartitioning2, overlapingPartitioning2, transitionToExclusive2, transitionToHalo2, transitionToOverlappingInit2, transitionToOverlappingReduce2);
 
