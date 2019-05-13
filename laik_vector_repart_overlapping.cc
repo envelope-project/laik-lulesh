@@ -40,7 +40,7 @@ void laik_vector_repart_overlapping<T>::resize(int count){
 
 template <typename T>
 T* laik_vector_repart_overlapping<T>::calc_pointer(int idx, int state){
-
+    return nullptr;
 }
 
 template <typename T>

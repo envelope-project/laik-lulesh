@@ -189,6 +189,7 @@ T* laik_vector_comm_exclusive_halo<T>::calc_pointer(int idx, int state, int b, i
         return base+i;
     }
 
+    return nullptr; // error
 }
 
 template <typename T>
