@@ -2885,7 +2885,7 @@ int main(int argc, char *argv[])
    // perform the local updates and reduction
    laik_switchto_partitioning(laikDt, allPartitioning, LAIK_DF_Init, LAIK_RO_Min);
    uint64_t dt_count; double* dt_base;
-   laik_map_def1(laikDt, (void**) &dt_base, &dt_count);
+   laik_get_map_1d(laikDt, 0, (void**) &dt_base, &dt_count);
 
    // Build the main data structure and initialize it
    // pass the laik_inst and laik_world and partitionings
@@ -2987,7 +2987,7 @@ int main(int argc, char *argv[])
            // repartition and geting the base pointer for only for dt
            laik_switchto_partitioning(laikDt, allPartitioning2, LAIK_DF_None, LAIK_RO_Min);
            laik_switchto_partitioning(laikDt, allPartitioning2, LAIK_DF_Preserve, LAIK_RO_Min);
-           laik_map_def1(laikDt, (void**) &dt_base, &dt_count);
+           laik_get_map_1d(laikDt, 0, (void**) &dt_base, &dt_count);
 
            // update the working process group in codes
            world = shrinked_group;

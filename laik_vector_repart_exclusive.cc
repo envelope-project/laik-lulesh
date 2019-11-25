@@ -36,7 +36,7 @@ void laik_vector_repart_exclusive<T>::resize(int count){
     int nSlices = laik_my_slicecount(this->p1);
     for (int n = 0; n < nSlices; ++n)
     {
-       laik_map_def(this->data, n, (void **)&base, &cnt);
+       laik_get_map_1d(this->data, n, (void **)&base, &cnt);
     }
     this -> count = cnt;
 }
@@ -74,7 +74,7 @@ void laik_vector_repart_exclusive<T>::migrate(Laik_Group* new_group, Laik_Partit
     nSlices = laik_my_slicecount(this->p1);
     for (int n = 0; n < nSlices; n++)
     {
-        laik_map_def(this->data, n, (void **)&base, &cnt);
+        laik_get_map_1d(this->data, n, (void **)&base, &cnt);
         memcpy(base, &data_vector[0] + n*cnt, cnt*sizeof(T));
         //std::copy( base, base + cnt, data_vector.begin() + n*count );
     }
@@ -93,7 +93,7 @@ void laik_vector_repart_exclusive<T>::migrate(Laik_Group* new_group, Laik_Partit
     this -> t2=t_new_2;
 
     // resize vector
-    laik_map_def(this->data, 0, (void **)&base, &cnt);
+    laik_get_map_1d(this->data, 0, (void **)&base, &cnt);
     int s = cnt*cnt*cnt;
     data_vector.resize(s);
 
@@ -101,7 +101,7 @@ void laik_vector_repart_exclusive<T>::migrate(Laik_Group* new_group, Laik_Partit
     nSlices = laik_my_slicecount(this->p1);
     for (int n = 0; n < nSlices; n++)
     {
-        laik_map_def(this->data, n, (void **)&base, &cnt);
+        laik_get_map_1d(this->data, n, (void **)&base, &cnt);
         memcpy(&data_vector[0] + n*cnt, base, cnt*sizeof(T));
         //std::copy(data_vector.begin() + n*count ,data_vector.begin() + (n+1)*count-1 , base);
     }

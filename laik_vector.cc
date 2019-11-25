@@ -32,7 +32,7 @@ void laik_vector<T>::test_print(){
     int nSlices = laik_my_slicecount(p1);
     for (int s = 0; s < nSlices; s++)
     {
-        laik_map_def(data, s, (void**) &base, &count);
+        laik_get_map_1d(data, s, (void**) &base, &count);
         for (uint64_t i = 0; i < count; i++)
         {
             laik_log(Laik_LogLevel(2),"%f\n", base[i]);
