@@ -7,6 +7,7 @@
 #endif
 #include "lulesh.h"
 
+
 /* Helper function for converting strings to ints, with error checking */
 int StrToInt(const char *token, int *retVal)
 {
@@ -16,7 +17,7 @@ int StrToInt(const char *token, int *retVal)
 
    if (token == NULL)
       return 0 ;
-   
+
    c = token ;
    *retVal = (int)strtol(c, &endptr, decimal_base) ;
    if((endptr != c) && ((*endptr == ' ') || (*endptr == '\0')))
@@ -42,8 +43,10 @@ static void PrintCommandLineOptions(char *execname, int myRank)
       printf(" -v              : Output viz file (requires compiling with -DVIZ_MESH\n");
       printf(" -repart         : enable repartitioning by defining the number of target group\n");
       printf(" -repart_cycle   : cycle at which repartitioning happens\n");
+      printf(" -no-timers      : disable MPI timing functionality to make output stable\n");
       printf(" -h              : This message\n");
-      printf("\n\n");
+       printf(FAULT_TOLERANCE_OPTIONS_HELP);
+       printf("\n\n");
    }
 }
 
@@ -51,7 +54,7 @@ static void ParseError(const char *message, int myRank)
 {
    if (myRank == 0) {
       printf("%s\n", message);
-#if USE_MPI      
+#if USE_MPI
       MPI_Abort(MPI_COMM_WORLD, -1);
 #else
       exit(-1);
@@ -59,8 +62,12 @@ static void ParseError(const char *message, int myRank)
    }
 }
 
-void ParseCommandLineOptions(int argc, char *argv[],
-                             int myRank, struct cmdLineOpts *opts)
+void printOptions(cmdLineOpts* opts) {
+    laik_log(LAIK_LL_Info, "LAIK LULESH Options:\nQuiet: %i, %i iterations, size %i, %i regions, balance %i, cost %i, %i files, %i progress, %i viz output, %i repartitioning (at cycle %i).\n", opts->quiet, opts->its, opts->nx, opts->numReg, opts->balance, opts->cost, opts->numFiles, opts->showProg, opts->viz, opts->repart, opts->cycle);
+}
+
+void
+ParseCommandLineOptions(int argc, char *argv[], int myRank, struct cmdLineOpts *opts, FaultToleranceOptions *ftOptions)
 {
    if(argc > 1) {
       int i = 1;
@@ -143,7 +150,7 @@ void ParseCommandLineOptions(int argc, char *argv[],
          }
          /* -v */
          else if (strcmp(argv[i], "-v") == 0) {
-#if VIZ_MESH            
+#if VIZ_MESH
             opts->viz = 1;
 #else
             ParseError("Use of -v requires compiling with -DVIZ_MESH\n", myRank);
@@ -170,10 +177,18 @@ void ParseCommandLineOptions(int argc, char *argv[],
             }
             i+=2;
          }
+         else if (parseFaultToleranceOptionsProxy(argc, argv, &i, myRank, ftOptions)) {
+             // Successfully parsed arg, need to shift by one more arg since lulesh doesn't do any shifting on its own
+             i++;
+         }
+         else if(strcmp(argv[i], "-no-timers") == 0) {
+             opts->noTimer = true;
+             i++;
+         }
          /* -h */
          else if (strcmp(argv[i], "-h") == 0) {
             PrintCommandLineOptions(argv[0], myRank);
-#if USE_MPI            
+#if USE_MPI
             MPI_Abort(MPI_COMM_WORLD, 0);
 #else
             exit(0);
@@ -182,11 +197,13 @@ void ParseCommandLineOptions(int argc, char *argv[],
          else {
             char msg[80];
             PrintCommandLineOptions(argv[0], myRank);
-            sprintf(msg, "ERROR: Unknown command line argument: %s\n", argv[i]);
+            sprintf(msg, "ERROR: Unknown command line argument at position %i: %s\n", i, argv[i]);
             ParseError(msg, myRank);
          }
       }
    }
+
+   printOptions(opts);
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -198,7 +215,7 @@ void VerifyAndWriteFinalOutput(Real_t elapsed_time,
 {
    // GrindTime1 only takes a single domain into account, and is thus a good way to measure
    // processor speed indepdendent of MPI parallelism.
-   // GrindTime2 takes into account speedups from MPI parallelism 
+   // GrindTime2 takes into account speedups from MPI parallelism
    Real_t grindTime1 = ((elapsed_time*1e6)/locDom.cycle())/(nx*nx*nx);
    Real_t grindTime2 = ((elapsed_time*1e6)/locDom.cycle())/(nx*nx*nx*numRanks);
 

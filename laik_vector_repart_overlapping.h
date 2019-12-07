@@ -14,7 +14,14 @@ public:
     void resize(int count) override;
     void switch_to_p1() override;
     void switch_to_p2() override;
-    void migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2, Laik_Transition* t_new_1, Laik_Transition* t_new_2) override;
+    void migrate(Laik_Group *new_group, Laik_Partitioning *p_new_1,
+                 Laik_Partitioning *p_new_2, Laik_Transition *t_new_1,
+                 Laik_Transition *t_new_2, bool suppressSwitchToP1) override;
+
+#ifdef FAULT_TOLERANCE
+    Laik_Checkpoint *checkpoint(int redundancyCount, int rotationDistance) override;
+    void restore(Laik_Checkpoint *checkpoint, Laik_Group *newGroup) override;
+#endif
 
 private:
     std::vector<T> data_vector;

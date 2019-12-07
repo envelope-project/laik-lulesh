@@ -1,6 +1,6 @@
 #include"laik_vector_comm_overlapping_overlapping.h"
-#include <laik_partitioners.h>
-#include <lulesh.h>
+#include "laik_partitioners.h"
+#include "lulesh.h"
 #include <limits.h>
 #include <type_traits>
 #include <string.h>
@@ -99,12 +99,14 @@ void laik_vector_comm_overlapping_overlapping<T>::switch_to_p2(){
 }
 
 template <typename T>
-void laik_vector_comm_overlapping_overlapping<T>::migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2, Laik_Transition* t_new_1, Laik_Transition* t_new_2){
+void laik_vector_comm_overlapping_overlapping<T>::migrate(Laik_Group *new_group, Laik_Partitioning *p_new_1,
+                                                          Laik_Partitioning *p_new_2, Laik_Transition *t_new_1,
+                                                          Laik_Transition *t_new_2, bool suppressSwitchToP1) {
     uint64_t cnt;
     int* base;
     //int slice = 0;
 
-    laik_switchto_partitioning(this->data, this->p1, LAIK_DF_None, LAIK_RO_Min);
+    this->prepareMigration(suppressSwitchToP1);
 
     Laik_Reservation* reservation = laik_reservation_new(this->data);
     laik_reservation_add(reservation, p_new_1);
