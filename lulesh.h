@@ -26,11 +26,12 @@
 
 #include <math.h>
 #include <vector>
-#include <laik_vector.h>
+#include "laik_vector.h"
 #include "laik_vector_comm_exclusive_halo.h"
 #include "laik_vector_comm_overlapping_overlapping.h"
 #include "laik_vector_repart_exclusive.h"
 #include "laik_vector_repart_overlapping.h"
+#include "../util/fault-tolerance-options.h"
 
 //**************************************************
 // Allow flexibility for arithmetic representations 
@@ -571,9 +572,17 @@ m_delx_zeta.resize(numElem) ;
     * @param t_to_overlapping_init
     * @param t_to_overlapping_reduce
     */
-   void re_distribute_data_structures(Laik_Group* new_group, Laik_Partitioning* p_exclusive, Laik_Partitioning* p_halo, Laik_Partitioning* p_overlapping, Laik_Transition *t_to_exclusive, Laik_Transition *t_to_halo, Laik_Transition *t_to_overlapping_init, Laik_Transition *t_to_overlapping_reduce);
+   void re_distribute_data_structures(Laik_Group *new_group, Laik_Partitioning *p_exclusive, Laik_Partitioning *p_halo,
+                                      Laik_Partitioning *p_overlapping, Laik_Transition *t_to_exclusive,
+                                      Laik_Transition *t_to_halo, Laik_Transition *t_to_overlapping_init,
+                                      Laik_Transition *t_to_overlapping_reduce, bool suppressSwitchToP1);
 
-  private:
+#ifdef FAULT_TOLERANCE
+    void createCheckpoints(std::vector<Laik_Checkpoint *> &checkpoints, int redundancyCount, int rotationDistance);
+    int restore(std::vector<Laik_Checkpoint *> &checkpoints, Laik_Group *newGroup);
+#endif
+
+private:
 
    void BuildMesh(Int_t nx, Int_t edgeNodes, Int_t edgeElems);
    void SetupThreadSupportStructures();
@@ -779,6 +788,7 @@ m_delx_zeta.resize(numElem) ;
    Index_t m_rowMin, m_rowMax;
    Index_t m_colMin, m_colMax;
    Index_t m_planeMin, m_planeMax ;
+
 } ;
 
 typedef Real_t &(Domain::* Domain_member )(Index_t) ;
@@ -795,6 +805,7 @@ struct cmdLineOpts {
    Int_t balance; // -b
    Int_t repart; // -repart
    Int_t cycle; // -repart_cycle
+   bool noTimer;
 };
 
 
@@ -807,8 +818,8 @@ Real_t CalcElemVolume( const Real_t x[8],
                        const Real_t z[8]);
 
 // lulesh-util
-void ParseCommandLineOptions(int argc, char *argv[],
-                             Int_t myRank, struct cmdLineOpts *opts);
+void
+ParseCommandLineOptions(int argc, char *argv[], int myRank, struct cmdLineOpts *opts, FaultToleranceOptions *ftOptions);
 void VerifyAndWriteFinalOutput(Real_t elapsed_time,
                                Domain& locDom,
                                Int_t nx,
@@ -898,5 +909,7 @@ void remove_partitionings_and_transitions(Laik_Partitioning *&exclusivePartition
  * @param removeList
  */
 void calculate_removing_list(Laik_Group* world, cmdLineOpts& opts, double side, double& newside, int& diffsize, int *&removeList);
+void calculate_removing_list_ft(Laik_Group* world, cmdLineOpts& opts, double side, double& newside, int& diffsize, int *&removeList, int* nodeStatuses);
 
+bool parseFaultToleranceOptionsProxy(int argc, char **argv, int *arg, int rank, FaultToleranceOptions *ftOptions);
 #endif

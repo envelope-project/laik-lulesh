@@ -1,6 +1,7 @@
 #include"laik_vector_repart_overlapping.h"
-#include <laik_partitioners.h>
-#include <lulesh.h>
+#include "laik_partitioners.h"
+#include "lulesh.h"
+#include "laik_vector.h"
 #include <limits.h>
 #include <type_traits>
 #include <string.h>
@@ -59,22 +60,15 @@ void laik_vector_repart_overlapping<T>::switch_to_p2(){
 }
 
 template <typename T>
-void laik_vector_repart_overlapping<T>::migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2, Laik_Transition* t_new_1, Laik_Transition* t_new_2){
-    uint64_t cnt;
-    T* base;
-    int nSlices;
+void laik_vector_repart_overlapping<T>::migrate(Laik_Group *new_group, Laik_Partitioning *p_new_1,
+                                                Laik_Partitioning *p_new_2, Laik_Transition *t_new_1,
+                                                Laik_Transition *t_new_2, bool suppressSwitchToP1) {
 
     this -> state = 0;
 
-    laik_switchto_partitioning(this->data, this->p1, LAIK_DF_None, LAIK_RO_Min);
-    // copy the data from stl vector into the laik container
-    nSlices = laik_my_slicecount(this->p1);
-    for (int n = 0; n < nSlices; n++)
-    {
-        laik_get_map_1d(this->data, n, (void **)&base, &cnt);
-        memcpy(base, &data_vector[0] + n*cnt, cnt*sizeof(T));
-        //std::copy( base, base + cnt, data_vector.begin() + n*count );
-    }
+    this->prepareMigration(suppressSwitchToP1);
+
+    this->copyVectorToLaikData(data_vector);
 
     // perform switches for communication
     laik_switchto_partitioning(this->data, p_new_1, LAIK_DF_Preserve, LAIK_RO_Min);
@@ -87,21 +81,25 @@ void laik_vector_repart_overlapping<T>::migrate(Laik_Group* new_group, Laik_Part
     this -> p2=p_new_2;
     this -> t1=t_new_1;
     this -> t2=t_new_2;
+    this->resizeVector(data_vector);
 
-    // resize vector
-    laik_get_map_1d(this->data, 0, (void **)&base, &cnt);
-    int s = cnt*cnt*cnt;
-    data_vector.resize(s);
-
-    // copy the data back into the stl vecotrs
-    nSlices = laik_my_slicecount(this->p1);
-    for (int n = 0; n < nSlices; n++)
-    {
-        laik_get_map_1d(this->data, n, (void **)&base, &cnt);
-        memcpy(&data_vector[0] + n*cnt, base, cnt*sizeof(T));
-        //std::copy(data_vector.begin() + n*count ,data_vector.begin() + (n+1)*count-1 , base);
-    }
+    this->copyLaikDataToVector(data_vector);
 
 }
+
+#ifdef FAULT_TOLERANCE
+template<typename T>
+Laik_Checkpoint * laik_vector_repart_overlapping<T>::checkpoint(int redundancyCount, int rotationDistance) {
+    this->copyVectorToLaikData(data_vector);
+    return laik_vector<T>::checkpoint(redundancyCount, rotationDistance);
+}
+
+template<typename T>
+void laik_vector_repart_overlapping<T>::restore(Laik_Checkpoint *checkpoint, Laik_Group *newGroup) {
+    laik_vector<T>::restore(checkpoint, newGroup);
+    this->resizeVectorToLaikData(data_vector);
+    this->copyLaikDataToVector(data_vector);
+}
+#endif
 
 template class laik_vector_repart_overlapping<double>;

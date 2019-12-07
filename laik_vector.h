@@ -20,6 +20,7 @@ extern "C"{
 template <typename T>
 class laik_vector
 {
+
 public:
     /**
      * @brief laik_vector constructor
@@ -67,12 +68,25 @@ public:
      * @param t_new_1 transition to p_new_1
      * @param t_new_2 transition to p_new_2
      */
-    virtual void migrate(Laik_Group* new_group, Laik_Partitioning* p_new_1, Laik_Partitioning* p_new_2, Laik_Transition* t_new_1, Laik_Transition* t_new_2) = 0;
+    virtual void
+    migrate(Laik_Group *new_group, Laik_Partitioning *p_new_1, Laik_Partitioning *p_new_2, Laik_Transition *t_new_1,
+            Laik_Transition *t_new_2, bool suppressSwitchToP1) = 0;
 
     /**
      * @brief clearing laik_vectors
      */
     void clear();
+
+    void copyLaikDataToVector(std::vector<T> &data_vector);
+    void copyVectorToLaikData(std::vector<T> &data_vector);
+
+    void resizeVector(std::vector<T>&);
+    void resizeVectorToLaikData(std::vector<T>&);
+
+#ifdef FAULT_TOLERANCE
+    virtual Laik_Checkpoint *checkpoint(int redundancyCount, int rotationDistance);
+    virtual void restore(Laik_Checkpoint *checkpoint, Laik_Group *newGroup);
+#endif
 
 protected:
     // members from laik
@@ -111,6 +125,8 @@ protected:
      * @brief test_print printing laik_vector for debug
      */
     void test_print();
+
+    void prepareMigration(bool suppressDataSwitchToP1);
 };
 
 #endif // LAIK_VECTOR
