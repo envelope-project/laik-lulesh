@@ -43,8 +43,8 @@ void laik_vector_comm_exclusive_halo<T>::resize(int count){
 
     //laik_exec_transition(data, toExclusive);
     laik_switchto_partitioning(this->data, this->p1, LAIK_DF_None, this->reduction_operation);
-    int nSlices = laik_my_slicecount(this->p1);
-    for (int n = 0; n < nSlices; ++n)
+    int nRanges = laik_my_rangecount(this->p1);
+    for (int n = 0; n < nRanges; ++n)
     {
        laik_get_map_1d(this->data, n, (void **)&base, &cnt);
     }
@@ -280,8 +280,8 @@ void laik_vector_comm_exclusive_halo<T>::migrate(Laik_Group* new_group, Laik_Par
         return ;
 
     laik_switchto_partitioning(this->data, this->p1, LAIK_DF_None, LAIK_RO_None);
-    int nSlices = laik_my_slicecount(this->p1);
-    for (int n = 0; n < nSlices; n++)
+    int nRanges = laik_my_rangecount(this->p1);
+    for (int n = 0; n < nRanges; n++)
     {
         laik_get_map_1d(this->data, n, (void **)&base, &cnt);
     }

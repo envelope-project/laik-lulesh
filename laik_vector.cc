@@ -29,8 +29,8 @@ template <typename T>
 void laik_vector<T>::test_print(){
     T *base;
     uint64_t count;
-    int nSlices = laik_my_slicecount(p1);
-    for (int s = 0; s < nSlices; s++)
+    int nRanges = laik_my_rangecount(p1);
+    for (int s = 0; s < nRanges; s++)
     {
         laik_get_map_1d(data, s, (void**) &base, &count);
         for (uint64_t i = 0; i < count; i++)
