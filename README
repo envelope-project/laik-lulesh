@@ -4,6 +4,9 @@ This is the README for porting LULESH to LAIK
 Building
 ========
 
+==
+1. build laik
+
 Clone with "git clone --recurse ..." to also clone LAIK as submodule in subdirectory "laik/".
 By default, this version will be linked with LULESH.
 First, run "configure". MPI needs to be installed and detected for LULESH to work.
@@ -12,6 +15,9 @@ First, run "configure". MPI needs to be installed and detected for LULESH to wor
     ./configure
     make liblaik.so
 
+
+==
+2. build laik-lulesh
 
 To link LULESH with an existing LAIK installation, set LAIK_ROOT to the path you installed
 LAIK into (or the base directory with the compiled LAIK sources).
@@ -24,7 +30,7 @@ There are two targets for builing laik-lulesh: one that compiles it for best per
 the other one compiles it for enabling repartitioning.
 
 for performance use the following build instruction: (default)
-    make -DPERFORMANCE
+    make target=DPERFORMANCE
 
 for enabling repartitioning use:
-    make -DREPARTITIONING
+    make target=REPARTITIONING
